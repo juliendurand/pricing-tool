@@ -4,12 +4,12 @@ from matplotlib.ticker import MultipleLocator
 import numpy as np
 
 
-def mean_absolute_error(y_hat, y):
-    return np.average(np.abs(y_hat - y))
+def mean_absolute_error(y_hat, y, exposure):
+    return np.sum(np.abs(y_hat - y)) / np.sum(exposure)
 
 
-def root_mean_square_error(y, y_hat):
-    return np.sqrt(np.mean(np.square(y-y_hat)))
+def root_mean_square_error(y, y_hat, exposure):
+    return np.sqrt(np.sum(np.square(y-y_hat)) / np.sum(exposure))
 
 
 def deviance(y, y_hat):

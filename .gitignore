@@ -1,3 +1,6 @@
 /data
 /bin
+/venv
 *.pyc
+*.o
+.ipynb_checkpoints
