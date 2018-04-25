@@ -208,14 +208,14 @@ void ImplicitSGDPoissonRegressor::printGroupedCoeffN2(){
             float c = coeffs[(i + 1) *200 + j];
             s += c * c;
         }
-        std::cout << i << "," << std::sqrt(s) << "," << std::endl;
+        std::cout << i << ",:" << std::sqrt(s) << "," << std::endl;
     }
     std::cout << std::endl;
 }
 
 
 int main(){
-    int p = 164;
+    int p = 152;
     int n = 4459543;
 
     Array<uint8_t> x("./data/observations.dat", p, n);
@@ -227,10 +227,10 @@ int main(){
     btof((char*) exposure_data.getData(), exposure, n);
 
     ImplicitSGDPoissonRegressor model(p, n, x.getData(), y, exposure);
-    int nb_iterations = 2000000;
+    int nb_iterations = 5000000;
     double alpha = 1;
     for(int i=0; i < nb_iterations; i++){
-        //alpha = 3000 / float(10000 + i - 1);
+        alpha = 3000 / float(10000 + i - 1);
         alpha = 0.0001;
         model.fit_explicit(i % 3000000, alpha);
         int nb_coeffs = 0;
