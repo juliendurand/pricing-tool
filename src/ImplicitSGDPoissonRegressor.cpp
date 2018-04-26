@@ -55,6 +55,7 @@ ImplicitSGDPoissonRegressor::ImplicitSGDPoissonRegressor(int p, int n,
 ImplicitSGDPoissonRegressor::~ImplicitSGDPoissonRegressor()
 {
     delete[] coeffs;
+    delete[] coeffs_star;
 }
 
 void ImplicitSGDPoissonRegressor::fit(int i, float learning_rate)
@@ -219,13 +220,10 @@ int main(){
     int n = 4459543;
 
     Array<uint8_t> x("./data/observations.dat", p, n);
-    Array<char> y_data("./data/targets.dat", 1, n * 4);
-    Array<char> exposure_data("./data/exposure.dat", 1, n * 4);
-    float* y = new float[n];
-    btof((char*)y_data.getData(), y, n);
-    float* exposure = new float[n];
-    btof((char*) exposure_data.getData(), exposure, n);
-
+    Array<float> y_data("./data/targets.dat", 1, n * 4);
+    Array<float> exposure_data("./data/exposure.dat", 1, n * 4);
+    float* y = y_data.getData();
+    float* exposure = exposure_data.getData();
     ImplicitSGDPoissonRegressor model(p, n, x.getData(), y, exposure);
     int nb_iterations = 5000000;
     double alpha = 1;
@@ -279,9 +277,6 @@ int main(){
     model.printGroupedCoeffN2();
 
     model.writeResults("./data/results.csv");
-
-    delete[] y;
-    delete[] exposure;
 
     std::cout << "Finished OK." << std::endl;
 }

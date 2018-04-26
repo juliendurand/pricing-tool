@@ -41,4 +41,4 @@ T* Array<T>::getData(){
 }
 
 template class Array<uint8_t>;
-template class Array<char>;
+template class Array<float>;

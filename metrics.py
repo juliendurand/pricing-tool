@@ -13,8 +13,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-
-
 def check_deviance(y, y_pred, weight=None):
     """
     Robust checks to run at beginning of deviance
@@ -48,7 +46,7 @@ def binomial_deviance(y, y_pred,weight=None):
 
     """
     y_pred = check_deviance(y, y_pred, weight=weight)
-    deviance_vector = - (y * np.log(y_pred) + (1-y) * np.log(1 -y_pred))
+    deviance_vector = - (y * np.log(y_pred) + (1-y) * np.log(1 - y_pred))
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
     return 2 * np.sum(deviance_vector)
@@ -77,12 +75,12 @@ def gamma_deviance(y, y_pred, weight=None):
 
     """
     y_pred = check_deviance(y, y_pred, weight=weight)
-        
+
     deviance_vector = -np.log(y/y_pred) + (y-y_pred)/y_pred
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
 
-    return 2 * np.sum(deviance_vector)     
+    return 2 * np.sum(deviance_vector)
 
 
 def poisson_deviance(y, y_pred, weight=None):
@@ -106,14 +104,14 @@ def poisson_deviance(y, y_pred, weight=None):
 
     """
     y_pred = check_deviance(y, y_pred, weight=weight)
-        
+
     bool_zeros = y != 0
     deviance_vector = np.zeros(y.shape[0])
     deviance_vector[bool_zeros] = (y[bool_zeros] * np.log(y[bool_zeros] / y_pred[bool_zeros]) - y[bool_zeros] + y_pred[bool_zeros])
     deviance_vector[~bool_zeros] = - y[~bool_zeros] + y_pred[~bool_zeros]
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
-    
+
     return 2 * np.sum(deviance_vector)
 
 
