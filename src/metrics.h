@@ -13,16 +13,16 @@ public:
     int s;
     uint8_t* x;
     float* y;
-    float* ypred;
+    std::vector<float> ypred;
     float* exposure;
     float* coeffs;
     int* samples;
 
 
-    LinearRegressionResult(int p, int n, uint8_t* x, float* y, float* ypred,
+    LinearRegressionResult(int p, int n, uint8_t* x, float* y, std::vector<float> ypred,
                            float* exposure, float* coeffs);
-    double rmse(int nbSamples, std::vector<int> samples);
-    double gini(int nbSamples, std::vector<int> samples);
+    double rmse(std::vector<int> samples);
+    double gini(std::vector<int> samples);
 };
 
 #endif  // METRICS_H_

@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 
+
  #include "array.h"
  #include "ImplicitSGDPoissonRegressor.h"
 
@@ -161,8 +162,8 @@ double ImplicitSGDPoissonRegressor::pred(int i){
     return exp(dp) * exposure[i];
 }
 
-float* ImplicitSGDPoissonRegressor::predict(){
-    float* ypred = new float[n];
+std::vector<float> ImplicitSGDPoissonRegressor::predict(){
+    std::vector<float> ypred(n);
     for(int i = 0; i < n; i++){
         ypred[i] = pred(i);
     }

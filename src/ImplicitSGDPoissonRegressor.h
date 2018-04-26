@@ -2,6 +2,7 @@
 #define IMPLICITSGDPOISSONREGRESSOR_H_
 
 #include <string>
+#include <vector>
 
 
 class ImplicitSGDPoissonRegressor
@@ -24,7 +25,7 @@ public:
     int penalizeGroupLasso(float learning_rate, float l1);
     void penalizeRidge(float learning_rate, float l2);
     double pred(int);
-    float* predict();
+    std::vector<float> predict();
     void writeResults(std::string);
     void printGroupedCoeffN2();
 };

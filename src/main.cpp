@@ -60,16 +60,15 @@ int main(){
             std::cout << "shuffling " << samples[i] << std::endl;
     }
 
-    float* ypred = model.predict();
+    std::vector<float> ypred = model.predict();
 
     LinearRegressionResult result(p, n, x, y, ypred, exposure, model.coeffs);
-    std::cout << "rmse: " << result.rmse(ns, samples) << std::endl;
-
-    delete[] ypred;
+    std::cout << "rmse: " << result.rmse(samples) << std::endl;
 
     model.printGroupedCoeffN2();
 
     model.writeResults("./data/results.csv");
 
     std::cout << "Finished OK." << std::endl;
+    std::cout << samples.size() << std::endl;
 }
