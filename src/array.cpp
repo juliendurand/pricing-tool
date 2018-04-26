@@ -1,7 +1,13 @@
- #include "array.h"
+#include <assert.h>
 #include <errno.h>
-
+#include <fcntl.h>
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include "array.h"
+
 
 size_t getFilesize(const std::string filename) {
     struct stat st;
@@ -25,7 +31,6 @@ Array<T>::Array(std::string filename, int p, int n):
     mmappt = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
     assert(mmappt != MAP_FAILED);
     data = reinterpret_cast<T*>(mmappt);
-    //std::cout << mmappt << " " << (void*) data << " " << "ok" << std::endl;
 }
 
 template<typename T>

@@ -2,11 +2,6 @@
 #define ARRAY_H_
 
 #include <string>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <assert.h>
 
 template <typename T>
 class Array

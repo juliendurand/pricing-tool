@@ -11,36 +11,7 @@
 #include <assert.h>
 
  #include "array.h"
-
-
-void btof(void* bytes, float* floats, int size){
-    memcpy(floats, bytes, 4 * size );
-}
-
-
-class ImplicitSGDPoissonRegressor
-{
-public:
-    int p;
-    int n;
-    uint8_t* x;
-    float* y;
-    float* exposure;
-    float* coeffs;
-    float* coeffs_star;
-
-
-    ImplicitSGDPoissonRegressor(int, int, uint8_t*, float*, float*);
-    ~ImplicitSGDPoissonRegressor();
-    void fit(int, float);
-    void fit_explicit(int i, float learning_rate);
-    int penalizeLasso(float learning_rate, float l1);
-    int penalizeGroupLasso(float learning_rate, float l1);
-    void penalizeRidge(float learning_rate, float l2);
-    double pred(int);
-    void writeResults(std::string);
-    void printGroupedCoeffN2();
-};
+ #include "ImplicitSGDPoissonRegressor.h"
 
 
 ImplicitSGDPoissonRegressor::ImplicitSGDPoissonRegressor(int p, int n,
@@ -48,14 +19,13 @@ ImplicitSGDPoissonRegressor::ImplicitSGDPoissonRegressor(int p, int n,
     p(p), n(n), x(x), y(y), exposure(exposure)
 {
     coeffs = new float[(p + 1) * 200];
-    coeffs_star = new float[(p + 1) * 200];
+    //coeffs_star = new float[(p + 1) * 200];
 }
-
 
 ImplicitSGDPoissonRegressor::~ImplicitSGDPoissonRegressor()
 {
     delete[] coeffs;
-    delete[] coeffs_star;
+    //delete[] coeffs_star;
 }
 
 void ImplicitSGDPoissonRegressor::fit(int i, float learning_rate)
@@ -105,9 +75,9 @@ void ImplicitSGDPoissonRegressor::fit(int i, float learning_rate)
     for(int j = 0; j < p ; j++){
         coeffs[(j + 1) * 200 + xi[j]] += x2;
     }
-    for(int j = 0; j < (p+1) * 200 ; j++){
+    /*for(int j = 0; j < (p+1) * 200 ; j++){
         coeffs_star[j] += coeffs[j];
-    }
+    }*/
 }
 
 void ImplicitSGDPoissonRegressor::fit_explicit(int i, float learning_rate)
@@ -191,6 +161,14 @@ double ImplicitSGDPoissonRegressor::pred(int i){
     return exp(dp) * exposure[i];
 }
 
+float* ImplicitSGDPoissonRegressor::predict(){
+    float* ypred = new float[n];
+    for(int i = 0; i < n; i++){
+        ypred[i] = pred(i);
+    }
+    return ypred;
+}
+
 void ImplicitSGDPoissonRegressor::writeResults(std::string filename){
     std::ofstream resultFile;
     resultFile.open(filename.c_str(), std::ios::out);
@@ -212,71 +190,4 @@ void ImplicitSGDPoissonRegressor::printGroupedCoeffN2(){
         std::cout << i << ",:" << std::sqrt(s) << "," << std::endl;
     }
     std::cout << std::endl;
-}
-
-
-int main(){
-    int p = 152;
-    int n = 4459543;
-
-    Array<uint8_t> x("./data/observations.dat", p, n);
-    Array<float> y_data("./data/targets.dat", 1, n * 4);
-    Array<float> exposure_data("./data/exposure.dat", 1, n * 4);
-    float* y = y_data.getData();
-    float* exposure = exposure_data.getData();
-    ImplicitSGDPoissonRegressor model(p, n, x.getData(), y, exposure);
-    int nb_iterations = 5000000;
-    double alpha = 1;
-    for(int i=0; i < nb_iterations; i++){
-        alpha = 3000 / float(10000 + i - 1);
-        alpha = 0.0001;
-        model.fit_explicit(i % 3000000, alpha);
-        int nb_coeffs = 0;
-        nb_coeffs = 0;
-        model.penalizeRidge(alpha, 0.0001);
-        if(i%100000 == 0){
-            double rmse = 0;
-            double s = 0;
-            for(int j=3000000; j < n; j++){
-                double e = y[j] - model.pred(j);
-                rmse += e*e;
-                s += exposure[j] ;
-            }
-            rmse = std::sqrt(rmse/s);
-            std::cout << "rmse: (" << i << ") " << rmse << " " <<  nb_coeffs << std::endl;
-       }
-    }
-
-
-    double rmse = 0;
-    double s = 0;
-    for(int i=3000000; i < n; i++){
-        double e = y[i] - model.pred(i);
-        rmse += e*e;
-        s += exposure[i] ;
-    }
-    rmse = std::sqrt(rmse/s);
-    std::cout << "rmse: " << rmse << std::endl;
-
-
-    /*for(int j = 0; j < (p+1) * 200 ; j++){
-        model.coeffs[j] = model.coeffs_star[j] / nb_iterations;
-    }*/
-
-
-    rmse = 0;
-    s = 0;
-    for(int i=3000000; i < n; i++){
-        double e = y[i] - model.pred(i);
-        rmse += e*e;
-        s += exposure[i];
-    }
-    rmse = std::sqrt(rmse/s);
-    std::cout << "rmse of mean coeffs: " << rmse << std::endl;
-
-    model.printGroupedCoeffN2();
-
-    model.writeResults("./data/results.csv");
-
-    std::cout << "Finished OK." << std::endl;
 }

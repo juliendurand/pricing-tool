@@ -1,6 +1,9 @@
 /data
 /bin
 /venv
+/build
+/dist
+/pricingtool.egg-info
 *.pyc
 *.o
 .ipynb_checkpoints
