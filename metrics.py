@@ -25,7 +25,7 @@ def check_deviance(y, y_pred, weight=None):
     return y_pred
 
 
-def binomial_deviance(y, y_pred,weight=None):
+def binomial_deviance(y, y_pred, weight=None):
     """
     Variance for the binomial model
 

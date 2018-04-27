@@ -19,10 +19,13 @@ public:
     int* samples;
 
 
-    LinearRegressionResult(int p, int n, uint8_t* x, float* y, std::vector<float> ypred,
+    LinearRegressionResult(int p, int n, uint8_t* x, float* y, const std::vector<float> &ypred,
                            float* exposure, float* coeffs);
-    double rmse(std::vector<int> samples);
-    double gini(std::vector<int> samples);
+    double rmse(const std::vector<int> &samples);
+    double gini(const std::vector<int> &samples);
+
+private:
+    double area_lorentz_fast(const std::vector<int> &samples);
 };
 
 #endif  // METRICS_H_
