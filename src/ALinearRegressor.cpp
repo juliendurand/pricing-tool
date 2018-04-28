@@ -35,17 +35,18 @@ int Dataset::next(){
 }
 
 ALinearRegressor::ALinearRegressor(int p, int n,
-    uint8_t* x, float* y, float* exposure) :
-    p(p), n(n), x(x), y(y), exposure(exposure)
+    uint8_t* x, float* y, float* exposure, int nbCoeffs, const std::vector<int> &offsets, std::vector<std::string> &features) :
+    p(p), n(n), x(x), y(y), exposure(exposure), nbCoeffs(nbCoeffs), offsets(offsets), features(features)
 {
-    coeffs = new float[(p + 1) * 200];
-    //coeffs_star = new float[(p + 1) * 200];
+    coeffs = new double[nbCoeffs + 1];
+    for(int i = 0; i < nbCoeffs; i++){
+        coeffs[i] = 0;
+    }
 }
 
 ALinearRegressor::~ALinearRegressor()
 {
     delete[] coeffs;
-    //delete[] coeffs_star;
 }
 
 std::vector<double> ALinearRegressor::covarianceProduct(const std::vector<int> &samples){
@@ -55,7 +56,6 @@ std::vector<double> ALinearRegressor::covarianceProduct(const std::vector<int> &
         double e = exposure[i];
         double v = e * e;
         for(int k = 0; k < p; k++){
-            int pos = k * 200 * 200 + xi[k];
             for(int j = k; j < p; j++){
                 s[xi[j]] += v;
             }
@@ -66,16 +66,16 @@ std::vector<double> ALinearRegressor::covarianceProduct(const std::vector<int> &
 
 int ALinearRegressor::penalizeLasso(float learning_rate, float l1){
     int nb_coeffs_non_zero = 0;
-    for(int j = 0; j < p * 200 ; j++){
-        float c = coeffs[200 + j];
+    for(int j = 0; j < nbCoeffs + 1; j++){
+        float c = coeffs[j];
         if(c > l1 * learning_rate){
-            coeffs[200 + j] -= l1 * learning_rate;
+            coeffs[j] -= l1 * learning_rate;
             nb_coeffs_non_zero++;
         } else if(c < -l1 * learning_rate){
-            coeffs[200 + j] += l1 * learning_rate;
+            coeffs[j] += l1 * learning_rate;
             nb_coeffs_non_zero++;
         } else {
-            coeffs[200 + j] = 0;
+            coeffs[j] = 0;
         }
     }
     return nb_coeffs_non_zero;
@@ -105,8 +105,8 @@ int ALinearRegressor::penalizeGroupLasso(float learning_rate, float l1){
 }
 
 void ALinearRegressor::penalizeRidge(float learning_rate, float l2){
-    for(int j = 0; j < p * 200 ; j++){
-        coeffs[200 + j] *= (1 - l2 * learning_rate);
+    for(int j = 1; j < nbCoeffs + 1; j++){
+        coeffs[j] *= (1 - l2 * learning_rate);
     }
 }
 
@@ -114,10 +114,7 @@ double ALinearRegressor::pred(int i){
     uint8_t* xi = x + p * i;
     double dp = coeffs[0];
     for(int j = 0; j < p; j++){
-        if(xi[j] > 200){
-            std::cout << "ERROR" << std::endl;
-        }
-        dp += coeffs[(j + 1) * 200 + xi[j]];
+        dp += coeffs[offsets[j]+ xi[j] + 1];
     }
     return exp(dp) * exposure[i];
 }
@@ -133,22 +130,45 @@ std::vector<float> ALinearRegressor::predict(){
 void ALinearRegressor::writeResults(std::string filename, std::vector<int> test){
     std::ofstream resultFile;
     resultFile.open(filename.c_str(), std::ios::out);
-    resultFile << "exposure" << "," << "target" << "," << "prediction" << std::endl;
+    resultFile << "row,exposure,target,prediction" << std::endl;
     for(int i : test){
-        pred(i);
-        resultFile << exposure[i] << "," << y[i] << "," << pred(i) << std::endl;
+        resultFile << i << ", " << exposure[i] << "," << y[i] << "," << pred(i) << std::endl;
     }
     resultFile.close();
 }
 
-void ALinearRegressor::printGroupedCoeffN2(){
-    for(int i = 0; i< p; i++){
-        float s = 0;
-        for(int j = 0; j < 200 ; j++){
-            float c = coeffs[(i + 1) *200 + j];
-            s += c * c;
-        }
-        std::cout << i << ",:" << std::sqrt(s) << "," << std::endl;
+double ALinearRegressor::getCoeffNorm2(int feature){
+    double s = 0;
+    for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
+        float c = coeffs[j + 1];
+        s += c * c;
     }
-    std::cout << std::endl;
+    int length = offsets[feature + 1] - offsets[feature];
+    return std::sqrt(s / length);
+}
+
+int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
+    int minidx = -1;
+    double minvalue = 100000000;
+    for(int i = 0; i< p; i++){
+        double s = getCoeffNorm2(i);
+        if(selected_features.count(i) && s < minvalue){
+            minvalue = s;
+            minidx = i;
+        }
+    }
+    return minidx;
+}
+
+double ALinearRegressor::getSpread(int feature){
+    double minvalue = 100000000;
+    double maxvalue = 0;
+
+    for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
+        float c = std::exp(coeffs[j + 1]);
+        if(c < minvalue) minvalue = c;
+        if(c > maxvalue) maxvalue = c;
+    }
+
+    return (maxvalue / minvalue - 1) * 100;
 }

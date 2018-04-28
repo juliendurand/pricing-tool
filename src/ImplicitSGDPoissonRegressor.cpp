@@ -3,7 +3,7 @@
 #include "ImplicitSGDPoissonRegressor.h"
 
 ImplicitSGDPoissonRegressor::ImplicitSGDPoissonRegressor(int p, int n,
-    uint8_t* x, float* y, float* exposure) : ALinearRegressor(p, n, x, y, exposure)
+    uint8_t* x, float* y, float* exposure, int nbCoeffs, const std::vector<int> &offsets, std::vector<std::string> &features) : ALinearRegressor(p, n, x, y, exposure, nbCoeffs, offsets, features)
 {
 }
 

@@ -20,15 +20,30 @@ Array<T>::Array(std::string filename, int p, int n):
     filename(filename), p(p), n(n)
 {
     size = n * p;
-    size_t filesize = getFilesize(filename);
-    assert(filesize == size);
 
     //Open file
-    fd = open(filename.c_str(), O_RDONLY, 0);
+    fd = open(filename.c_str(), O_RDWR | O_CREAT /*O_RDONLY*/, (mode_t)0777);
     assert(fd != -1);
 
+    size_t filesize = getFilesize(filename);
+    //assert(filesize == size);
+    if(size != filesize){
+        if (lseek(fd, size, SEEK_SET) == -1)
+        {
+            close(fd);
+            perror("Error calling lseek() to 'stretch' the file");
+            exit(EXIT_FAILURE);
+        }
+        if (write(fd, "", 1) == -1)
+        {
+            close(fd);
+            perror("Error writing last byte of the file");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     //Execute mmap
-    mmappt = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
+    mmappt = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     assert(mmappt != MAP_FAILED);
     data = reinterpret_cast<T*>(mmappt);
 }
@@ -47,3 +62,4 @@ T* Array<T>::getData(){
 
 template class Array<uint8_t>;
 template class Array<float>;
+template class Array<double>;

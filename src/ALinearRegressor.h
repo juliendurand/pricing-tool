@@ -4,6 +4,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <set>
 
 class Dataset
 {
@@ -25,11 +26,13 @@ public:
     uint8_t* x;
     float* y;
     float* exposure;
-    float* coeffs;
-    float* coeffs_star;
+    double* coeffs;
+    int nbCoeffs;
+    std::vector<int> offsets;
+    std::vector<std::string> features;
 
-
-    ALinearRegressor(int, int, uint8_t*, float*, float*);
+    ALinearRegressor(int, int, uint8_t*, float*, float*, int nbCoeffs,
+                     const std::vector<int> &offsets, std::vector<std::string> &features);
     ~ALinearRegressor();
     virtual void fit(int, float) = 0;
     std::vector<double> covarianceProduct(const std::vector<int> &samples);
@@ -39,7 +42,9 @@ public:
     double pred(int);
     std::vector<float> predict();
     void writeResults(std::string filename , std::vector<int> test);
-    void printGroupedCoeffN2();
+    int getMinCoeff(std::set<int>& selected_features);
+    double getCoeffNorm2(int feature);
+    double getSpread(int feature);
 };
 
 #endif  // ALINEARREGRESSOR_H_

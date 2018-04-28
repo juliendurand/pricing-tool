@@ -15,12 +15,12 @@ public:
     float* y;
     std::vector<float> ypred;
     float* exposure;
-    float* coeffs;
+    double* coeffs;
     int* samples;
 
 
     LinearRegressionResult(int p, int n, uint8_t* x, float* y, const std::vector<float> &ypred,
-                           float* exposure, float* coeffs);
+                           float* exposure, double* coeffs);
     double rmse(const std::vector<int> &samples);
     double gini(const std::vector<int> &samples);
 

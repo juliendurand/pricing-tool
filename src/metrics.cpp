@@ -6,7 +6,7 @@
 #include "metrics.h"
 
 LinearRegressionResult::LinearRegressionResult(int p, int n, uint8_t* x, float* y,
-    const std::vector<float> &ypred, float* exposure, float* coeffs):
+    const std::vector<float> &ypred, float* exposure, double* coeffs):
     p(p), n(n), x(x), y(y), ypred(ypred), exposure(exposure), coeffs(coeffs)
 {
 
