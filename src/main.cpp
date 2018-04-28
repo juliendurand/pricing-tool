@@ -220,13 +220,7 @@ int main(){
     for(int i=0; i < p; i++){
         selected_features.insert(i);
     }
-    /*selected_features.erase(77);
-    selected_features.erase(78);
-    selected_features.erase(79);
-    selected_features.erase(80);
-    selected_features.erase(81);*/
     selected_features.erase(111);
-
 
 /*
     std::cout << "Starting CovProduct " << ds.train.size() << std::endl;
