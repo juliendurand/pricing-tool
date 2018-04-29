@@ -27,6 +27,10 @@ public:
     float* y;
     float* exposure;
     double* coeffs;
+    double* weights;
+    double* stdev;
+    double* x1;
+    double* x0;
     int nbCoeffs;
     std::vector<int> offsets;
     std::vector<std::string> features;

@@ -12,6 +12,13 @@ from scipy import interpolate
 import pandas as pd
 import matplotlib.pyplot as plt
 
+def mean_absolute_error(y, y_hat, exposure):
+    return np.sum(np.abs(y_hat - y)) / np.sum(exposure)
+
+
+def root_mean_square_error(y, y_hat, exposure):
+    return np.sqrt(np.sum(np.square(y-y_hat)) / np.sum(exposure))
+
 
 def check_deviance(y, y_pred, weight=None):
     """

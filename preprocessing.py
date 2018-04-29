@@ -117,6 +117,9 @@ class Metadata:
         offsets = self.get_offsets()
         return list(range(offsets[feature_idx], offsets[feature_idx + 1]))
 
+    def get_modalities(self, feature):
+        return self.modalities[feature]
+
     def get_unused_fields(self):
         unused_fields = set(self.fields) - set(self.features) \
                         - set(self.targets) - set([self.exposure])
@@ -136,6 +139,22 @@ class Metadata:
         with open(metadata_filename, 'r') as metadata_file:
             self.__dict__ = json.load(metadata_file)
         print("Loaded metadata from ", metadata_filename)
+
+    def save_simple_config(self):
+        config_filename = os.path.join(self.path, self.name, 'metadata.cfg')
+        with open(config_filename, 'w') as config:
+            config.write(str(self.size) + '\n')
+            config.write(str(self.count_features()) + '\n')
+            config.write(str(self.count_modalities()) + '\n')
+            for i in range(self.count_features()):
+                config.write(self.features[i]+ '\n')
+            for i in range(self.count_features()):
+                modalities = self.modalities[self.features[i]]
+                for m in modalities:
+                    config.write(str(m) + '\n')
+            offsets = self.get_offsets()
+            for o in offsets:
+                config.write(str(o) + '\n')
 
     def get_feature_filename(self):
         return os.path.join(self.path, self.name, "features.dat")

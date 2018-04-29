@@ -4,7 +4,7 @@ from matplotlib.ticker import MultipleLocator
 import numpy as np
 
 
-def mean_absolute_error(y_hat, y, exposure):
+def mean_absolute_error(y, y_hat, exposure):
     return np.sum(np.abs(y_hat - y)) / np.sum(exposure)
 
 

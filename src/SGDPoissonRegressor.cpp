@@ -8,7 +8,6 @@ SGDPoissonRegressor::SGDPoissonRegressor(int p, int n,
 {
 }
 
-
 void SGDPoissonRegressor::fit(int i, float learning_rate)
 {
     uint8_t* xi = x + p * i;
@@ -26,8 +25,11 @@ void SGDPoissonRegressor::filterfit(int i, float learning_rate, std::set<int> &f
 
     double r = learning_rate * (y[i]- pred(i));
     coeffs[0] += r;
+    //coeffs[0] = -1.3553940277; //remove this hack !
     for(int j : feature_filters){
-        coeffs[offsets[j]+ xi[j] + 1] += r;
+        //if(weights[offsets[j]+ xi[j] + 1] < n * 0.5){
+            coeffs[offsets[j]+ xi[j] + 1] += r;
+        //}
     }
 }
 
@@ -52,8 +54,6 @@ void SGDPoissonRegressor::blockfit(Dataset &ds, int blocksize, float learning_ra
 
     for(int j = 0; j < nbCoeffs + 1 ; j++){
         coeffs[j] += update[j] * learning_rate / blocksize;
-        //if(j<10)
-        //std::cout << update[j] / blocksize <<  std::endl;
     }
 
     delete[] update;

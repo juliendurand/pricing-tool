@@ -42,6 +42,28 @@ ALinearRegressor::ALinearRegressor(int p, int n,
     for(int i = 0; i < nbCoeffs; i++){
         coeffs[i] = 0;
     }
+
+    weights = new double[nbCoeffs + 1];
+    stdev = new double[nbCoeffs + 1];
+    x1 = new double[nbCoeffs + 1];
+    x0 = new double[nbCoeffs + 1];
+    for(int i = 0; i < nbCoeffs; i++){
+        weights[i] = 0;
+    }
+    // should be calculated only on training set !!!
+    for(int i = 0; i < n; i++){
+        uint8_t*  xi = x + p * i;
+        for(int j = 0; j < p; j++){
+            weights[xi[j] + offsets[j] + 1] += 1;
+        }
+    }
+    stdev[0] = 1;
+    for(int i = 1; i < nbCoeffs; i++){
+        w = weights[i] / n;
+        s= std::sqrt(w - w*W);
+        stdev[i] = s;
+        x1 = (1 - w) / s;
+    }
 }
 
 ALinearRegressor::~ALinearRegressor()
@@ -127,6 +149,18 @@ std::vector<float> ALinearRegressor::predict(){
     return ypred;
 }
 
+#include <iomanip>
+#include <sstream>
+
+std::string doubleToText(const double & d)
+{
+    std::stringstream ss;
+    //ss << std::setprecision( std::numeric_limits<double>::digits10+2);
+    ss << std::setprecision( std::numeric_limits<int>::max() );
+    ss << d;
+    return ss.str();
+}
+
 void ALinearRegressor::writeResults(std::string filename, std::vector<int> test){
     std::ofstream resultFile;
     resultFile.open(filename.c_str(), std::ios::out);
@@ -135,16 +169,28 @@ void ALinearRegressor::writeResults(std::string filename, std::vector<int> test)
         resultFile << i << ", " << exposure[i] << "," << y[i] << "," << pred(i) << std::endl;
     }
     resultFile.close();
+
+    std::ofstream coeffFile;
+    coeffFile.open("data/mrh/coeffs.csv", std::ios::out);
+    coeffFile << "Coeffs" << std::endl;
+    for(int j=0; j < nbCoeffs + 1; j++){
+        double c = coeffs[j];
+        coeffFile << doubleToText(c) << std::endl;
+    }
+    coeffFile.close();
 }
 
 double ALinearRegressor::getCoeffNorm2(int feature){
     double s = 0;
+    double sw = 0;
     for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
-        float c = coeffs[j + 1];
-        s += c * c;
+        double w =  weights[j + 1];
+        double c = coeffs[j + 1];
+        s += c * c * w;
+        sw += w;
     }
-    int length = offsets[feature + 1] - offsets[feature];
-    return std::sqrt(s / length);
+    //int length = offsets[feature + 1] - offsets[feature];
+    return std::sqrt(s / sw);
 }
 
 int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
