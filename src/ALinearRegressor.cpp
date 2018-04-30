@@ -12,8 +12,8 @@
 #include <assert.h>
 
 
- #include "array.h"
- #include "ALinearRegressor.h"
+#include "array.h"
+#include "ALinearRegressor.h"
 
 
 Dataset::Dataset(int size, float testPct){
@@ -59,10 +59,12 @@ ALinearRegressor::ALinearRegressor(int p, int n,
     }
     stdev[0] = 1;
     for(int i = 1; i < nbCoeffs; i++){
-        w = weights[i] / n;
-        s= std::sqrt(w - w*W);
+        double w = weights[i] / n;
+        double s= std::sqrt(w - w * w);
         stdev[i] = s;
-        x1 = (1 - w) / s;
+        x1[i] = (1 - w) / s;
+        x0[i] = (0 - w) / s;
+        //std::cout << weights[i] << " " << w << " " << s << " " << x0[i] << " " << x1[i] << std::endl;
     }
 }
 
@@ -135,16 +137,31 @@ void ALinearRegressor::penalizeRidge(float learning_rate, float l2){
 double ALinearRegressor::pred(int i){
     uint8_t* xi = x + p * i;
     double dp = coeffs[0];
+    for(int j = 1; j < nbCoeffs; j++){
+        dp += x0[j] * coeffs[j];
+    }
     for(int j = 0; j < p; j++){
-        dp += coeffs[offsets[j]+ xi[j] + 1];
+        int k = offsets[j]+ xi[j] + 1;
+        dp += (x1[k] - x0[k]) * coeffs[k];
     }
     return exp(dp) * exposure[i];
 }
 
 std::vector<float> ALinearRegressor::predict(){
     std::vector<float> ypred(n);
+    double dp0 = 0;
+    for(int j = 1; j < nbCoeffs; j++){
+        dp0 += x0[j] * coeffs[j];
+    }
     for(int i = 0; i < n; i++){
-        ypred[i] = pred(i);
+        uint8_t* xi = x + p * i;
+        double dp = coeffs[0] + dp0;
+        for(int j = 0; j < p; j++){
+            int k = offsets[j]+ xi[j] + 1;
+            dp += (x1[k] - x0[k]) * coeffs[k];
+        }
+        ypred[i] = exp(dp) * exposure[i];
+        //ypred[i] = pred(i);
     }
     return ypred;
 }
@@ -174,23 +191,22 @@ void ALinearRegressor::writeResults(std::string filename, std::vector<int> test)
     coeffFile.open("data/mrh/coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
     for(int j=0; j < nbCoeffs + 1; j++){
-        double c = coeffs[j];
+        double c = coeffs[j] / stdev[j];
         coeffFile << doubleToText(c) << std::endl;
     }
     coeffFile.close();
 }
 
 double ALinearRegressor::getCoeffNorm2(int feature){
-    double s = 0;
+    double sc = 0;
     double sw = 0;
     for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
-        double w =  weights[j + 1];
         double c = coeffs[j + 1];
-        s += c * c * w;
-        sw += w;
+        double w = weights[j + 1];
+        sc += c * c * w;
+        sw += weights[j + 1];
     }
-    //int length = offsets[feature + 1] - offsets[feature];
-    return std::sqrt(s / sw);
+    return std::sqrt(sc / sw);
 }
 
 int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
@@ -211,10 +227,19 @@ double ALinearRegressor::getSpread(int feature){
     double maxvalue = 0;
 
     for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
-        float c = std::exp(coeffs[j + 1]);
+        float c = std::exp(coeffs[j + 1]  / stdev[j + 1]);
         if(c < minvalue) minvalue = c;
         if(c > maxvalue) maxvalue = c;
     }
 
     return (maxvalue / minvalue - 1) * 100;
+}
+
+void ALinearRegressor::eraseFeature(int i, int remove_feature, Config& config){
+    std::cout << i << " : Removing " << config.features[remove_feature] << " Norm2=" << getCoeffNorm2(remove_feature) << std::endl;
+    for(int j = config.offsets[remove_feature]; j < config.offsets[remove_feature + 1]; j++){
+        coeffs[j + 1] = 0;
+        x0[j + 1] = 0;
+        x1[j + 1] = 0;
+    }
 }

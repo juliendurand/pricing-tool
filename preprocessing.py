@@ -260,6 +260,11 @@ class Metadata:
         for k, m in modalities.items():
             m = {v: k for k, v in m.items()}
             modalities[k] = [m[k] for k in sorted(m)]
+            if len(modalities[k]) == 1:
+                raise Exception("Feature", k, " has only one modality and it"
+                                "therefore colinear to the intercept. Please "
+                                "remove it from the dataset as it will cause "
+                                "problems if included.")
 
         self.set_modalities(modalities)
         self.save()

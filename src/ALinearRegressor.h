@@ -6,6 +6,8 @@
 #include <vector>
 #include <set>
 
+#include "config.h"
+
 class Dataset
 {
 public:
@@ -49,6 +51,7 @@ public:
     int getMinCoeff(std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
     double getSpread(int feature);
+    void eraseFeature(int i, int feature, Config& config);
 };
 
 #endif  // ALINEARREGRESSOR_H_

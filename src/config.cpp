@@ -1,18 +1,21 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include "config.h"
 
-void Config::load(const std::string& path, const std::string& filename){
+void Config::load(const std::string& path, const std::string& name){
     this->path = path + "/" ;
-    name = filename;
+    this->name = name;
 
-    std::cout << "Loading config file : " << path + filename <<std::endl;
+    std::cout << "Loading config file : " << path + name + ".cfg" <<std::endl;
 
 
-    std::ifstream cfgfile(this->path + filename);
+    std::ifstream cfgfile(this->path + name + ".cfg");
     cfgfile >> target;
     cfgfile >> loss;
+    cfgfile >> nbFeaturesInModel;
 
     std::ifstream metadatafile(this->path  + "metadata.cfg");
     metadatafile >> n;
@@ -37,6 +40,12 @@ void Config::load(const std::string& path, const std::string& filename){
         offsets.push_back(k);
     }
 
+    std::ifstream excludedFeatureFile(this->path  + name + "_exclude.cfg");
+    while(excludedFeatureFile){
+        excludedFeatureFile >> f;
+        excludedFeatures.push_back(f);
+    }
+
     std::cout << "Loading config file : OK. " << std::endl;
 }
 
@@ -50,4 +59,14 @@ std::string Config::getExposureFilename(){
 
 std::string Config::getTargetFilename(){
     return path + "target_" + target + ".dat";
+}
+
+int Config::getFeatureIndex(const std::string& feature){
+    auto idx = std::find(excludedFeatures.begin(), excludedFeatures.end(),
+                         feature);
+    if(idx == excludedFeatures.end()){
+        throw std::invalid_argument( "ERROR : Excluded feature " + feature +
+                                    " can not be found." );
+    }
+    return idx- excludedFeatures.begin();
 }

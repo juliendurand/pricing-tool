@@ -51,34 +51,68 @@ int main(int argc, char** argv){
 
     SGDPoissonRegressor model(config.p, config.n, x, y, exposure, config.m, config.offsets, config.features);
 
-    std::cout << "Fit Model..." << std::endl;
-    int nb_iterations = 100000000;
-    int nbMaxSelectedFeatures = 12;
+    for(std::string feature : config.excludedFeatures){
+        int featureIdx = config.getFeatureIndex(feature);
+        selected_features.erase(featureIdx);
+        model.eraseFeature(0, featureIdx, config);
+    }
 
+    std::cout << "Fit Model for " << config.nbFeaturesInModel << " variables..." << std::endl;
+    int nb_iterations = 200000000;
+/*
     for(int i=0; i < nb_iterations; i++){
-        double alpha = 0.01;
+        double alpha = 0.000001;
 
         model.filterfit(ds.next(), alpha, selected_features);
         if(selected_features.size() <= nbMaxSelectedFeatures){
-            //model.penalizeRidge(alpha, 0.001);
+            //model.penalizeRidge(alpha, 0.01);
         }
 
         //int non_zero = model.penalizeLasso(alpha, 0.01);
-        if(i % 10000000 == 0){
+        if(i % 1000000 == 0){
             std::vector<float> ypred = model.predict();
             LinearRegressionResult res(config.p, config.n, x, y, ypred, exposure, model.coeffs);
             std::cout << i << " : rmse train=" << res.rmse(ds.train) << ", test=" << res.rmse(ds.test) << ")" << " | gini(train=" << res.gini(ds.train) << ", test=" << res.gini(ds.test) << ")" << std::endl;
             //std::cout << non_zero << std::endl;
         }
-        if(i > 50000000 &&  i % 300000 == 0 && selected_features.size() > nbMaxSelectedFeatures){
+        if(i > 20000000 &&  i % 100000 == 0 && selected_features.size() > nbMaxSelectedFeatures){
             int remove_feature = model.getMinCoeff(selected_features);
-            std::cout << "Removing: " << config.features[remove_feature] << " Norm2=" << model.getCoeffNorm2(remove_feature) << std::endl;
             selected_features.erase(remove_feature);
-            for(int j = config.offsets[remove_feature]; j < config.offsets[remove_feature + 1]; j++){
-                model.coeffs[j + 1] = 0;
-            }
+            model.eraseFeature(remove_feature, config);
        }
     }
+*/
+
+
+    int blocksize = 10 * config.m;
+    double alpha = 0.01;
+    for(int i=0; i < nb_iterations / blocksize; i++){
+        model.blockfit(ds, 10000, alpha, selected_features);
+        //model.penalizeRidge(alpha, 0.005);
+        if(i % 1000 == 0){
+            std::vector<float> ypred = model.predict();
+            LinearRegressionResult res(config.p, config.n, x, y, ypred, exposure, model.coeffs);
+            std::cout << i * blocksize << " : rmse(train=" << res.rmse(ds.train) << ", test=" << res.rmse(ds.test) << ")" << " | gini(train=" << res.gini(ds.train) << ", test=" << res.gini(ds.test) << ")" << std::endl;
+        }
+
+        if(i > 3000 && selected_features.size() > config.nbFeaturesInModel){
+            if(selected_features.size() > config.nbFeaturesInModel + 20){
+            int remove_feature = model.getMinCoeff(selected_features);
+            selected_features.erase(remove_feature);
+            model.eraseFeature(i * blocksize, remove_feature, config);
+            } else if(i % 100 == 0){
+                int remove_feature = model.getMinCoeff(selected_features);
+                selected_features.erase(remove_feature);
+                model.eraseFeature(i * blocksize, remove_feature, config);
+            }
+        }
+
+        if(selected_features.size() == config.nbFeaturesInModel){
+            alpha = 0.1;
+        }
+    }
+
+    //model.squeezeCoeffs();
 
     std::map<double, int> keep_features;
     for(auto f : selected_features){
@@ -96,28 +130,8 @@ int main(int argc, char** argv){
     std::cout << "rmse (test) : " << result.rmse(ds.test) << std::endl;
     std::cout << "gini (train) : " << result.gini(ds.train) << std::endl;
     std::cout << "gini (test) : " << result.gini(ds.test) << std::endl;
-/*
-    int blocksize = 10000;
-    for(int i=0; i < nb_iterations / blocksize; i++){
 
-        model.blockfit(ds, 10000, 0.5);
-        if((i * blocksize ) % 10000000 == 0){
-            std::vector<float> ypred = model.predict();
-            LinearRegressionResult res(p, n, x, y, ypred, exposure, model.coeffs);
-            std::cout << i * blocksize << " : rmse train=" << res.rmse(ds.train) << ", test=" << res.rmse(ds.test) << ")" << " | gini(train=" << res.gini(ds.train) << ", test=" << res.gini(ds.test) << ")" << std::endl;
-        }
-    }
-
-
-    ypred = model.predict();
-    result = LinearRegressionResult(p, n, x, y, ypred, exposure, model.coeffs);
-    std::cout << "rmse (train) : " << result.rmse(ds.train) << std::endl;
-    std::cout << "rmse (test) : " << result.rmse(ds.test) << std::endl;
-    std::cout << "gini (train) : " << result.gini(ds.train) << std::endl;
-    std::cout << "gini (test) : " << result.gini(ds.test) << std::endl;
-*/
-    //model.printGroupedCoeffN2();
-
+    std::cout << "Writting results." << std::endl;
     model.writeResults("./data/results.csv", ds.test);
 
     std::cout << "Finished OK." << std::endl;
