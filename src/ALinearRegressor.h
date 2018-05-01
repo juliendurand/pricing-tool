@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 
+#include "array.h"
 #include "config.h"
 
 class Dataset
@@ -15,14 +16,20 @@ public:
     std::vector<int> test;
     std::mt19937 generator;
     std::uniform_int_distribution<std::mt19937::result_type> random;
+    Array<uint8_t>* x_data;
+    Array<float>* exposure_data;
+    Array<float>* y_data;
 
-    Dataset(int size, float testPct);
+    Dataset();
+    Dataset(Config& config, float testPct);
     int next();
 };
 
 class ALinearRegressor
 {
 public:
+    Config config;
+    Dataset dataset;
     int p;
     int n;
     uint8_t* x;
@@ -37,8 +44,7 @@ public:
     std::vector<int> offsets;
     std::vector<std::string> features;
 
-    ALinearRegressor(int, int, uint8_t*, float*, float*, int nbCoeffs,
-                     const std::vector<int> &offsets, std::vector<std::string> &features);
+    ALinearRegressor(Config& config, Dataset& dataset);
     ~ALinearRegressor();
     virtual void fit(int, float) = 0;
     std::vector<double> covarianceProduct(const std::vector<int> &samples);

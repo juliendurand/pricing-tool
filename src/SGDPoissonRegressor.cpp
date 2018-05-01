@@ -2,9 +2,8 @@
 
 #include "SGDPoissonRegressor.h"
 
-SGDPoissonRegressor::SGDPoissonRegressor(int p, int n,
-    uint8_t* x, float* y, float* exposure, int nbCoeffs,
-    const std::vector<int> &offsets, std::vector<std::string> &features) : ALinearRegressor(p, n, x, y, exposure, nbCoeffs, offsets, features)
+SGDPoissonRegressor::SGDPoissonRegressor(Config& config, Dataset& dataset):
+    ALinearRegressor(config, dataset)
 {
     update.reserve(nbCoeffs + 1);
 }
@@ -65,7 +64,7 @@ void SGDPoissonRegressor::blockfit(Dataset &ds, int blocksize, float learning_ra
     coeffs[0] += rTotal * learning_rate / blocksize;
     for(int j = 1; j < nbCoeffs + 1 ; j++){
         double w = weights[j];
-        if(w < std::sqrt(n) / 100){
+        if(w < std::sqrt(n) / 10){
             // squeezing non significative coefficients to Zero
             coeffs[j] = 0; // this line is not required (just to be explicit) !
             continue;

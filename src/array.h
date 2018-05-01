@@ -15,6 +15,7 @@ class Array
     T* data;
 
 public:
+    Array();
     Array(std::string filename, int p, int n);
     ~Array();
     T* getData();

@@ -9,7 +9,7 @@ void Config::load(const std::string& path, const std::string& name){
     this->path = path + "/" ;
     this->name = name;
 
-    std::cout << "Loading config file : " << path + name + ".cfg" <<std::endl;
+    std::cout << "Loading config file : " << this->path + name + ".cfg" <<std::endl;
 
 
     std::ifstream cfgfile(this->path + name + ".cfg");
@@ -62,11 +62,12 @@ std::string Config::getTargetFilename(){
 }
 
 int Config::getFeatureIndex(const std::string& feature){
-    auto idx = std::find(excludedFeatures.begin(), excludedFeatures.end(),
+    auto it = std::find(features.begin(), features.end(),
                          feature);
-    if(idx == excludedFeatures.end()){
+    if(it == excludedFeatures.end()){
         throw std::invalid_argument( "ERROR : Excluded feature " + feature +
                                     " can not be found." );
     }
-    return idx- excludedFeatures.begin();
+    auto idx = std::distance(features.begin(), it);
+    return idx;
 }

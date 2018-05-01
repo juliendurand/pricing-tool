@@ -22,34 +22,14 @@ int main(int argc, char** argv){
     Config config;
     config.load(path, config_filename);
 
-    //int p = 134;
-    //int n = 4459543;
-    Dataset ds(config.n, 0.2);
+    Dataset ds(config, 0.2);
 
-    Array<uint8_t> x_data(config.getFeatureFilename(), config.p, config.n);
-    uint8_t* x = x_data.getData();
-    Array<float> exposure_data(config.getExposureFilename(), 1, config.n * 4);
-    float* exposure = exposure_data.getData();
-    Array<float> y_data(config.getTargetFilename(), 1, config.n * 4);
-    float* y = y_data.getData();
-
-    /*std::vector<int> nbModalities = {
-        7, 7, 2, 7, 7, 45, 7, 3, 6, 2, 3, 11, 3, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8, 6, 16, 25, 28, 34, 6, 31, 131, 5, 51, 47, 27, 22, 34, 51, 16, 30, 13, 11, 16, 14, 15, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 7, 2, 2, 2, 2, 2, 11, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 9, 10, 10, 9, 25, 6, 12, 12, 17, 10, 4, 4, 7, 1, 2, 2, 2, 81, 21, 11, 21, 21, 21, 21, 21, 21, 21, 11, 21, 30, 4, 4, 8, 21, 16, 21
-    };
-
-    std::vector<int> offsets(nbModalities.size() + 1);
-    for(int i = 1; i < nbModalities.size() + 1; i++){
-        offsets[i] = offsets[i - 1] + nbModalities[i - 1];
-    }
-    int nbTotalModalities = offsets.back();
-    */
+    SGDPoissonRegressor model(config, ds);
 
     std::set<int> selected_features;
     for(int i=0; i < config.p; i++){
         selected_features.insert(i);
     }
-
-    SGDPoissonRegressor model(config.p, config.n, x, y, exposure, config.m, config.offsets, config.features);
 
     for(std::string feature : config.excludedFeatures){
         int featureIdx = config.getFeatureIndex(feature);
@@ -57,8 +37,10 @@ int main(int argc, char** argv){
         model.eraseFeature(0, featureIdx, config);
     }
 
+    std::cout << "ok 3" << std::endl;
+
     std::cout << "Fit Model for " << config.nbFeaturesInModel << " variables..." << std::endl;
-    int nb_iterations = 200000000;
+    int nb_iterations = 500000000;
 /*
     for(int i=0; i < nb_iterations; i++){
         double alpha = 0.000001;
@@ -85,13 +67,13 @@ int main(int argc, char** argv){
 
 
     int blocksize = 10 * config.m;
-    double alpha = 0.01;
+    double alpha = 0.3;
     for(int i=0; i < nb_iterations / blocksize; i++){
-        model.blockfit(ds, 10000, alpha, selected_features);
+        model.blockfit(ds, blocksize, alpha, selected_features);
         //model.penalizeRidge(alpha, 0.005);
         if(i % 1000 == 0){
             std::vector<float> ypred = model.predict();
-            LinearRegressionResult res(config.p, config.n, x, y, ypred, exposure, model.coeffs);
+            LinearRegressionResult res(config.p, config.n, model.x, model.y, ypred, model.exposure, model.coeffs);
             std::cout << i * blocksize << " : rmse(train=" << res.rmse(ds.train) << ", test=" << res.rmse(ds.test) << ")" << " | gini(train=" << res.gini(ds.train) << ", test=" << res.gini(ds.test) << ")" << std::endl;
         }
 
@@ -112,8 +94,6 @@ int main(int argc, char** argv){
         }
     }
 
-    //model.squeezeCoeffs();
-
     std::map<double, int> keep_features;
     for(auto f : selected_features){
         double v = model.getSpread(f);
@@ -125,7 +105,7 @@ int main(int argc, char** argv){
     }
 
     std::vector<float> ypred = model.predict();
-    LinearRegressionResult result(config.p, config.n, x, y, ypred, exposure, model.coeffs);
+    LinearRegressionResult result(config.p, config.n, model.x, model.y, ypred, model.exposure, model.coeffs);
     std::cout << "rmse (train) : " << result.rmse(ds.train) << std::endl;
     std::cout << "rmse (test) : " << result.rmse(ds.test) << std::endl;
     std::cout << "gini (train) : " << result.gini(ds.train) << std::endl;

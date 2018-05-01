@@ -16,28 +16,44 @@
 #include "ALinearRegressor.h"
 
 
-Dataset::Dataset(int size, float testPct){
-    std::vector<int> index(size);
+Dataset::Dataset(){
+}
+
+Dataset::Dataset(Config& config, float testPct){
+    std::vector<int> index(config.n);
     std::iota (std::begin(index), std::end(index), 0);
     std::random_device rd;
     generator = std::mt19937(rd());
     std::shuffle(index.begin(), index.end(), generator);
-    std::size_t const testSize = static_cast<std::size_t>(size * testPct);
+    std::size_t const testSize = static_cast<std::size_t>(config.n * testPct);
     train = std::vector<int>(index.begin(), index.end() - testSize);
     std::sort(train.begin(), train.end());
     test = std::vector<int>(index.end() - testSize, index.end());
     std::sort(test.begin(), test.end());
     random = std::uniform_int_distribution<std::mt19937::result_type>(0, train.size());
+
+    x_data = new Array<uint8_t>(config.getFeatureFilename(), config.p, config.n);
+    exposure_data = new Array<float>(config.getExposureFilename(), 1, config.n * 4);
+    y_data = new Array<float>(config.getTargetFilename(), 1, config.n * 4);
 }
 
 int Dataset::next(){
     return train[random(generator)];
 }
 
-ALinearRegressor::ALinearRegressor(int p, int n,
-    uint8_t* x, float* y, float* exposure, int nbCoeffs, const std::vector<int> &offsets, std::vector<std::string> &features) :
-    p(p), n(n), x(x), y(y), exposure(exposure), nbCoeffs(nbCoeffs), offsets(offsets), features(features)
+ALinearRegressor::ALinearRegressor(Config& config, Dataset& dataset)
 {
+
+    this->config = config;
+    n = config.n;
+    p = config.p;
+    nbCoeffs = config.m;
+    offsets = config.offsets;
+    features = config.features;
+    x = dataset.x_data->getData();
+    exposure = dataset.exposure_data->getData();
+    y = dataset.y_data->getData();
+
     coeffs = new double[nbCoeffs + 1];
     for(int i = 0; i < nbCoeffs; i++){
         coeffs[i] = 0;
@@ -64,7 +80,6 @@ ALinearRegressor::ALinearRegressor(int p, int n,
         stdev[i] = s;
         x1[i] = (1 - w) / s;
         x0[i] = (0 - w) / s;
-        //std::cout << weights[i] << " " << w << " " << s << " " << x0[i] << " " << x1[i] << std::endl;
     }
 }
 
