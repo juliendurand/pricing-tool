@@ -37,8 +37,6 @@ int main(int argc, char** argv){
         model.eraseFeature(0, featureIdx, config);
     }
 
-    std::cout << "ok 3" << std::endl;
-
     std::cout << "Fit Model for " << config.nbFeaturesInModel << " variables..." << std::endl;
     int nb_iterations = 500000000;
 /*
