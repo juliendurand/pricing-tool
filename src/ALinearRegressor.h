@@ -1,35 +1,19 @@
 #ifndef ALINEARREGRESSOR_H_
 #define ALINEARREGRESSOR_H_
 
-#include <random>
 #include <string>
 #include <vector>
 #include <set>
 
-#include "array.h"
 #include "config.h"
+#include "dataset.h"
 
-class Dataset
-{
-public:
-    std::vector<int> train;
-    std::vector<int> test;
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::mt19937::result_type> random;
-    Array<uint8_t>* x_data;
-    Array<float>* exposure_data;
-    Array<float>* y_data;
-
-    Dataset();
-    Dataset(Config& config, float testPct);
-    int next();
-};
 
 class ALinearRegressor
 {
 public:
-    Config config;
-    Dataset dataset;
+    Config* config;
+    Dataset* dataset;
     int p;
     int n;
     uint8_t* x;
@@ -43,8 +27,9 @@ public:
     int nbCoeffs;
     std::vector<int> offsets;
     std::vector<std::string> features;
+    std::set<int> selected_features;
 
-    ALinearRegressor(Config& config, Dataset& dataset);
+    ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
     virtual void fit(int, float) = 0;
     std::vector<double> covarianceProduct(const std::vector<int> &samples);
@@ -57,7 +42,8 @@ public:
     int getMinCoeff(std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
     double getSpread(int feature);
-    void eraseFeature(int i, int feature, Config& config);
+    void eraseFeature(int i, int feature);
+    void printSelectedFeatures();
 };
 
 #endif  // ALINEARREGRESSOR_H_

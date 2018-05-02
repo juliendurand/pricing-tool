@@ -1,58 +1,35 @@
 #include <algorithm>
-#include <cinttypes>
-#include <iostream>
-#include <cmath>
-#include <string>
-#include <fstream>
-
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include <assert.h>
-
+#include <cinttypes>
+#include <cmath>
+#include <fcntl.h>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "array.h"
 #include "ALinearRegressor.h"
 
 
-Dataset::Dataset(){
-}
-
-Dataset::Dataset(Config& config, float testPct){
-    std::vector<int> index(config.n);
-    std::iota (std::begin(index), std::end(index), 0);
-    std::random_device rd;
-    generator = std::mt19937(rd());
-    std::shuffle(index.begin(), index.end(), generator);
-    std::size_t const testSize = static_cast<std::size_t>(config.n * testPct);
-    train = std::vector<int>(index.begin(), index.end() - testSize);
-    std::sort(train.begin(), train.end());
-    test = std::vector<int>(index.end() - testSize, index.end());
-    std::sort(test.begin(), test.end());
-    random = std::uniform_int_distribution<std::mt19937::result_type>(0, train.size());
-
-    x_data = new Array<uint8_t>(config.getFeatureFilename(), config.p, config.n);
-    exposure_data = new Array<float>(config.getExposureFilename(), 1, config.n * 4);
-    y_data = new Array<float>(config.getTargetFilename(), 1, config.n * 4);
-}
-
-int Dataset::next(){
-    return train[random(generator)];
-}
-
-ALinearRegressor::ALinearRegressor(Config& config, Dataset& dataset)
+ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
 {
 
-    this->config = config;
-    n = config.n;
-    p = config.p;
-    nbCoeffs = config.m;
-    offsets = config.offsets;
-    features = config.features;
-    x = dataset.x_data->getData();
-    exposure = dataset.exposure_data->getData();
-    y = dataset.y_data->getData();
+    config = configuration;
+    dataset = ds;
+    n = config->n;
+    p = config->p;
+    nbCoeffs = config->m;
+    offsets = config->offsets;
+    features = config->features;
+    x = dataset->x_data->getData();
+    exposure = dataset->exposure_data->getData();
+    y = dataset->y_data->getData();
 
     coeffs = new double[nbCoeffs + 1];
     for(int i = 0; i < nbCoeffs; i++){
@@ -81,6 +58,14 @@ ALinearRegressor::ALinearRegressor(Config& config, Dataset& dataset)
         x1[i] = (1 - w) / s;
         x0[i] = (0 - w) / s;
     }
+
+    for(int i=0; i < p; i++){
+        selected_features.insert(i);
+    }
+    for(std::string feature : config->excludedFeatures){
+        int featureIdx = config->getFeatureIndex(feature);
+        eraseFeature(0, featureIdx);
+    }
 }
 
 ALinearRegressor::~ALinearRegressor()
@@ -88,7 +73,8 @@ ALinearRegressor::~ALinearRegressor()
     delete[] coeffs;
 }
 
-std::vector<double> ALinearRegressor::covarianceProduct(const std::vector<int> &samples){
+std::vector<double> ALinearRegressor::covarianceProduct(
+        const std::vector<int> &samples){
     std::vector<double> s(200);
     for(int i : samples){
         uint8_t* xi = x + p * i;
@@ -131,7 +117,8 @@ int ALinearRegressor::penalizeGroupLasso(float learning_rate, float l1){
         s = std::sqrt(s);
         if(s > l1 * learning_rate){
             for(int j = 0; j < 200 ; j++){
-                coeffs[(i + 1) *200 + j] -= l1 * learning_rate * coeffs[(i + 1) *200 + j] / s;
+                coeffs[(i + 1) *200 + j] -= l1 * learning_rate
+                                            * coeffs[(i + 1) * 200 + j] / s;
             }
             nb_coeffs_non_zero++;
         } else {
@@ -176,29 +163,27 @@ std::vector<float> ALinearRegressor::predict(){
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
         ypred[i] = exp(dp) * exposure[i];
-        //ypred[i] = pred(i);
     }
     return ypred;
 }
 
-#include <iomanip>
-#include <sstream>
-
 std::string doubleToText(const double & d)
 {
     std::stringstream ss;
-    //ss << std::setprecision( std::numeric_limits<double>::digits10+2);
     ss << std::setprecision( std::numeric_limits<int>::max() );
     ss << d;
     return ss.str();
 }
 
-void ALinearRegressor::writeResults(std::string filename, std::vector<int> test){
+void ALinearRegressor::writeResults(std::string filename,
+                                    std::vector<int> test){
+    std::cout << "Writting results." << std::endl;
     std::ofstream resultFile;
     resultFile.open(filename.c_str(), std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;
     for(int i : test){
-        resultFile << i << ", " << exposure[i] << "," << y[i] << "," << pred(i) << std::endl;
+        resultFile << i << ", " << exposure[i] << "," << y[i] << ","
+            << pred(i) << std::endl;
     }
     resultFile.close();
 
@@ -247,14 +232,36 @@ double ALinearRegressor::getSpread(int feature){
         if(c > maxvalue) maxvalue = c;
     }
 
-    return (maxvalue / minvalue - 1) * 100;
+    return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
-void ALinearRegressor::eraseFeature(int i, int remove_feature, Config& config){
-    std::cout << i << " : Removing " << config.features[remove_feature] << " Norm2=" << getCoeffNorm2(remove_feature) << std::endl;
-    for(int j = config.offsets[remove_feature]; j < config.offsets[remove_feature + 1]; j++){
+void ALinearRegressor::eraseFeature(int i, int remove_feature){
+    std::cout << i << " : Removing " << config->features[remove_feature]
+              << " " << remove_feature << " "
+              << " Norm2=" << getCoeffNorm2(remove_feature) << std::endl;
+    selected_features.erase(remove_feature);
+    for(int j = config->offsets[remove_feature];
+        j < config->offsets[remove_feature + 1]; j++){
         coeffs[j + 1] = 0;
         x0[j + 1] = 0;
         x1[j + 1] = 0;
+    }
+}
+
+void ALinearRegressor::printSelectedFeatures(){
+    std::map<double, int> keep_features;
+    for(auto f : selected_features){
+        double v = getSpread(f);
+        keep_features[v] = f;
+    }
+
+    int i = 1;
+    std::cout << "Selected Features :" <<std::endl;
+    for(auto kv = keep_features.rbegin(); kv != keep_features.rend(); kv++){
+        int featureIdx = kv->second ;
+        std::cout << "        " << i << " : " << features[featureIdx] << " [N2="
+                  << getCoeffNorm2(featureIdx) << ", Spread(100/0)="
+                  << getSpread(featureIdx) << "%]" << std::endl;
+        i++;
     }
 }

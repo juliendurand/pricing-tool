@@ -11,12 +11,9 @@ class SGDPoissonRegressor : public ALinearRegressor
     std::vector<double> update;
 
 public:
-    SGDPoissonRegressor(Config& config, Dataset& dataset);
+    SGDPoissonRegressor(Config* config, Dataset* dataset);
     virtual void fit(int, float);
-    void filterfit(int, float, std::set<int> &feature_filters);
-    void blockfit(Dataset& ds, int blocksize, float learning_rate,
-                  std::set<int> &feature_filters);
-    void squeezeCoeffs();
+    void blockfit(int blocksize, float learning_rate);
 };
 
 #endif  // SGDPOISSONREGRESSOR_H_

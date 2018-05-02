@@ -20,7 +20,7 @@ public:
     std::vector<int> offsets;
     std::vector<std::string> excludedFeatures;
 
-    void load(const std::string& path, const std::string& filename);
+    Config(const std::string& path, const std::string& filename);
     std::string getFeatureFilename();
     std::string getExposureFilename();
     std::string getTargetFilename();

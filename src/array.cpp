@@ -23,6 +23,7 @@ template<typename T>
 Array<T>::Array(std::string filename, int p, int n):
     filename(filename), p(p), n(n)
 {
+    std::cout << "Lodading data file : " << filename << std::endl;
     size = n * p;
 
     //Open file
@@ -50,7 +51,6 @@ Array<T>::Array(std::string filename, int p, int n):
     mmappt = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     assert(mmappt != MAP_FAILED);
     data = reinterpret_cast<T*>(mmappt);
-    std::cout << "Lodaded file : " << filename << std::endl;
 }
 
 template<typename T>

@@ -5,11 +5,12 @@
 
 #include "config.h"
 
-void Config::load(const std::string& path, const std::string& name){
+Config::Config(const std::string& path, const std::string& name){
     this->path = path + "/" ;
     this->name = name;
 
-    std::cout << "Loading config file : " << this->path + name + ".cfg" <<std::endl;
+    std::cout << "Loading config file : "
+              << this->path + name + ".cfg" <<std::endl;
 
 
     std::ifstream cfgfile(this->path + name + ".cfg");
@@ -42,11 +43,13 @@ void Config::load(const std::string& path, const std::string& name){
 
     std::ifstream excludedFeatureFile(this->path  + name + "_exclude.cfg");
     while(excludedFeatureFile){
-        excludedFeatureFile >> f;
+        std::getline(excludedFeatureFile, f);
+        if(f.empty()){
+            continue;
+        }
+        std::cout << f << " f" << std::endl;
         excludedFeatures.push_back(f);
     }
-
-    std::cout << "Loading config file : OK. " << std::endl;
 }
 
 std::string Config::getFeatureFilename(){
@@ -64,7 +67,8 @@ std::string Config::getTargetFilename(){
 int Config::getFeatureIndex(const std::string& feature){
     auto it = std::find(features.begin(), features.end(),
                          feature);
-    if(it == excludedFeatures.end()){
+    std::cout << feature << " " << std::endl;
+    if(it == features.end()){
         throw std::invalid_argument( "ERROR : Excluded feature " + feature +
                                     " can not be found." );
     }
