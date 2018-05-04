@@ -44,6 +44,7 @@ public:
     double getSpread(int feature);
     void eraseFeature(int i, int feature);
     void printSelectedFeatures();
+    double getNorm2CoeffDiff(double* coeffs2);
 };
 
 #endif  // ALINEARREGRESSOR_H_

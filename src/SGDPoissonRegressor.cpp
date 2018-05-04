@@ -40,6 +40,7 @@ void SGDPoissonRegressor::blockfit(int blocksize, float learning_rate){
         for(int j : selected_features){
             int k = offsets[j]+ xi[j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
+            //std::cout << x0[k] << " " << x1[k] << std::endl;
         }
         double ypred = exp(dp) * exposure[i];
         double r = y[i]- ypred;
@@ -48,16 +49,19 @@ void SGDPoissonRegressor::blockfit(int blocksize, float learning_rate){
             int k = offsets[j]+ xi[j] + 1;
             update[k] += r * (x1[k] - x0[k]);
         }
+        //std::cout << y[i] << " " << ypred << std::endl;
     }
 
     coeffs[0] += rTotal * learning_rate / blocksize;
+    //std::cout << blocksize << " " << learning_rate << " " << coeffs[0]  << " " << rTotal;
     for(int j = 1; j < nbCoeffs + 1 ; j++){
         double w = weights[j];
-        if(w < std::sqrt(n) / 10){
+        if(w < std::sqrt(weights[0]) / 10){
             // squeezing non significative coefficients to Zero
             coeffs[j] = 0; // this line is not required (just to be explicit) !
         }else{
             coeffs[j] += (update[j] + rTotal * x0[j]) * learning_rate / blocksize;
+            //std::cout << coeffs[j];
         }
     }
 }

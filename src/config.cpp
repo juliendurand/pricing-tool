@@ -17,6 +17,7 @@ Config::Config(const std::string& path, const std::string& name){
     cfgfile >> target;
     cfgfile >> loss;
     cfgfile >> nbFeaturesInModel;
+    cfgfile >> nbIterations;
 
     std::ifstream metadatafile(this->path  + "metadata.cfg");
     metadatafile >> n;
@@ -69,9 +70,19 @@ int Config::getFeatureIndex(const std::string& feature){
                          feature);
     std::cout << feature << " " << std::endl;
     if(it == features.end()){
-        throw std::invalid_argument( "ERROR : Excluded feature " + feature +
+        throw std::invalid_argument("ERROR : Excluded feature " + feature +
                                     " can not be found." );
     }
     auto idx = std::distance(features.begin(), it);
     return idx;
+}
+
+int Config::getFeatureFromModality(int m){
+    for(int i = 0; i < features.size(); i++){
+        if(m >= offsets[i] && m < offsets[i + 1]){
+            return i;
+        }
+    }
+    throw std::invalid_argument("ERROR : Modality " + std::to_string(m) +
+                                " can not be found." );
 }

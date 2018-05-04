@@ -12,6 +12,7 @@ public:
     std::string target;
     std::string loss;
     int nbFeaturesInModel;
+    int nbIterations;
     int n;
     int p;
     int m;
@@ -25,6 +26,7 @@ public:
     std::string getExposureFilename();
     std::string getTargetFilename();
     int getFeatureIndex(const std::string& feature);
+    int getFeatureFromModality(int m);
 };
 
 #endif  // CONFIG_H_

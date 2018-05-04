@@ -6,14 +6,14 @@
 #include "metrics.h"
 
 LinearRegressionResult::LinearRegressionResult(
-    ALinearRegressor& linearRegressor
+    ALinearRegressor* linearRegressor
 )
 {
-    x = linearRegressor.x;
-    y = linearRegressor.y;
-    ypred = linearRegressor.predict();
-    exposure = linearRegressor.exposure;
-    coeffs = linearRegressor.coeffs;
+    x = linearRegressor->x;
+    y = linearRegressor->y;
+    ypred = linearRegressor->predict();
+    exposure = linearRegressor->exposure;
+    coeffs = linearRegressor->coeffs;
 }
 
 double LinearRegressionResult::rmse(const std::vector<int> &samples){

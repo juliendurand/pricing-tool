@@ -17,7 +17,7 @@ public:
     float* exposure;
     double* coeffs;
 
-    LinearRegressionResult(ALinearRegressor& linearRegressor);
+    LinearRegressionResult(ALinearRegressor* linearRegressor);
     double rmse(const std::vector<int> &samples);
     double gini(const std::vector<int> &samples);
     void print(const std::vector<int> &train, const std::vector<int> &test);

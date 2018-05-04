@@ -19,7 +19,6 @@
 
 ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
 {
-
     config = configuration;
     dataset = ds;
     n = config->n;
@@ -32,31 +31,38 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     y = dataset->y_data->getData();
 
     coeffs = new double[nbCoeffs + 1];
-    for(int i = 0; i < nbCoeffs; i++){
-        coeffs[i] = 0;
-    }
-
     weights = new double[nbCoeffs + 1];
     stdev = new double[nbCoeffs + 1];
     x1 = new double[nbCoeffs + 1];
     x0 = new double[nbCoeffs + 1];
-    for(int i = 0; i < nbCoeffs; i++){
+
+    for(int i = 0; i < nbCoeffs + 1; i++){
+        coeffs[i] = 0;
         weights[i] = 0;
     }
-    // should be calculated only on training set !!!
-    for(int i = 0; i < n; i++){
+
+    weights[0] = dataset->train.size();
+    for(int i : dataset->train){
         uint8_t*  xi = x + p * i;
         for(int j = 0; j < p; j++){
             weights[xi[j] + offsets[j] + 1] += 1;
         }
     }
+
     stdev[0] = 1;
-    for(int i = 1; i < nbCoeffs; i++){
-        double w = weights[i] / n;
+    x0[0] = 0;
+    x1[0] = 1;
+    for(int i = 1; i < nbCoeffs + 1; i++){
+        double w = weights[i] / weights[0];
         double s= std::sqrt(w - w * w);
         stdev[i] = s;
-        x1[i] = (1 - w) / s;
-        x0[i] = (0 - w) / s;
+        if(s > 0){
+            x1[i] = (1 - w) / s;
+            x0[i] = (0 - w) / s;
+        } else {
+            x1[i] = 0;
+            x0[i] = 0;
+        }
     }
 
     for(int i=0; i < p; i++){
@@ -252,6 +258,7 @@ void ALinearRegressor::printSelectedFeatures(){
     std::map<double, int> keep_features;
     for(auto f : selected_features){
         double v = getSpread(f);
+        // FIXME : this does not work if two features have the same spread !
         keep_features[v] = f;
     }
 
@@ -264,4 +271,17 @@ void ALinearRegressor::printSelectedFeatures(){
                   << getSpread(featureIdx) << "%]" << std::endl;
         i++;
     }
+}
+
+double ALinearRegressor::getNorm2CoeffDiff(double* coeffs2){
+    int size = 0;
+    double s = 0;
+    for(int i = 0; i < config->m + 1; i++){
+        if(coeffs[i] != 0 || coeffs2[i] != 0){
+            size++;
+            double diff = (coeffs[i] - coeffs2[i]) / stdev[i];
+            s += diff * diff ;
+        }
+    }
+    return std::sqrt(s /  size);
 }
