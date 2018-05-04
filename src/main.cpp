@@ -67,6 +67,13 @@ ALinearRegressor* fitCD(Config* config, Dataset* ds){
         if(i % 1 == 0){
             LinearRegressionResult(model).print(ds->train, ds->test);
         }
+        if(i == 6){
+            while(model->selected_features.size() > config->nbFeaturesInModel){
+                int remove_feature = model->getMinCoeff(model->selected_features);
+                model->selected_features.erase(remove_feature);
+                model->eraseFeature(i * blocksize, remove_feature);
+            }
+        }
     }
 
     return model;

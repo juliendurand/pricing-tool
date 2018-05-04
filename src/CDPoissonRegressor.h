@@ -12,9 +12,9 @@ class CDPoissonRegressor : public ALinearRegressor
 public:
     CDPoissonRegressor(Config* config, Dataset* dataset);
     virtual void fit(int, float);
-    void cacheColumn(int m);
+    uint8_t* cacheColumn(int m);
 
-    double ** columns;
+    uint8_t** columns;
 };
 
 #endif  // CDPOISSONREGRESSOR_H_
