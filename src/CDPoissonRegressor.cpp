@@ -5,6 +5,15 @@
 CDPoissonRegressor::CDPoissonRegressor(Config* config, Dataset* dataset):
     ALinearRegressor(config, dataset)
 {
+    columns = new double*[nbCoeffs + 1];
+    for(int i = 0; i < nbCoeffs + 1; i++){
+        columns[i] = NULL;
+    }
+    columns[0] = new double[dataset->train.size()];
+    double* intercept = columns[0];
+    for(int i = 0; i < dataset->train.size(); i++){
+        intercept[i] = 1;
+    }
 }
 
 std::vector<int> argsort(const std::vector<double> &v) {
@@ -19,10 +28,24 @@ std::vector<int> argsort(const std::vector<double> &v) {
   return idx;
 }
 
+void CDPoissonRegressor::cacheColumn(int m){
+    if(columns[m] != NULL) return;
+
+    std::cout << "caching " << m << std::endl;
+    int f = config->getFeatureFromModality(m - 1);
+    columns[m] = new double[dataset->train.size()];
+    double* column = columns[m];
+    for(int k = 0; k < dataset->train.size(); k++){
+        int i = dataset->train[k];
+        uint8_t* xi = x + p * i;
+        column[i] = (offsets[f] + xi[f] + 1 == m);
+    }
+    std::cout << "end caching " << m << std::endl;
+}
+
 void CDPoissonRegressor::fit(int blocksize, float learning_rate){
     std::cout << "precomputation" << std::endl;
     std::vector<int> sample(blocksize);
-
 
     /*for(int k = 0; k < blocksize; k++){
         sample[k] = dataset->next();
@@ -94,11 +117,8 @@ void CDPoissonRegressor::fit(int blocksize, float learning_rate){
             int i = sample[k];
             uint8_t* xi = x + p * i;
             int xim = (m == 0) ? 1 : (offsets[f] + xi[f] + 1 == m);
-            if(xim){
-                B += x1[m] * ypred[k];
-            } else {
-                A += x0[m] * ypred[k];
-            }
+            B += xim * x1[m] * ypred[k];
+            A += (1 - xim) * x0[m] * ypred[k];
         }
 
         if(m!=0 && (A == 0 || B == 0)){
@@ -121,7 +141,7 @@ void CDPoissonRegressor::fit(int blocksize, float learning_rate){
             int i = sample[k];
             uint8_t* xi = x + p * i;
             int xim = (m == 0) ? 1 : (offsets[f] + xi[f] + 1 == m);
-            double xf = xim ? x1[m] : x0[m];
+            double xf = xim * x1[m] + (1 - xim) * x0[m];
             ypred[k] *= std::exp(xf * a);
         }
     }

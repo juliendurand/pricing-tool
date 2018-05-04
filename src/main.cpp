@@ -60,9 +60,9 @@ ALinearRegressor* fitCD(Config* config, Dataset* ds){
                            << " iterations :" << std::endl;
 
     int blocksize = 10 * config->m;
-    double alpha = 0.1;
+    double alpha = 0.2;
     double * previousCoeffs = new double[config->m + 1];
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < config->nbIterations; i++){
         model->fit(blocksize*100, alpha);
         if(i % 1 == 0){
             LinearRegressionResult(model).print(ds->train, ds->test);
