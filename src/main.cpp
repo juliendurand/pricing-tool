@@ -13,7 +13,7 @@ ALinearRegressor* fitSGD(Config* config, Dataset* ds){
                            << " variables with " << config->nbIterations
                            << " iterations :" << std::endl;
 
-    int blocksize = 100 * config->m;
+    int blocksize = 10 * config->m;
     double alpha = 0.1;
     double * previousCoeffs = new double[config->m + 1];
     for(int i = 0; i < config->nbIterations / blocksize; i++){
@@ -47,10 +47,54 @@ ALinearRegressor* fitSGD(Config* config, Dataset* ds){
             previousCoeffs[j] = model->coeffs[j];
         }
     }
-
     return model;
 }
 
+ALinearRegressor* fitGammaSGD(Config* config, Dataset* ds){
+    ds->filterNonZeroTarget();
+    std::cout << ds->train.size() << std::endl;
+    SGDPoissonRegressor* model = new SGDPoissonRegressor(config, ds);
+
+    std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
+                           << " variables with " << config->nbIterations
+                           << " iterations :" << std::endl;
+
+    int blocksize = 10 * config->m;
+    double alpha = 0.01;
+    double * previousCoeffs = new double[config->m + 1];
+    for(int i = 0; i < config->nbIterations / blocksize; i++){
+        model->fitGamma(blocksize, alpha);
+        //model->penalizeRidge(alpha, 0.005);
+        if(i % 100 == 0){
+            std::vector<float> ypred = model->predict();
+            std::cout << i * blocksize << "th iteration : ";
+            LinearRegressionResult(model).print(ds->train, ds->test);
+            std::cout << "Diff of coeffs : " << model->getNorm2CoeffDiff(previousCoeffs)
+                      << std::endl;
+        }
+
+        if(i > 100  && model->selected_features.size() > config->nbFeaturesInModel){
+            if(model->selected_features.size() > config->nbFeaturesInModel + 20){
+            int remove_feature = model->getMinCoeff(model->selected_features);
+            model->selected_features.erase(remove_feature);
+            model->eraseFeature(i * blocksize, remove_feature);
+            } else if(i % 5 == 0){
+                int remove_feature = model->getMinCoeff(model->selected_features);
+                model->selected_features.erase(remove_feature);
+                model->eraseFeature(i * blocksize, remove_feature);
+            }
+        }
+
+        if(model->selected_features.size() == config->nbFeaturesInModel){
+            //alpha = 0.1;
+        }
+
+        for(int j = 0; j < config->m + 1; j++){
+            previousCoeffs[j] = model->coeffs[j];
+        }
+    }
+    return model;
+}
 
 ALinearRegressor* fitCD(Config* config, Dataset* ds){
     CDPoissonRegressor* model = new CDPoissonRegressor(config, ds);
@@ -74,6 +118,7 @@ ALinearRegressor* fitCD(Config* config, Dataset* ds){
                 model->eraseFeature(i * blocksize, remove_feature);
             }
         }
+        if(i == 12) break;
     }
 
     return model;
@@ -127,7 +172,7 @@ int main(int argc, char** argv){
 
     Dataset ds(&config, 0.2);
 
-    ALinearRegressor* model = fitCD(&config, &ds);
+    ALinearRegressor* model = fitGammaSGD(&config, &ds);
 
     std::cout << std::endl << "Final results :" << std::endl
               << "---------------" << std::endl;

@@ -13,6 +13,7 @@ class SGDPoissonRegressor : public ALinearRegressor
 public:
     SGDPoissonRegressor(Config* config, Dataset* dataset);
     virtual void fit(int, float);
+    void fitGamma(int, float);
     void blockfit(int blocksize, float learning_rate);
 };
 

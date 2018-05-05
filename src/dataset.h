@@ -11,6 +11,7 @@
 class Dataset
 {
 public:
+    float testPct;
     std::vector<int> train;
     std::vector<int> test;
     std::mt19937 generator;
@@ -22,6 +23,7 @@ public:
     Dataset();
     Dataset(Config* config, float testPct);
     int next();
+    void filterNonZeroTarget();
 };
 
 #endif  // DATASET_H_

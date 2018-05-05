@@ -19,6 +19,7 @@ public:
     Array(std::string filename, int p, int n);
     ~Array();
     T* getData();
+    int getSize();
 };
 
 #endif  // ARRAY_H_

@@ -65,6 +65,11 @@ T* Array<T>::getData(){
     return data;
 }
 
+template<typename T>
+int Array<T>::getSize(){
+    return n / 4;
+}
+
 template class Array<uint8_t>;
 template class Array<float>;
 template class Array<double>;
