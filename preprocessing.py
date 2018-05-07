@@ -2,6 +2,7 @@ import csv
 import itertools as it
 import json
 import os
+import time
 
 import numpy as np
 
@@ -10,7 +11,7 @@ import progressbar
 
 def count_line(filename):
     f = open(filename, 'rb')
-    bufgen = it.takewhile(lambda x: x, (f.raw.read(1024*1024)
+    bufgen = it.takewhile(lambda x: x, (f.raw.read(1024 * 1024)
                                         for _ in it.repeat(None)))
     return sum(buf.count(b'\n') for buf in bufgen)
 
@@ -56,8 +57,42 @@ def create_data_file_from_list(lst, out_filename, dtype):
     size = float(dat_file.nbytes) / (1024 ** 2)
     print('written %s : %.3f MB' % (out_filename, size))
 
+
 def load_data(file_path, dtype='int32', shape=None):
     return np.memmap(file_path, dtype=dtype, shape=shape)
+
+
+start_time = 0
+
+
+def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
+                     length=100, fill='█'):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : number of decimals in % complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+    """
+    global start_time
+    if iteration == 0:
+        start_time = time.time()
+    value = 100 * (iteration / float(total))
+    percent = ("{0:." + str(decimals) + "f}").format(value)
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    elapsed_time = int(time.time() - start_time)
+    m = str(elapsed_time // 60).zfill(2)
+    s = str(elapsed_time % 60).zfill(2)
+    print('\r%s |%s| %s%% %s in %sm%ss' % (prefix, bar, percent,
+          suffix, m, s), end='\r')
+    # Print New Line on Complete
+    if iteration == total:
+        print()
 
 
 class Metadata:
@@ -96,7 +131,7 @@ class Metadata:
         self.modalities = modalities
 
     def count_features(self):
-        return len(self.features);
+        return len(self.features)
 
     def count_modalities(self):
         return sum(self.count_modalities_per_feature())
@@ -121,8 +156,8 @@ class Metadata:
         return self.modalities[feature]
 
     def get_unused_fields(self):
-        unused_fields = set(self.fields) - set(self.features) \
-                        - set(self.targets) - set([self.exposure])
+        unused_fields = set(self.fields) - set(self.features) - \
+            set(self.targets) - set([self.exposure])
         return list(unused_fields)
 
     def get_metadata_filename(self):
@@ -147,7 +182,7 @@ class Metadata:
             config.write(str(self.count_features()) + '\n')
             config.write(str(self.count_modalities()) + '\n')
             for i in range(self.count_features()):
-                config.write(self.features[i]+ '\n')
+                config.write(self.features[i] + '\n')
             for i in range(self.count_features()):
                 modalities = self.modalities[self.features[i]]
                 for m in modalities:
@@ -197,7 +232,7 @@ class Metadata:
 
         target_filenames = [self.get_target_filename(t) for t in targets]
         target_data = [create_data_file(f, np.dtype('float32'), (nb_lines))
-                        for f in target_filenames]
+                       for f in target_filenames]
 
         features_mapping = [{} for i in range(nb_features)]
 
@@ -235,10 +270,11 @@ class Metadata:
                     if data_transform:
                         v = data_transform(self.features[j], v)
                     a = features_mapping[j].setdefault(v, \
-                            len(features_mapping[j]))
+                        len(features_mapping[j]))
                     if a > 200:
-                        raise Exception("Feature", self.features[j], \
-                            "has too many modalities ( more than 200).")
+                        raise Exception("Feature", self.features[j],
+                                        "has too many modalities " +
+                                        "( more than 200).")
                     observations[i, j] = a
                 exposure_data[i] = values[exposure_index]
                 for idx, t in enumerate(target_data):
@@ -246,16 +282,16 @@ class Metadata:
 
                 if i % 1000 == 0 or i == nb_lines - 1:
                     progressbar.printProgressBar(i, nb_lines - 1,
-                                                 prefix = 'Progress:',
-                                                 suffix = 'Complete',
-                                                 length = 50)
+                                                 prefix='Progress:',
+                                                 suffix='Complete',
+                                                 length=50)
         save_data_file(observations, data_filename)
         save_data_file(exposure_data, exposure_filename)
         for i in range(len(target_data)):
             save_data_file(target_data[i], target_filenames[i])
 
         modalities = {f: features_mapping[i] for i, f in
-                    enumerate(self.features)}
+                      enumerate(self.features)}
         # invert index and modality and return list of modalities
         for k, m in modalities.items():
             m = {v: k for k, v in m.items()}
