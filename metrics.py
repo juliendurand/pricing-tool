@@ -9,8 +9,6 @@ where ``**kwargs`` are **named** extra-parameters.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 from scipy import interpolate
 
 
@@ -395,72 +393,3 @@ def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False,
     else:
         # We don't normalize the Gini coefficient:
         return gini_model
-
-
-def plot_lift_curve(y, y_pred, weight=None, n_band=10, title=None,
-                    path_plot_save='Results\\'):
-    """
-
-    Parameters
-    ----------
-
-    y : ndarray
-        array containing the TRUE response (either 0 or 1)
-    y_pred : ndarray
-        array containing the predicted probabilities by the model
-    weight : ndarray, optional
-        array containing the weight (default 1)
-    n_band : int, optional
-        number of bands (default 10)
-    title: str
-        title of the plot, if None, plot is not saved.
-    path_plot_save: str
-        file path where the plot will be saved.
-
-    Returns
-    -------
-
-    """
-    if weight is None:
-        weight = np.ones(y.shape[0])
-
-    d = {'pred': list(y_pred), 'obs': list(y), 'weights': list(weight)}
-    d = pd.DataFrame(d)
-    d = d.dropna(subset=['obs', 'pred'])
-    d = d.sort_values('pred', ascending=True)
-    d.index = list(range(0, len(y_pred)))
-    exp_cum = [0]
-    for k in range(0, len(y_pred)):
-        exp_cum.append(exp_cum[-1] + d.ix[k, 'weights'])
-    s = exp_cum[-1]
-    j = s // n_band
-    m_pred, m_obs, m_weight = [], [], []
-    k, k2 = 0, 0
-
-    for i in range(0, n_band):
-        k = k2
-        for p in range(k, len(y_pred)):
-            if exp_cum[p] < ((i + 1) * j):
-                k2 += 1
-        temp = d.ix[range(k, k2), ]
-        m_pred.append(sum(temp['pred'] * temp['weights']) /
-                      sum(temp['weights']))
-        m_obs.append(sum(temp['obs'] * temp['weights']) /
-                     sum(temp['weights']))
-        m_weight.append(temp['weights'].sum())
-
-    fig, ax1 = plt.subplots()
-
-    ax2 = ax1.twinx()
-
-    ax1.set_xlabel('Band')
-    ax1.set_ylabel('Y values')
-    ax2.set_ylabel('Weight')
-    ax2.set_ylim([0, max(m_weight) * 3])
-    ax1.plot(range(0, n_band), m_pred, linestyle='--', marker='o', color='b')
-    ax1.plot(range(0, n_band), m_obs, linestyle='--', marker='o', color='r')
-    # the histogram of the weigths
-    ax2.bar(range(0, n_band), m_weight, color='yellow', alpha=0.2)
-    ax1.legend(labels=['Predicted', 'Observed'], loc=2)
-    if title is not None:
-        fig.savefig(path_plot_save + title + '.png', bbox_inches='tight')
