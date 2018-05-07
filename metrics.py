@@ -1,6 +1,7 @@
 """
 Contains functions that are able to reproduce Emblem's metrics and plots.
-Each function in this module has at least three arguments, which are numpy arrays of the same size
+Each function in this module has at least three arguments,
+which are numpy arrays of the same size.
 
 ``function(y, y_pred, weights = None, **kwargs)``
 where ``**kwargs`` are **named** extra-parameters.
@@ -8,16 +9,17 @@ where ``**kwargs`` are **named** extra-parameters.
 """
 
 import numpy as np
-from scipy import interpolate
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+from scipy import interpolate
+
 
 def mean_absolute_error(y, y_hat, exposure):
     return np.sum(np.abs(y_hat - y)) / np.sum(exposure)
 
 
 def root_mean_square_error(y, y_hat, exposure):
-    return np.sqrt(np.sum(np.square(y-y_hat)) / np.sum(exposure))
+    return np.sqrt(np.sum(np.square(y - y_hat)) / np.sum(exposure))
 
 
 def check_deviance(y, y_pred, weight=None):
@@ -25,10 +27,12 @@ def check_deviance(y, y_pred, weight=None):
     Robust checks to run at beginning of deviance
     """
     if isinstance(y_pred, (np.floating, float)):
-        y_pred = np.repeat(y_pred,y.shape[0])
-    assert y.shape[0] == y_pred.shape[0], "y and y_pred must have the same size"
+        y_pred = np.repeat(y_pred, y.shape[0])
+    assert y.shape[0] == y_pred.shape[0], \
+        "y and y_pred must have the same size"
     if weight is not None:
-        assert weight.shape[0] == y.shape[0], "weight and y do not have same shape"
+        assert weight.shape[0] == y.shape[0], \
+            "weight and y do not have same shape"
     return y_pred
 
 
@@ -53,7 +57,7 @@ def binomial_deviance(y, y_pred, weight=None):
 
     """
     y_pred = check_deviance(y, y_pred, weight=weight)
-    deviance_vector = - (y * np.log(y_pred) + (1-y) * np.log(1 - y_pred))
+    deviance_vector = - (y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
     return 2 * np.sum(deviance_vector)
@@ -83,7 +87,7 @@ def gamma_deviance(y, y_pred, weight=None):
     """
     y_pred = check_deviance(y, y_pred, weight=weight)
 
-    deviance_vector = -np.log(y/y_pred) + (y-y_pred)/y_pred
+    deviance_vector = -np.log(y / y_pred) + (y - y_pred) / y_pred
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
 
@@ -114,7 +118,9 @@ def poisson_deviance(y, y_pred, weight=None):
 
     bool_zeros = y != 0
     deviance_vector = np.zeros(y.shape[0])
-    deviance_vector[bool_zeros] = (y[bool_zeros] * np.log(y[bool_zeros] / y_pred[bool_zeros]) - y[bool_zeros] + y_pred[bool_zeros])
+    deviance_vector[bool_zeros] = \
+        (y[bool_zeros] * np.log(y[bool_zeros] / y_pred[bool_zeros]) -
+            y[bool_zeros] + y_pred[bool_zeros])
     deviance_vector[~bool_zeros] = - y[~bool_zeros] + y_pred[~bool_zeros]
     if weight is not None:
         deviance_vector = np.dot(weight, deviance_vector)
@@ -170,12 +176,14 @@ def gaussian_pseudo_r2(y, y_pred, weight=None):
 
     Notes
     -----
-    Pseudo R2 is defined as 1 - (deviance(y,y_pred,weight)}deviance(y,mu,weight)
+    Pseudo R2 is defined as :
+        1 - (deviance(y,y_pred,weight) / deviance(y,mu,weight)
     where mu is the weighted mean of y
 
     """
-    return 1 - (gaussian_deviance(y, y_pred, weight)
-                / gaussian_deviance(y, np.ones(len(y))*np.average(y, weights=weight), weight))
+    return 1 - (gaussian_deviance(y, y_pred, weight) /
+                gaussian_deviance(y, np.ones(len(y)) *
+                np.average(y, weights=weight), weight))
 
 
 def poisson_pseudo_r2(y, y_pred, weight=None):
@@ -199,12 +207,14 @@ def poisson_pseudo_r2(y, y_pred, weight=None):
 
     Notes
     -----
-    Pseudo R2 is defined as 1 - (deviance(y,y_pred,weight)}deviance(y,mu,weight)
+    Pseudo R2 is defined as :
+        1 - (deviance(y,y_pred,weight) / deviance(y,mu,weight)
     where mu is the weighted mean of y
 
     """
-    return 1 - (poisson_deviance(y, y_pred, weight)
-                / poisson_deviance(y, np.ones(len(y))*np.average(y, weights=weight), weight))
+    return 1 - (poisson_deviance(y, y_pred, weight) /
+                poisson_deviance(y, np.ones(len(y)) *
+                np.average(y, weights=weight), weight))
 
 
 def gamma_pseudo_r2(y, y_pred, weight=None):
@@ -228,12 +238,14 @@ def gamma_pseudo_r2(y, y_pred, weight=None):
 
     Notes
     -----
-    Pseudo R2 is defined as 1 - (deviance(y,y_pred,weight)}deviance(y,mu,weight)
+    Pseudo R2 is defined as :
+        1 - (deviance(y,y_pred,weight) / deviance(y,mu,weight)
     where mu is the weighted mean of y
 
     """
-    return 1 - (gamma_deviance(y, y_pred, weight)
-                / gamma_deviance(y, np.ones(len(y))*np.average(y, weights=weight), weight))
+    return 1 - (gamma_deviance(y, y_pred, weight) /
+                gamma_deviance(y, np.ones(len(y)) *
+                np.average(y, weights=weight), weight))
 
 
 def binomial_pseudo_r2(y, y_pred, weight=None):
@@ -258,15 +270,18 @@ def binomial_pseudo_r2(y, y_pred, weight=None):
 
     Notes
     -----
-    Pseudo R2 is defined as 1 - (deviance(y,y_pred,weight)}deviance(y,mu,weight)
+    Pseudo R2 is defined as :
+        1 - (deviance(y,y_pred,weight) / deviance(y,mu,weight)
     where mu is the weighted mean of y
 
     """
-    return 1 - (binomial_deviance(y, y_pred, weight)
-                / binomial_deviance(y, np.ones(len(y))*np.average(y, weights=weight), weight))
+    return 1 - (binomial_deviance(y, y_pred, weight) /
+                binomial_deviance(y, np.ones(len(y)) *
+                np.average(y, weights=weight), weight))
 
 
-def area_lorentz_fast(y, y_pred, weight=None, resolution=5000, interpolation="constant", plot=False):
+def area_lorentz_fast(y, y_pred, weight=None, resolution=5000,
+                      interpolation="constant", plot=False):
     '''
     Reproduces the weighted gini of emblem
 
@@ -290,14 +305,15 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000, interpolation="co
     # Comments
     # --------
     #
-    # constant piecewise interpolation is useful when the number of observed ones is
-    # little (to underline the breakpoints),
+    # constant piecewise interpolation is useful when the number of observed
+    # ones is little (to underline the breakpoints),
+    #
     # linear has nicer smoothing properties
 
     if interpolation not in ["linear", "constant"]:
-        raise NotImplementedError("interpolation available only for linear and constant")
+        raise NotImplementedError("Interpolation requested not available.")
     if y.shape[0] != y_pred.shape[0]:
-        raise ValueError("y and y_pred must have the same length")
+        raise ValueError("y and y_pred must have the same length.")
 
     n_samples = y.shape[0]
 
@@ -308,19 +324,20 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000, interpolation="co
     obs_col, pred_col, w_col, rank_col = (0, 1, 2, 3)
 
     # Order data following prediction
-    ordered_data = np.column_stack((y, y_pred,weight, np.zeros(y.shape[0])))
+    ordered_data = np.column_stack((y, y_pred, weight, np.zeros(y.shape[0])))
 
     pred_order = np.argsort(y_pred)[::-1]
     ordered_data = ordered_data[pred_order, :]
 
     # Compute the rank
-    ordered_data[:, rank_col] = np.cumsum(ordered_data[:, w_col]) - 1. / 2 * ordered_data[:, w_col]
+    ordered_data[:, rank_col] = np.cumsum(ordered_data[:, w_col]) - 1. / \
+        2 * ordered_data[:, w_col]
 
     total_weight = np.sum(ordered_data[:, w_col])
 
     obs_sum = np.dot(ordered_data[:, w_col], ordered_data[:, obs_col])
 
-    intermediate = ordered_data[:,0]*ordered_data[:,2]*ordered_data[:,3]
+    intermediate = ordered_data[:, 0] * ordered_data[:, 2] * ordered_data[:, 3]
     rank_obs_sum = intermediate.sum()
 
     # Compute the Gini coefficient
@@ -329,15 +346,18 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000, interpolation="co
     if plot:
         # Determine the points to plot
         x_list = np.cumsum(ordered_data[:, w_col]) / total_weight
-        y_list = np.cumsum(ordered_data[:, w_col] * ordered_data[:, obs_col]) / obs_sum
+        y_list = np.cumsum(ordered_data[:, w_col] * ordered_data[:, obs_col]) \
+            / obs_sum
         x_interpolate = np.linspace(0, 1, num=resolution)
 
         #    this is for linear interpolation
         if interpolation == "linear":
             y_interpolate = np.interp(x_interpolate, x_list, y_list)
         elif interpolation == "constant":
-            # this is for piecewise interpolation (better when 1s and 0s are little)
-            f = interpolate.interp1d(x_list, y_list, kind='zero', bounds_error=False)
+            # this is for piecewise interpolation
+            # (better when 1s and 0s are little)
+            f = interpolate.interp1d(x_list, y_list, kind='zero',
+                                     bounds_error=False)
             y_interpolate = f(x_interpolate)
 
             # manually make 0 and 1s outside the range (bug in interp1d)
@@ -351,11 +371,13 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000, interpolation="co
         return gini
 
 
-def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False, verbose=False):
+def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False,
+                     verbose=False):
     # We compute Gini coefficient for the model col_score
     gini_model = area_lorentz_fast(y, y_pred, weights)
     if verbose:
-        print("Gini coefficient for prediction", " without normalization:", gini_model)
+        print("Gini coefficient for prediction", " without normalization:",
+              gini_model)
     # Emblem by default returns the non-normalized version of the Gini
     if normalize_gini:
         # We compute the gini coefficient for the "perfect model":
@@ -366,7 +388,8 @@ def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False, verbose=Fals
         # We normalize the Gini coefficient:
         gini = gini_model / gini_perfect_model
         if verbose:
-            print("The Gini coefficient for prediction", " after normalization:", gini)
+            print("The Gini coefficient for prediction after normalization :",
+                  gini)
         return gini
 
     else:
@@ -374,7 +397,8 @@ def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False, verbose=Fals
         return gini_model
 
 
-def plot_lift_curve(y, y_pred, weight=None, n_band=10, title=None, path_plot_save='Results\\'):
+def plot_lift_curve(y, y_pred, weight=None, n_band=10, title=None,
+                    path_plot_save='Results\\'):
     """
 
     Parameters
@@ -404,10 +428,9 @@ def plot_lift_curve(y, y_pred, weight=None, n_band=10, title=None, path_plot_sav
     d = pd.DataFrame(d)
     d = d.dropna(subset=['obs', 'pred'])
     d = d.sort_values('pred', ascending=True)
-    l = len(y_pred)
-    d.index = list(range(0, l))
+    d.index = list(range(0, len(y_pred)))
     exp_cum = [0]
-    for k in range(0, l):
+    for k in range(0, len(y_pred)):
         exp_cum.append(exp_cum[-1] + d.ix[k, 'weights'])
     s = exp_cum[-1]
     j = s // n_band
@@ -416,12 +439,14 @@ def plot_lift_curve(y, y_pred, weight=None, n_band=10, title=None, path_plot_sav
 
     for i in range(0, n_band):
         k = k2
-        for p in range(k, l):
+        for p in range(k, len(y_pred)):
             if exp_cum[p] < ((i + 1) * j):
                 k2 += 1
         temp = d.ix[range(k, k2), ]
-        m_pred.append(sum(temp['pred'] * temp['weights']) / sum(temp['weights']))
-        m_obs.append(sum(temp['obs'] * temp['weights']) / sum(temp['weights']))
+        m_pred.append(sum(temp['pred'] * temp['weights']) /
+                      sum(temp['weights']))
+        m_obs.append(sum(temp['obs'] * temp['weights']) /
+                     sum(temp['weights']))
         m_weight.append(temp['weights'].sum())
 
     fig, ax1 = plt.subplots()

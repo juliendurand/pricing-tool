@@ -94,11 +94,11 @@ void SGDPoissonRegressor::fitGamma(int blocksize, float learning_rate){
         //std::cout << y[i] << " " << ypred << std::endl;
     }
 
-    coeffs[0] = std::log(1600);// += rTotal * learning_rate / blocksize;
+    coeffs[0] = std::log(1218);// += rTotal * learning_rate / blocksize;
     //std::cout << blocksize << " " << learning_rate << " " << coeffs[0]  << " " << rTotal << std::endl;;
     for(int j = 1; j < nbCoeffs + 1 ; j++){
         double w = weights[j];
-        if(w < std::sqrt(weights[0]) / 10){
+        if(w < std::sqrt(weights[0]) / 30){
             // squeezing non significative coefficients to Zero
             coeffs[j] = 0; // this line is not required (just to be explicit) !
         }else{

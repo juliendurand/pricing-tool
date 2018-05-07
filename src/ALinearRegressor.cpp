@@ -197,7 +197,7 @@ void ALinearRegressor::writeResults(std::string filename,
     coeffFile.open("data/mrh/coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
     for(int j=0; j < nbCoeffs + 1; j++){
-        double c = coeffs[j] / stdev[j];
+        double c = stdev[j] != 0 ? coeffs[j] / stdev[j] : 0;
         coeffFile << doubleToText(c) << std::endl;
     }
     coeffFile.close();
