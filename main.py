@@ -16,6 +16,7 @@ def compile():
 def fit():
     print("Fitting model...")
     command = "time ./bin/sgd data/mrh chargeDDEA"
+    command = "time ./bin/sgd data/mrh nbsinDDE"
     result = subprocess.run([command], shell=True)
     if result.returncode != 0:
         raise Exception("Fatal Error during model fitting.")

@@ -192,7 +192,10 @@ class Results:
         ax1.set_xlabel('Band')
         ax2.set_ylabel('Y values')
         ax1.set_ylabel('Weight')
-        filename = os.path.join(path, 'img', 'lift_curve.png')
+        path = os.path.join(path, 'img')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        filename = os.path.join(path, 'lift_curve.png')
         fig.savefig(filename, bbox_inches='tight')
         plt.close()
         return os.path.join('img', 'lift_curve.png')

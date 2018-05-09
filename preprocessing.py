@@ -6,8 +6,6 @@ import time
 
 import numpy as np
 
-import progressbar
-
 
 def count_line(filename):
     f = open(filename, 'rb')
@@ -173,7 +171,7 @@ class Metadata:
         metadata_filename = self.get_metadata_filename()
         with open(metadata_filename, 'r') as metadata_file:
             self.__dict__ = json.load(metadata_file)
-        print("Loaded metadata from ", metadata_filename)
+        # print("Loaded metadata from ", metadata_filename)
 
     def save_simple_config(self):
         config_filename = os.path.join(self.path, self.name, 'metadata.cfg')
