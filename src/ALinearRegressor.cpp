@@ -77,6 +77,7 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
 
     ypred.reserve(n);
     dppred.reserve(n);
+    giniPath.reserve(p + 1);
 }
 
 ALinearRegressor::~ALinearRegressor()
@@ -165,6 +166,7 @@ std::string doubleToText(const double & d)
 void ALinearRegressor::writeResults(std::string filename,
                                     std::vector<int> test){
     std::cout << "Writting results." << std::endl;
+
     std::ofstream resultFile;
     resultFile.open(filename.c_str(), std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;
@@ -223,9 +225,18 @@ double ALinearRegressor::getSpread(int feature){
 }
 
 void ALinearRegressor::eraseFeature(int i, int remove_feature){
-    std::cout << i << " : Removing " << config->features[remove_feature]
-              << " " << remove_feature << " "
+    if(remove_feature < 0){
+        giniPath.push_back(std::pair<std::string, float>("Intercept",
+                                                     gini(dataset->test)));
+        return;
+    }
+
+    std::string feature = config->features[remove_feature];
+    std::cout << i << " : Removing " << feature
               << " Norm2=" << getCoeffNorm2(remove_feature) << std::endl;
+
+    giniPath.push_back(std::pair<std::string, float>(feature,
+                                                     gini(dataset->test)));
     selected_features.erase(remove_feature);
     for(int j = config->offsets[remove_feature];
         j < config->offsets[remove_feature + 1]; j++){
@@ -320,4 +331,15 @@ std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
     );
 
   return idx;
+}
+
+void ALinearRegressor::writeGiniPath(){
+    std::cout << "Writting Gini Path." << std::endl;
+    std::ofstream giniPathFile;
+    giniPathFile.open("data/mrh/ginipath.csv", std::ios::out);
+    giniPathFile << "Feature,Gini" << std::endl;
+    for (auto p = giniPath.rbegin(); p != giniPath.rend(); p++) {
+        giniPathFile << p->first << "," << p->second << std::endl;
+    }
+    giniPathFile.close();
 }

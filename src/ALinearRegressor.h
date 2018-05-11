@@ -30,6 +30,7 @@ public:
     std::set<int> selected_features;
     std::vector<float> dppred;
     std::vector<float> ypred;
+    std::vector< std::pair<std::string, float> > giniPath;
 
     ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
@@ -48,6 +49,7 @@ public:
     double rmse(const std::vector<int> &samples);
     double gini(const std::vector<int> &samples);
     void printResults(const std::vector<int> &train, const std::vector<int> &test);
+    void writeGiniPath();
 
 private:
     std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,

@@ -10,7 +10,7 @@ void fitToConvergence(ALinearRegressor* model, Dataset* ds, int& i, int blocksiz
     for(; nbIterationsSinceMinimum < 3; i++){
         model->fit(blocksize, alpha);
         if(i % 100 == 0){
-            std::cout << i * blocksize << "th iteration : ";
+            std::cout << i * blocksize << "th iteration : " << std::endl;
             model->predict();
             model->printResults(ds->train, ds->test);
             double ll = model->logLikelihood(ds->train);
@@ -37,6 +37,8 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
     for(int nbExcessFeatures = 1; nbExcessFeatures > 0; i++){
         model->fit(blocksize, alpha);
         if(((nbExcessFeatures > 20) && (i % 10 == 0)) || (i % 100 == 0)){
+            model->predict();
+            model->printResults(ds->train, ds->test);
             int remove_feature = model->getMinCoeff(model->selected_features);
             model->eraseFeature(i * blocksize, remove_feature);
         }
@@ -44,6 +46,27 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
             config->nbFeaturesInModel;
     }
     fitToConvergence(model, ds, i, blocksize, alpha);
+
+    std::cout << std::endl << "Final results :" << std::endl
+              << "---------------" << std::endl;
+    model->predict();
+    model->printResults(ds->train, ds->test);
+    model->printSelectedFeatures();
+    model->writeResults("./data/results.csv", ds->test);
+    std::cout << std::endl;
+
+    for(int nbFeatures = 1; nbFeatures > 0; i++){
+        int remove_feature = model->getMinCoeff(model->selected_features);
+        model->eraseFeature(i * blocksize, remove_feature);
+        fitToConvergence(model, ds, i, blocksize, alpha);
+        model->predict();
+        model->printResults(ds->train, ds->test);
+        nbFeatures = model->selected_features.size();
+    }
+    model->eraseFeature(i * blocksize, -1);
+    model->writeGiniPath();
+    std::cout << std::endl;
+
     return model;
 }
 
@@ -56,14 +79,7 @@ int main(int argc, char** argv){
 
     Config config(config_filename);
     Dataset ds(&config, 0.2);
-    ALinearRegressor* model = fit(&config, &ds);
+    fit(&config, &ds);
 
-    std::cout << std::endl << "Final results :" << std::endl
-              << "---------------" << std::endl;
-    model->predict();
-    model->printResults(ds.train, ds.test);
-    model->printSelectedFeatures();
-    std::cout << std::endl;
-    model->writeResults("./data/results.csv", ds.test);
     std::cout << "Finished OK." << std::endl;
 }
