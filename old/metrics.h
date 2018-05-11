@@ -23,7 +23,8 @@ public:
     void print(const std::vector<int> &train, const std::vector<int> &test);
 
 private:
-    double area_lorentz_fast(const std::vector<int> &samples);
+    std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,
+                                             const std::vector<int> &samples)
 };
 
 #endif  // METRICS_H_

@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <string>
 #include <sstream>
 #include <sys/mman.h>
@@ -33,8 +34,9 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     coeffs = new double[nbCoeffs + 1];
     weights = new double[nbCoeffs + 1];
     stdev = new double[nbCoeffs + 1];
-    x1 = new double[nbCoeffs + 1];
     x0 = new double[nbCoeffs + 1];
+    x1 = new double[nbCoeffs + 1];
+
 
     for(int i = 0; i < nbCoeffs + 1; i++){
         coeffs[i] = 0;
@@ -72,27 +74,18 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
         int featureIdx = config->getFeatureIndex(feature);
         eraseFeature(0, featureIdx);
     }
+
+    ypred.reserve(n);
+    dppred.reserve(n);
 }
 
 ALinearRegressor::~ALinearRegressor()
 {
     delete[] coeffs;
-}
-
-std::vector<double> ALinearRegressor::covarianceProduct(
-        const std::vector<int> &samples){
-    std::vector<double> s(200);
-    for(int i : samples){
-        uint8_t* xi = x + p * i;
-        double e = exposure[i];
-        double v = e * e;
-        for(int k = 0; k < p; k++){
-            for(int j = k; j < p; j++){
-                s[xi[j]] += v;
-            }
-        }
-    }
-    return s;
+    delete[] weights;
+    delete[] stdev;
+    delete[] x0;
+    delete[] x1;
 }
 
 int ALinearRegressor::penalizeLasso(float learning_rate, float l1){
@@ -112,51 +105,13 @@ int ALinearRegressor::penalizeLasso(float learning_rate, float l1){
     return nb_coeffs_non_zero;
 }
 
-int ALinearRegressor::penalizeGroupLasso(float learning_rate, float l1){
-    int nb_coeffs_non_zero = 0;
-    for(int i = 0; i< p; i++){
-        float s = 0;
-        for(int j = 0; j < 200 ; j++){
-            float c = coeffs[(i + 1) *200 + j];
-            s += c * c;
-        }
-        s = std::sqrt(s);
-        if(s > l1 * learning_rate){
-            for(int j = 0; j < 200 ; j++){
-                coeffs[(i + 1) *200 + j] -= l1 * learning_rate
-                                            * coeffs[(i + 1) * 200 + j] / s;
-            }
-            nb_coeffs_non_zero++;
-        } else {
-            for(int j = 0; j < 200 ; j++){
-                coeffs[(i + 1) *200 + j] = 0;
-            }
-        }
-    }
-    return nb_coeffs_non_zero;
-}
-
 void ALinearRegressor::penalizeRidge(float learning_rate, float l2){
     for(int j = 1; j < nbCoeffs + 1; j++){
         coeffs[j] *= (1 - l2 * learning_rate);
     }
 }
 
-double ALinearRegressor::pred(int i){
-    uint8_t* xi = x + p * i;
-    double dp = coeffs[0];
-    for(int j = 1; j < nbCoeffs; j++){
-        dp += x0[j] * coeffs[j];
-    }
-    for(int j = 0; j < p; j++){
-        int k = offsets[j]+ xi[j] + 1;
-        dp += (x1[k] - x0[k]) * coeffs[k];
-    }
-    return exp(dp) * exposure[i];
-}
-
-std::vector<float> ALinearRegressor::predict(){
-    std::vector<float> ypred(n);
+void ALinearRegressor::predict(){
     double dp0 = 0;
     for(int j = 1; j < nbCoeffs; j++){
         dp0 += x0[j] * coeffs[j];
@@ -168,9 +123,35 @@ std::vector<float> ALinearRegressor::predict(){
             int k = offsets[j]+ xi[j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
+        dppred[i] = dp;
         ypred[i] = exp(dp) * exposure[i];
     }
-    return ypred;
+}
+
+double ALinearRegressor::logLikelihood(const std::vector<int> &samples){
+    double ll = 0;
+    if(config->loss == "gaussian"){
+        for(int i : samples){
+            double dp = dppred[i];
+            double ei = exposure[i];
+            ll += std::sqrt(ei * dp - y[i]);
+        }
+    } else if(config->loss == "poisson") {
+        for(int i : samples){
+            double dp = dppred[i];
+            double ei = exposure[i];
+            ll += ei * std::exp(dp) - y[i] * dp + std::log(ei);
+        }
+    } else if(config->loss == "gamma") {
+        for(int i : samples){
+            double dp = dppred[i];
+            double ei = exposure[i];
+            ll += y[i] / (ei * std::exp(dp)) + dp;
+        }
+    } else {
+        throw std::invalid_argument( "Received invalid loss function." );
+    }
+    return ll / samples.size();
 }
 
 std::string doubleToText(const double & d)
@@ -188,8 +169,8 @@ void ALinearRegressor::writeResults(std::string filename,
     resultFile.open(filename.c_str(), std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;
     for(int i : test){
-        resultFile << i << ", " << exposure[i] << "," << y[i] << ","
-            << pred(i) << std::endl;
+        resultFile << i << "," << exposure[i] << "," << y[i] << ","
+            << ypred[i] << std::endl;
     }
     resultFile.close();
 
@@ -284,4 +265,59 @@ double ALinearRegressor::getNorm2CoeffDiff(double* coeffs2){
         }
     }
     return std::sqrt(s /  size);
+}
+
+double ALinearRegressor::rmse(const std::vector<int> &samples){
+    double rmse = 0;
+    double sexp = 0;
+    for(int j=0; j < samples.size(); j++){
+        int i = samples[j];
+        double e = y[i] - ypred[i];
+        rmse += e * e;
+        sexp += exposure[i];
+    }
+    return std::sqrt(rmse/sexp);
+}
+
+double ALinearRegressor::gini(const std::vector<int> &samples){
+    std::vector<size_t> idx = reverse_sort_indexes(ypred, samples);
+    double exposure_sum = 0;
+    double obs_sum = 0;
+    double rank_obs_sum = 0;
+    for(int i : idx){
+        int obs = samples[i];
+        double e = exposure[obs];
+        exposure_sum += e;
+        obs_sum += e * y[obs];
+        rank_obs_sum += y[obs] * e * (exposure_sum - 0.5 * e);
+    }
+    return 1 - (2 / (exposure_sum * obs_sum)) * rank_obs_sum;
+}
+
+void ALinearRegressor::printResults(const std::vector<int> &train,
+                                   const std::vector<int> &test){
+    std::cout << "rmse(train=" << rmse(train) << ", test=" << rmse(test) << ")"
+              << " | "
+              << "gini(train=" << gini(train) << ", test=" << gini(test) << ")"
+              << " | "
+              << "ll(train=" << logLikelihood(train) << ", test="
+              << logLikelihood(test) << ")"
+              << std::endl;
+}
+
+std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
+        const std::vector<float> &v, const std::vector<int> &samples)
+{
+    // initialize original index locations
+    std::vector<size_t> idx(samples.size());
+    std::iota(idx.begin(), idx.end(), 0);
+
+    // sort indexes based on comparing values in v
+    std::sort(idx.begin(), idx.end(),
+        [&v, &samples](size_t i1, size_t i2) {
+            return v[samples[i1]] > v[samples[i2]];
+        }
+    );
+
+  return idx;
 }

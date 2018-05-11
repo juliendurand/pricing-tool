@@ -22,22 +22,22 @@ public:
     double* coeffs;
     double* weights;
     double* stdev;
-    double* x1;
     double* x0;
+    double* x1;
     int nbCoeffs;
     std::vector<int> offsets;
     std::vector<std::string> features;
     std::set<int> selected_features;
+    std::vector<float> dppred;
+    std::vector<float> ypred;
 
     ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
     virtual void fit(int, float) = 0;
-    std::vector<double> covarianceProduct(const std::vector<int> &samples);
     int penalizeLasso(float learning_rate, float l1);
-    int penalizeGroupLasso(float learning_rate, float l1);
     void penalizeRidge(float learning_rate, float l2);
-    double pred(int);
-    std::vector<float> predict();
+    void predict();
+    double logLikelihood(const std::vector<int> &samples);
     void writeResults(std::string filename , std::vector<int> test);
     int getMinCoeff(std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
@@ -45,6 +45,14 @@ public:
     void eraseFeature(int i, int feature);
     void printSelectedFeatures();
     double getNorm2CoeffDiff(double* coeffs2);
+    double rmse(const std::vector<int> &samples);
+    double gini(const std::vector<int> &samples);
+    void printResults(const std::vector<int> &train, const std::vector<int> &test);
+
+private:
+    std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,
+                                             const std::vector<int> &samples);
+
 };
 
 #endif  // ALINEARREGRESSOR_H_

@@ -25,16 +25,18 @@ SGDPoissonRegressor::SGDPoissonRegressor(Config* config, Dataset* dataset):
 
 void SGDPoissonRegressor::fitIntercept(){
     double s = 0;
+    double w = 0;
     for(int i : dataset->train){
         s += y[i];
+        w += exposure[i];
     }
 
     if(config->loss == "gaussian"){
-        coeffs[0] = s / dataset->train.size();
+        coeffs[0] = s / w;
     } else if(config->loss == "poisson") {
-        coeffs[0] = std::log(s / dataset->train.size());
+        coeffs[0] = std::log(s / w);
     } else if(config->loss == "gamma") {
-        coeffs[0] = std::log(s / dataset->train.size());
+        coeffs[0] = std::log(s / w);
     } else {
         throw std::invalid_argument( "Received invalid loss function." );
     }
@@ -65,14 +67,13 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate){
         }
     }
 
-    coeffs[0] += rTotal * learning_rate / blocksize;
-    for(int j = 1; j < nbCoeffs + 1 ; j++){
+    for(int j = 0; j < nbCoeffs + 1 ; j++){
         //double w = weights[j];
         //if(w < std::sqrt(weights[0]) / 100){
             // squeezing non significative coefficients to Zero
         //    coeffs[j] = 0; // this line is not required (just to be explicit) !
         //}else{
-            coeffs[j] += (update[j] + rTotal * x0[j]) * learning_rate / blocksize;
+            coeffs[j] += (update[j] + rTotal * x0[j]) / blocksize * learning_rate;
         //}
     }
 }
