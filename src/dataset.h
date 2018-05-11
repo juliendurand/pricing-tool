@@ -17,7 +17,7 @@ public:
     std::mt19937 generator;
     std::uniform_int_distribution<std::mt19937::result_type> random;
     Array<uint8_t>* x_data;
-    Array<float>* exposure_data;
+    Array<float>* weight_data;
     Array<float>* y_data;
 
     Dataset();

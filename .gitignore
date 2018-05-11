@@ -9,3 +9,5 @@
 *.pyc
 *.o
 .ipynb_checkpoints
+
+test.ipynb

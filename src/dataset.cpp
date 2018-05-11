@@ -20,8 +20,12 @@ Dataset::Dataset(Config* config, float testPercent){
     random = std::uniform_int_distribution<std::mt19937::result_type>(0, train.size());
 
     x_data = new Array<uint8_t>(config->getFeatureFilename(), config->p, config->n);
-    exposure_data = new Array<float>(config->getExposureFilename(), 1, config->n * 4);
+    weight_data = new Array<float>(config->getWeightFilename(), 1, config->n * 4);
     y_data = new Array<float>(config->getTargetFilename(), 1, config->n * 4);
+
+    if(config->loss == "gamma"){
+        filterNonZeroTarget();
+    }
 }
 
 int Dataset::next(){

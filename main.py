@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 import documentation
 import results
@@ -6,17 +7,16 @@ import results
 
 def compile():
     print("Compiling regression algorithms...")
-    command = "time g++ -Wall -std=c++11 -O3 ./src/*.cpp -o ./bin/sgd"
+    command = "time g++ -Wall -std=c++11 -O3 ./src/*.cpp -o ./bin/glm"
     result = subprocess.run([command], shell=True)
     if result.returncode != 0:
         raise Exception("Fatal Error during compilation.")
     print("Compiling Finished.\n")
 
 
-def fit():
+def fit(config_file):
     print("Fitting model...")
-    command = "time ./bin/sgd data/mrh chargeDDEA"
-    command = "time ./bin/sgd data/mrh nbsinDDE"
+    command = "time ./bin/glm " + config_file
     result = subprocess.run([command], shell=True)
     if result.returncode != 0:
         raise Exception("Fatal Error during model fitting.")
@@ -34,6 +34,11 @@ def generate_documentation():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise Exception("Invalid number of options, expecting only one : " \
+                        "[config filename].")
+    config_file = sys.argv[1]
+
     compile()
-    fit()
+    fit(config_file)
     generate_documentation()

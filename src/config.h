@@ -10,6 +10,7 @@ public:
     std::string path;
     std::string name;
     std::string target;
+    std::string weight;
     std::string loss;
     int nbFeaturesInModel;
     int nbIterations;
@@ -21,9 +22,9 @@ public:
     std::vector<int> offsets;
     std::vector<std::string> excludedFeatures;
 
-    Config(const std::string& path, const std::string& filename);
+    Config(const std::string& filename);
     std::string getFeatureFilename();
-    std::string getExposureFilename();
+    std::string getWeightFilename();
     std::string getTargetFilename();
     int getFeatureIndex(const std::string& feature);
     int getFeatureFromModality(int m);

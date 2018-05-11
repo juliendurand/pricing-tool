@@ -15,8 +15,6 @@ public:
     SGDPoissonRegressor(Config* config, Dataset* dataset);
     virtual void fit(int, float);
     void fitIntercept();
-    void fitGamma(int, float);
-    void blockfit(int blocksize, float learning_rate);
 };
 
 #endif  // SGDPOISSONREGRESSOR_H_

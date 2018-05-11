@@ -5,17 +5,16 @@
 
 #include "config.h"
 
-Config::Config(const std::string& path, const std::string& name){
-    this->path = path + "/" ;
+Config::Config(const std::string& name){
+    std::cout << "Loading config file : " << name <<std::endl;
+
     this->name = name;
-
-    std::cout << "Loading config file : "
-              << this->path + name + ".cfg" <<std::endl;
-
-
-    std::ifstream cfgfile(this->path + name + ".cfg");
-    cfgfile >> target;
+    std::ifstream cfgfile(name);
+    cfgfile >> this->path;
+    this->path = this->path + "/" ;
     cfgfile >> loss;
+    cfgfile >> target;
+    cfgfile >> weight;
     cfgfile >> nbFeaturesInModel;
     cfgfile >> nbIterations;
 
@@ -57,12 +56,12 @@ std::string Config::getFeatureFilename(){
     return path + "features.dat";
 }
 
-std::string Config::getExposureFilename(){
-    return path + "exposure.dat";
+std::string Config::getWeightFilename(){
+    return path + "column_" + weight + ".dat";
 }
 
 std::string Config::getTargetFilename(){
-    return path + "target_" + target + ".dat";
+    return path + "column_" + target + ".dat";
 }
 
 int Config::getFeatureIndex(const std::string& feature){

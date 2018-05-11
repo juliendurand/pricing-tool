@@ -103,7 +103,6 @@ class Metadata:
         self.features = None
         self.modalities = None
         self.targets = None
-        self.exposure = None
         self.csv_filename = None
 
         folder = os.path.join(path, name)
@@ -121,9 +120,6 @@ class Metadata:
 
     def set_targets(self, targets):
         self.targets = targets
-
-    def set_exposure(self, exposure):
-        self.exposure = exposure
 
     def set_modalities(self, modalities):
         self.modalities = modalities
@@ -155,7 +151,7 @@ class Metadata:
 
     def get_unused_fields(self):
         unused_fields = set(self.fields) - set(self.features) - \
-            set(self.targets) - set([self.exposure])
+            set(self.targets)
         return list(unused_fields)
 
     def get_metadata_filename(self):
@@ -192,11 +188,8 @@ class Metadata:
     def get_feature_filename(self):
         return os.path.join(self.path, self.name, "features.dat")
 
-    def get_exposure_filename(self):
-        return os.path.join(self.path, self.name, "exposure.dat")
-
     def get_target_filename(self, target):
-        return os.path.join(self.path, self.name, "target_" + target + ".dat")
+        return os.path.join(self.path, self.name, "column_" + target + ".dat")
 
     def process(self, csv_filename, data_transform=None):
         self.csv_filename = csv_filename
@@ -206,9 +199,6 @@ class Metadata:
         targets = self.targets
         if not targets:
             raise Exception("No targets found.")
-        exposure = self.exposure
-        if not features:
-            raise Exception("No exposure found.")
         name = self.name
         if not name:
             raise Exception("Missing dataset name.")
@@ -223,10 +213,6 @@ class Metadata:
         data_filename = self.get_feature_filename()
         observations = create_data_file(data_filename, np.dtype('u1'),
                                         (nb_lines, nb_features))
-
-        exposure_filename = self.get_exposure_filename()
-        exposure_data = create_data_file(exposure_filename,
-                                         np.dtype('float32'), (nb_lines))
 
         target_filenames = [self.get_target_filename(t) for t in targets]
         target_data = [create_data_file(f, np.dtype('float32'), (nb_lines))
@@ -243,12 +229,6 @@ class Metadata:
             features_index = [self.fields.index(f) for f in self.features]
             if len(features_index) != nb_features:
                 raise Exception("Invalid features")
-
-            exposure_index = [i for i in range(nb_fields) if
-                              self.fields[i] == self.exposure]
-            if len(exposure_index) != 1:
-                raise Exception("Invalid Exposure field.")
-            exposure_index = exposure_index[0]
 
             targets_index = [self.fields.index(t) for t in self.targets]
             if len(targets_index) != len(self.targets):
@@ -274,17 +254,15 @@ class Metadata:
                                         "has too many modalities " +
                                         "( more than 200).")
                     observations[i, j] = a
-                exposure_data[i] = values[exposure_index]
                 for idx, t in enumerate(target_data):
-                    t[i] = values[targets_index[idx]]
+                    t[i] = float(values[targets_index[idx]])
 
                 if i % 1000 == 0 or i == nb_lines - 1:
-                    progressbar.printProgressBar(i, nb_lines - 1,
+                    printProgressBar(i, nb_lines - 1,
                                                  prefix='Progress:',
                                                  suffix='Complete',
                                                  length=50)
         save_data_file(observations, data_filename)
-        save_data_file(exposure_data, exposure_filename)
         for i in range(len(target_data)):
             save_data_file(target_data[i], target_filenames[i])
 

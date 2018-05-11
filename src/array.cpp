@@ -32,8 +32,9 @@ Array<T>::Array(std::string filename, int p, int n):
 
     size_t filesize = getFilesize(filename);
     //assert(filesize == size);
+
     if(size != filesize){
-        if (lseek(fd, size, SEEK_SET) == -1)
+        if (lseek(fd, size - 1, SEEK_SET) == -1)
         {
             close(fd);
             perror("Error calling lseek() to 'stretch' the file");

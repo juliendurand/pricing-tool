@@ -27,7 +27,7 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     offsets = config->offsets;
     features = config->features;
     x = dataset->x_data->getData();
-    exposure = dataset->exposure_data->getData();
+    exposure = dataset->weight_data->getData();
     y = dataset->y_data->getData();
 
     coeffs = new double[nbCoeffs + 1];
@@ -210,7 +210,7 @@ double ALinearRegressor::getCoeffNorm2(int feature){
         double c = coeffs[j + 1];
         double w = weights[j + 1];
         sc += c * c * w;
-        sw += weights[j + 1];
+        sw += w;
     }
     return std::sqrt(sc / sw);
 }

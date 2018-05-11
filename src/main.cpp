@@ -16,16 +16,15 @@ ALinearRegressor* fitSGD(Config* config, Dataset* ds){
     int blocksize = 10 * config->m;
     double alpha = 0.1;
     double * previousCoeffs = new double[config->m + 1];
-    model->fitIntercept();
     for(int i = 0; i < config->nbIterations / blocksize; i++){
-        model->blockfit(blocksize, alpha);
+        model->fit(blocksize, alpha);
         //model->penalizeRidge(alpha, 0.005);
         if(i % 100 == 0){
             std::vector<float> ypred = model->predict();
             std::cout << i * blocksize << "th iteration : ";
             LinearRegressionResult(model).print(ds->train, ds->test);
-            std::cout << "Diff of coeffs : " << model->getNorm2CoeffDiff(previousCoeffs)
-                      << std::endl;
+            //std::cout << "Diff of coeffs : " << model->getNorm2CoeffDiff(previousCoeffs)
+            //          << std::endl;
         }
 
         if(i > 3000 && model->selected_features.size() > config->nbFeaturesInModel){
@@ -52,8 +51,6 @@ ALinearRegressor* fitSGD(Config* config, Dataset* ds){
 }
 
 ALinearRegressor* fitGammaSGD(Config* config, Dataset* ds){
-    ds->filterNonZeroTarget();
-    std::cout << ds->train.size() << std::endl;
     SGDPoissonRegressor* model = new SGDPoissonRegressor(config, ds);
 
     std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
@@ -63,9 +60,8 @@ ALinearRegressor* fitGammaSGD(Config* config, Dataset* ds){
     int blocksize = 10 * config->m;
     double alpha = 0.01;
     double * previousCoeffs = new double[config->m + 1];
-    model->fitIntercept();
     for(int i = 0; i < config->nbIterations / blocksize; i++){
-        model->blockfit(blocksize, alpha);
+        model->fit(blocksize, alpha);
         //model->penalizeRidge(alpha, 0.005);
         if(i % 100 == 0){
             std::vector<float> ypred = model->predict();
@@ -162,19 +158,23 @@ ALinearRegressor* fitCD(Config* config, Dataset* ds){
 
 
 int main(int argc, char** argv){
-    if(argc != 3){
-        std::cout << "Invalid parameters. Expecting 2 parameters : [path] [config file]." <<std::endl;
+    if(argc != 2){
+        std::cout << "Invalid parameters. Expecting 1 parameter : [config file]." <<std::endl;
         return 1;
     }
 
-    char* path = argv[1];
-    char* config_filename = argv[2];
+    char* config_filename = argv[1];
 
-    Config config(path, config_filename);
+    Config config(config_filename);
 
     Dataset ds(&config, 0.2);
 
-    ALinearRegressor* model = fitSGD(&config, &ds);
+    ALinearRegressor* model = NULL;
+    if(config.loss == "poisson"){
+        model = fitSGD(&config, &ds);
+    } else if(config.loss == "gamma"){
+        model = fitGammaSGD(&config, &ds);
+    }
 
     std::cout << std::endl << "Final results :" << std::endl
               << "---------------" << std::endl;
