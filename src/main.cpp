@@ -7,7 +7,7 @@
 void fitToConvergence(ALinearRegressor* model, Dataset* ds, int& i, int blocksize, double alpha){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
-    for(;;i++){
+    for(; nbIterationsSinceMinimum < 3; i++){
         model->fit(blocksize, alpha);
         if(i % 100 == 0){
             std::cout << i * blocksize << "th iteration : ";
@@ -20,9 +20,6 @@ void fitToConvergence(ALinearRegressor* model, Dataset* ds, int& i, int blocksiz
             } else {
                 nbIterationsSinceMinimum++;
             }
-            if(nbIterationsSinceMinimum >= 10){
-                break;
-            }
         }
     }
 }
@@ -34,20 +31,17 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
                            << " variables :" << std::endl;
 
     int blocksize = 10 * config->m;
-    double alpha = 0.01;
+    double alpha = 0.02;
     int i = 0;
     fitToConvergence(model, ds, i, blocksize, alpha);
-    for(;;i++){
-        int nbExcessFeatures = model->selected_features.size() -
-            config->nbFeaturesInModel;
-        if(nbExcessFeatures <= 0){
-            break;
-        }
+    for(int nbExcessFeatures = 1; nbExcessFeatures > 0; i++){
         model->fit(blocksize, alpha);
         if(((nbExcessFeatures > 20) && (i % 10 == 0)) || (i % 100 == 0)){
             int remove_feature = model->getMinCoeff(model->selected_features);
             model->eraseFeature(i * blocksize, remove_feature);
         }
+        nbExcessFeatures = model->selected_features.size() -
+            config->nbFeaturesInModel;
     }
     fitToConvergence(model, ds, i, blocksize, alpha);
     return model;

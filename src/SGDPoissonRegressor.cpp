@@ -67,6 +67,7 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate){
         }
     }
 
+    update[0] = rTotal;
     for(int j = 0; j < nbCoeffs + 1 ; j++){
         //double w = weights[j];
         //if(w < std::sqrt(weights[0]) / 100){

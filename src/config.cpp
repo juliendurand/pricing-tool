@@ -5,13 +5,13 @@
 
 #include "config.h"
 
-Config::Config(const std::string& name){
+Config::Config(const std::string& name) : name(name) {
     std::cout << "Loading config file : " << name <<std::endl;
-
-    this->name = name;
     std::ifstream cfgfile(name);
-    cfgfile >> this->path;
-    this->path = this->path + "/" ;
+    cfgfile >> path;
+    if(path.back() != "/"){
+        path += "/";
+    }
     cfgfile >> loss;
     cfgfile >> target;
     cfgfile >> weight;
