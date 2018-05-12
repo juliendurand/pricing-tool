@@ -32,8 +32,8 @@ class Results:
                                   self.df.prediction,
                                   self.df.exposure), 6)
         self.test['gini'] = round(metrics.gini_emblem_fast(
-                                  self.df.target,
-                                  self.df.prediction,
+                                  self.df.target /self.df.exposure,
+                                  self.df.prediction / self.df.exposure,
                                   self.df.exposure), 6) * 100
         self.test['features'] = {}
         for f in self.metadata.features:

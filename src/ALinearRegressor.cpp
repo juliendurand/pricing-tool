@@ -43,11 +43,11 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
         weights[i] = 0;
     }
 
-    weights[0] = dataset->train.size();
     for(int i : dataset->train){
+        weights[0] += exposure[i];
         uint8_t*  xi = x + p * i;
         for(int j = 0; j < p; j++){
-            weights[xi[j] + offsets[j] + 1] += 1;
+            weights[xi[j] + offsets[j] + 1] += exposure[i];
         }
     }
 
@@ -203,7 +203,7 @@ int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
     double minvalue = 100000000;
     for(int i = 0; i< p; i++){
         double s = getCoeffNorm2(i);
-        if(selected_features.count(i) && s < minvalue){
+        if((selected_features.count(i) > 0) && (s < minvalue)){
             minvalue = s;
             minidx = i;
         }
@@ -232,7 +232,8 @@ void ALinearRegressor::eraseFeature(int i, int remove_feature){
     }
 
     std::string feature = config->features[remove_feature];
-    std::cout << i << " : Removing " << feature
+    std::cout << i << " : Removing[" << selected_features.size()
+              << "] " << feature
               << " Norm2=" << getCoeffNorm2(remove_feature) << std::endl;
 
     giniPath.push_back(std::pair<std::string, float>(feature,
@@ -291,7 +292,7 @@ double ALinearRegressor::rmse(const std::vector<int> &samples){
 }
 
 double ALinearRegressor::gini(const std::vector<int> &samples){
-    std::vector<size_t> idx = reverse_sort_indexes(ypred, samples);
+    std::vector<size_t> idx = reverse_sort_indexes(ypred, exposure, samples);
     double exposure_sum = 0;
     double obs_sum = 0;
     double rank_obs_sum = 0;
@@ -299,8 +300,8 @@ double ALinearRegressor::gini(const std::vector<int> &samples){
         int obs = samples[i];
         double e = exposure[obs];
         exposure_sum += e;
-        obs_sum += e * y[obs];
-        rank_obs_sum += y[obs] * e * (exposure_sum - 0.5 * e);
+        obs_sum += y[obs];
+        rank_obs_sum += y[obs] * (exposure_sum - 0.5 * e);
     }
     return 1 - (2 / (exposure_sum * obs_sum)) * rank_obs_sum;
 }
@@ -317,7 +318,7 @@ void ALinearRegressor::printResults(const std::vector<int> &train,
 }
 
 std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
-        const std::vector<float> &v, const std::vector<int> &samples)
+        const std::vector<float> &v, float* w, const std::vector<int> &samples)
 {
     // initialize original index locations
     std::vector<size_t> idx(samples.size());
@@ -325,8 +326,10 @@ std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
 
     // sort indexes based on comparing values in v
     std::sort(idx.begin(), idx.end(),
-        [&v, &samples](size_t i1, size_t i2) {
-            return v[samples[i1]] > v[samples[i2]];
+        [&v, w, &samples](size_t j1, size_t j2) {
+            int i1 = samples[j1];
+            int i2 = samples[j2];
+            return v[i1] / w[i1] > v[i2] / w[i2];
         }
     );
 
@@ -334,7 +337,7 @@ std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
 }
 
 void ALinearRegressor::writeGiniPath(){
-    std::cout << "Writting Gini Path." << std::endl;
+    std::cout << "Writting Gini Path." << std::endl << std::endl;
     std::ofstream giniPathFile;
     giniPathFile.open("data/mrh/ginipath.csv", std::ios::out);
     giniPathFile << "Feature,Gini" << std::endl;

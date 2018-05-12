@@ -16,11 +16,12 @@ SGDPoissonRegressor::SGDPoissonRegressor(Config* config, Dataset* dataset):
         std::cout << "Using poisson loss" << std::endl;
     } else if(config->loss == "gamma") {
         gradLoss = [](double y, double dp, double weight){return y / (std::exp(dp) * weight) - 1;};
+        fitIntercept();
         std::cout << "Using gamma loss" << std::endl;
     } else {
         throw std::invalid_argument( "Received invalid loss function." );
     }
-    fitIntercept();
+
 }
 
 void SGDPoissonRegressor::fitIntercept(){
@@ -42,7 +43,7 @@ void SGDPoissonRegressor::fitIntercept(){
     }
 }
 
-void SGDPoissonRegressor::fit(int blocksize, float learning_rate){
+void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
     double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs + 1 ; j++){
         dp0 += x0[j] * coeffs[j];
@@ -74,6 +75,7 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate){
             // squeezing non significative coefficients to Zero
         //    coeffs[j] = 0; // this line is not required (just to be explicit) !
         //}else{
+            coeffs[j] *= (1 - l2);
             coeffs[j] += (update[j] + rTotal * x0[j]) / blocksize * learning_rate;
         //}
     }

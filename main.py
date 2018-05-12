@@ -27,9 +27,9 @@ def fit(name):
 def generate_documentation(name):
     print("Generating Documentation...")
     r = results.Results("data", "mrh")
-    doc = documentation.Documentation("doc/mrh/chargeDDEa/", name, r)
+    doc = documentation.Documentation('doc/mrh/' + name + '/', name, r)
     doc.save_html()
-    command = "open doc/mrh/chargeDDEa/chargeDDEa.html"
+    command = 'open doc/mrh/' + name + '/' + name + ".html"
     subprocess.run([command], shell=True)
     print("Document Finished\n")
 

@@ -13,7 +13,7 @@ class SGDPoissonRegressor : public ALinearRegressor
 
 public:
     SGDPoissonRegressor(Config* config, Dataset* dataset);
-    virtual void fit(int, float);
+    virtual void fit(int, float, float);
     void fitIntercept();
 };
 

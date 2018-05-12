@@ -1,6 +1,9 @@
-adjust weight for gamma loss
+save result in own folder /results/name
+list of coeffs by feature included
 list of features sorted by gini and spread 100/0 and spread 95/5
-ridge penalty
+get pred for n feature on demand
+simple categorical smoothing
 spline interpolation
-lasso penalty
-weight to normalize x should be based on exposure
+complete documentation
+
+lasso/ridge penalty ?

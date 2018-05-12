@@ -13,7 +13,6 @@ public:
     std::string weight;
     std::string loss;
     int nbFeaturesInModel;
-    int nbIterations;
     int n;
     int p;
     int m;

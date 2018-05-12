@@ -16,7 +16,6 @@ Config::Config(const std::string& name) : name(name) {
     cfgfile >> target;
     cfgfile >> weight;
     cfgfile >> nbFeaturesInModel;
-    cfgfile >> nbIterations;
 
     std::ifstream metadatafile(this->path  + "metadata.cfg");
     metadatafile >> n;

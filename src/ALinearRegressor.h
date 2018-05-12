@@ -34,7 +34,7 @@ public:
 
     ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
-    virtual void fit(int, float) = 0;
+    virtual void fit(int, float, float) = 0;
     int penalizeLasso(float learning_rate, float l1);
     void penalizeRidge(float learning_rate, float l2);
     void predict();
@@ -53,6 +53,7 @@ public:
 
 private:
     std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,
+                                             float* w,
                                              const std::vector<int> &samples);
 
 };
