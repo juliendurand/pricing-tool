@@ -95,9 +95,8 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
 
 class Metadata:
 
-    def __init__(self, path, name):
+    def __init__(self, path):
         self.path = path
-        self.name = name
         self.size = -1
         self.fields = None
         self.features = None
@@ -105,9 +104,8 @@ class Metadata:
         self.targets = None
         self.csv_filename = None
 
-        folder = os.path.join(path, name)
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        if not os.path.exists(path):
+            os.makedirs(path)
 
     def set_size(self, size):
         self.size = size
@@ -155,7 +153,7 @@ class Metadata:
         return list(unused_fields)
 
     def get_metadata_filename(self):
-        return os.path.join(self.path, self.name, 'metadata.json')
+        return os.path.join(self.path, 'metadata.json')
 
     def save(self):
         metadata_filename = self.get_metadata_filename()
@@ -167,10 +165,9 @@ class Metadata:
         metadata_filename = self.get_metadata_filename()
         with open(metadata_filename, 'r') as metadata_file:
             self.__dict__ = json.load(metadata_file)
-        # print("Loaded metadata from ", metadata_filename)
 
     def save_simple_config(self):
-        config_filename = os.path.join(self.path, self.name, 'metadata.cfg')
+        config_filename = os.path.join(self.path, 'metadata.cfg')
         with open(config_filename, 'w') as config:
             config.write(str(self.size) + '\n')
             config.write(str(self.count_features()) + '\n')
@@ -186,12 +183,12 @@ class Metadata:
                 config.write(str(o) + '\n')
 
     def get_feature_filename(self):
-        return os.path.join(self.path, self.name, "features.dat")
+        return os.path.join(self.path, "features.dat")
 
     def get_target_filename(self, target):
-        return os.path.join(self.path, self.name, "column_" + target + ".dat")
+        return os.path.join(self.path, "column_" + target + ".dat")
 
-    def process(self, csv_filename, data_transform=None):
+    def process(self, csv_filename, data_transform=None, data_filter=None):
         self.csv_filename = csv_filename
         features = self.features
         if not features:
@@ -199,9 +196,6 @@ class Metadata:
         targets = self.targets
         if not targets:
             raise Exception("No targets found.")
-        name = self.name
-        if not name:
-            raise Exception("Missing dataset name.")
 
         print('Starting data importation.')
         sep = detect_csv_separator(csv_filename)
@@ -221,6 +215,10 @@ class Metadata:
         features_mapping = [{} for i in range(nb_features)]
 
         print("Importing", '{:,}'.format(nb_lines).replace(',', ' '), "lines.")
+
+        nb_fields = 0
+        features_index = []
+        targets_index = []
         with open(csv_filename) as csv_file:
             line = csv_file.readline()[:-1]
             self.fields = [s.strip() for s in line.split(sep)]
@@ -234,19 +232,20 @@ class Metadata:
             if len(targets_index) != len(self.targets):
                 raise Exception("Invalid targets")
 
-            for i, line in enumerate(csv_file):
-                if i >= nb_lines:
-                    break
-                line = line[:-1]
-                values = [s.strip() for s in line.split(sep)]
+        with open(csv_filename) as csv_file:
+            reader = csv.DictReader(csv_file)
+            for i, row in enumerate(reader):
+                if data_filter and not data_filter(row):
+                    continue
+                if data_transform:
+                    data_transform(row)
+                values = list(row.values())
                 if len(values) != nb_fields:
                     raise Exception("Inconsistent number of fields",
                                     len(values), "in line", i + 1,
                                     "expecting", nb_fields)
                 for j, index in enumerate(features_index):
                     v = values[index]
-                    if data_transform:
-                        v = data_transform(self.features[j], v)
                     a = features_mapping[j].setdefault(v, \
                         len(features_mapping[j]))
                     if a > 200:
@@ -263,8 +262,8 @@ class Metadata:
                                                  suffix='Complete',
                                                  length=50)
         save_data_file(observations, data_filename)
-        for i in range(len(target_data)):
-            save_data_file(target_data[i], target_filenames[i])
+        for i, target in enumerate(target_data):
+            save_data_file(target, target_filenames[i])
 
         modalities = {f: features_mapping[i] for i, f in
                       enumerate(self.features)}
@@ -280,3 +279,11 @@ class Metadata:
 
         self.set_modalities(modalities)
         self.save()
+        self.save_simple_config()
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise Exception("Invalid number of options, expecting only one : " \
+                        "[config filename].")
+    path = sys.argv[1]
