@@ -4,7 +4,7 @@
 #include "SGDPoissonRegressor.h"
 
 
-void fitToConvergence(ALinearRegressor* model, Dataset* ds, int& i,
+void fitToConvergence(ALinearRegressor* model, Dataset* ds, long& i,
                       int blocksize, double alpha, double l2){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
@@ -33,7 +33,7 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
 
     int blocksize = 10 * config->m;
     double alpha = 0.03;
-    int i = 0;
+    long i = 0;
     float l2 = 0;
     fitToConvergence(model, ds, i, blocksize, alpha, l2);;
     for(; model->selected_features.size() > 20; i++){

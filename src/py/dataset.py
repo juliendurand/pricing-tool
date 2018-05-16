@@ -16,14 +16,6 @@ def count_line(filename):
     return sum(buf.count(b'\n') for buf in bufgen)
 
 
-def detect_csv_separator(filename):
-    """Utility function to automatically detect the separator character
-    in a csv file."""
-    with open(filename) as csvfile:
-        first_line = csvfile.readline()
-        return csv.Sniffer().sniff(first_line).delimiter
-
-
 def create_data_file_from_list(lst, out_filename, dtype, shape):
     """Write a list in a binary file as a numpy array.
     Args:
@@ -79,7 +71,7 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
         print()
 
 
-class Metadata:
+class Dataset:
 
     def __init__(self, path):
         self.path = path
@@ -192,28 +184,24 @@ class Metadata:
 
         print('Starting data importation from', csv_filename)
         nb_lines = count_line(csv_filename) - 1
+        print("Importing", '{:,}'.format(nb_lines).replace(',', ' '), "lines.")
 
         nb_features = len(features)
 
-        data_filename = self.get_feature_filename()
         observations = np.empty((nb_lines, nb_features), np.dtype('u1'))
-
-        target_filenames = [self.get_target_filename(t) for t in targets]
         target_data = [np.empty((nb_lines), np.dtype('float32'))
-                       for f in target_filenames]
+                       for t in targets]
 
         features_mapping = [{} for i in range(nb_features)]
-
-        print("Importing", '{:,}'.format(nb_lines).replace(',', ' '), "lines.")
-
         nb_fields = 0
         fields = []
         features_index = []
         targets_index = []
-        sep = detect_csv_separator(csv_filename)
+        nb_observations = 0
+
         with open(csv_filename) as csv_file:
-            line = csv_file.readline()[:-1]
-            fields = [s.strip() for s in line.split(sep)]
+            reader = csv.DictReader(csv_file)
+            fields = [field.strip() for field in reader.fieldnames]
             nb_fields = len(fields)
 
             features_index = [fields.index(f) for f in features]
@@ -224,9 +212,6 @@ class Metadata:
             if len(targets_index) != len(targets):
                 raise Exception("Invalid targets")
 
-        nb_observations = 0
-        with open(csv_filename) as csv_file:
-            reader = csv.DictReader(csv_file)
             for i, row in enumerate(reader):
                 if data_filter and not data_filter(row):
                     continue
@@ -248,7 +233,6 @@ class Metadata:
                     observations[nb_observations, j] = a
                 for idx, t in enumerate(target_data):
                     t[nb_observations] = float(values[targets_index[idx]])
-
                 if i % 1000 == 0 or i == nb_lines - 1:
                     printProgressBar(i, nb_lines - 1,
                                      prefix='Progress:',
@@ -257,17 +241,18 @@ class Metadata:
                 nb_observations += 1
 
         create_data_file_from_list(observations[:nb_observations, :],
-                                   data_filename,
+                                   self.get_feature_filename(),
                                    np.dtype('u1'),
                                    (nb_observations, nb_features))
-        for i, target in enumerate(target_data):
+        for i, t in enumerate(targets):
+            target = target_data[i]
             create_data_file_from_list(target[:nb_observations],
-                                       target_filenames[i],
+                                       self.get_target_filename(t),
                                        np.dtype('float32'),
                                        (nb_observations))
 
-        modalities = {f: features_mapping[i] for i, f in
-                      enumerate(features)}
+        modalities = {f: features_mapping[i] for i, f in enumerate(features)}
+
         # invert index and modality and return list of modalities
         for k, m in modalities.items():
             m = {v: k for k, v in m.items()}
@@ -280,8 +265,6 @@ class Metadata:
         self.fields = fields
         self.size = nb_observations
         self.set_modalities(modalities)
-        self.save()
-        self.save_simple_config()
 
 
 if __name__ == '__main__':
@@ -297,5 +280,7 @@ if __name__ == '__main__':
         exec(config["transform"], context)
         config['data_transform'] = context['data_transform']
         config['data_filter'] = context['data_filter']
-        dataset = Metadata(config['path'])
+        dataset = Dataset(config['path'])
         dataset.process(config)
+        dataset.save()
+        dataset.save_simple_config()

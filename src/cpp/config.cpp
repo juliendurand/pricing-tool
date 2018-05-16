@@ -13,7 +13,8 @@ Config::Config(const std::string& name) : name(name) {
         path += "/";
     }
     cfgfile >> resultPath;
-    std::cout << resultPath << std::endl;
+    resultPath = "result/" + resultPath + "/";
+    std::cout << "resultPath : " << resultPath << std::endl;
     cfgfile >> loss;
     cfgfile >> target;
     cfgfile >> weight;

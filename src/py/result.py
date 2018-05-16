@@ -1,30 +1,35 @@
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import metrics
-import preprocessing
+import dataset
 
 
-class Results:
+class Result:
 
-    def __init__(self, path, metadata_path):
-        self.path = path
-        self.metadata = preprocessing.Metadata(metadata_path)
-        self.metadata.load()
+    def __init__(self, config):
+        self.path = config.get_result_path()
+        self.dataset = dataset.Dataset(config.get_dataset_filename())
+        self.dataset.load()
         self.df = self.load_results()
         self.data = self.load_data()
         self.df_coeffs = self.load_coeffs()
         self.testdata = self.data[self.df.row, :]
+
+        chart_path = os.path.join(self.path, 'img')
+        if not os.path.exists(chart_path):
+            os.makedirs(chart_path)
 
 
     def load_results(self):
         return pd.read_csv(self.path + "/results.csv")
 
     def load_data(self):
-        file_path = self.metadata.get_feature_filename()
-        shape = (self.metadata.size, self.metadata.count_features())
+        file_path = self.dataset.get_feature_filename()
+        shape = (self.dataset.size, self.dataset.count_features())
         return np.memmap(file_path, dtype=np.dtype('u1'), shape=shape)
 
     def load_coeffs(self):
@@ -46,6 +51,31 @@ class Results:
                                   self.df.prediction,
                                   self.df.exposure), 6)
 
+    def get_gini_curve(self, n=21):
+        ginipath_filename = os.path.join(self.path, 'ginipath.csv')
+        df = pd.read_csv(ginipath_filename)
+        df.Gini *= 100
+        return df.head(n)
+
+    def plot_gini_curve(self, path, n=21):
+        print('Plot Gini Curve')
+
+        ginipath_filename = os.path.join(self.path, 'ginipath.csv')
+        df = pd.read_csv(ginipath_filename)
+        ar = np.arange(n)
+        gini = df.head(n).Gini * 100
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.set_title('Gini Curve')
+        ax.set_ylim([0, max(gini) * 1.1])
+        ax.plot(range(0, n), gini, marker='o')
+        ax.legend()
+        ax.set_xticks(ar)
+
+        filename = os.path.join('img', 'gini_path.png')
+        plt.savefig(os.path.join(path, filename))
+        plt.close()
+
+        return filename
 
     def fill_missing_modalities(self, df, modalities):
         for i in range(len(modalities)):
@@ -55,8 +85,8 @@ class Results:
 
     def calculate_relativities(self, feature):
         df = self.df
-        idx = self.metadata.get_feature_index(feature)
-        modalities = self.metadata.get_modalities(feature)
+        idx = self.dataset.get_feature_index(feature)
+        modalities = self.dataset.get_modalities(feature)
 
         try:
             modalities = [float(m) for m in modalities]
@@ -86,7 +116,7 @@ class Results:
         relativity = self.fill_missing_modalities(relativity, modalities)
         relativity['Modalities'] = modalities
         relativity['Coefficients'] = self.get_coeffs(
-            self.metadata.get_feature_range(feature)
+            self.dataset.get_feature_range(feature)
         )
         relativity['Coefficients'] = relativity['Coefficients'] \
             .round(decimals=3)
@@ -124,13 +154,7 @@ class Results:
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel('Values')
 
-        chart_path = os.path.join(path)
-        if not os.path.exists(path):
-            os.makedirs(path)
-        filename = os.path.join(chart_path, 'img', 'relativity_' +
-                                feature + '.png')
-        # print('Saving relativity chart : ', filename)
-
+        filename = os.path.join(path, 'img', 'relativity_' + feature + '.png')
         plt.savefig(filename)
         plt.close()
 
@@ -185,10 +209,8 @@ class Results:
         ax1.set_xlabel('Band')
         ax2.set_ylabel('Y values')
         ax1.set_ylabel('Weight')
-        path = os.path.join(path, 'img')
-        if not os.path.exists(path):
-            os.makedirs(path)
-        filename = os.path.join(path, 'lift_curve.png')
+
+        filename = os.path.join(path, 'img', 'lift_curve.png')
         fig.savefig(filename, bbox_inches='tight')
         plt.close()
         return os.path.join('img', 'lift_curve.png')
