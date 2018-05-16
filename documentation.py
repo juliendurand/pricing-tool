@@ -3,8 +3,6 @@ import os
 import markdown
 import jinja2
 
-# import results
-
 
 class Documentation:
 
@@ -38,8 +36,6 @@ class Documentation:
         context = self.get_metadata()
         context['path'] = self.path
         context['results'] = self.results
-        context['train'] = self.results.train
-        context['test'] = self.results.test
         md_content = self.jinja2_env.get_template('template.md') \
             .render(context)
         html_content = self.md.convert(md_content)

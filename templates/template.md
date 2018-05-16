@@ -22,11 +22,11 @@ TBW
 
 ### Gini
 
-The model has a gini of : {{test.gini}}%.
+The model has a gini of : {{results.gini()}}%.
 
 ### RMSE
 
-The model has a root mean squared error of : {{test.rmse}}.
+The model has a root mean squared error of : {{results.rmse()}}.
 
 ### Lift Curve
 
@@ -36,13 +36,13 @@ The model has a root mean squared error of : {{test.rmse}}.
 
 ### Relativities by feature
 
-{% for feature, fv in test.features.items() %}
+{% for feature in results.metadata.features %}
 
 #### {{feature}}
 
-{{fv.relativities.data.to_html(index=False, classes=['table-condensed', 'table-striped'])}}
+{{results.calculate_relativities(feature).to_html(index=False, classes=['table-condensed', 'table-striped'])}}
 
-![{{feature}} relativity chart]({{results.plot_relativities(feature, fv.relativities.data, path)}})
+![{{feature}} relativity chart]({{results.plot_relativities(feature, path)}})
 
 <div class="pagebreak"></div>
 

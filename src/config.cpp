@@ -12,6 +12,8 @@ Config::Config(const std::string& name) : name(name) {
     if(strcmp(&path.back(), "/") != 0){
         path += "/";
     }
+    cfgfile >> resultPath;
+    std::cout << resultPath << std::endl;
     cfgfile >> loss;
     cfgfile >> target;
     cfgfile >> weight;

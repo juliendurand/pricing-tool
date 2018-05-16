@@ -9,6 +9,7 @@ class Config
 public:
     std::string path;
     std::string name;
+    std::string resultPath;
     std::string target;
     std::string weight;
     std::string loss;

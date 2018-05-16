@@ -3,11 +3,14 @@
 /dist
 /data
 /doc
+/results
 /pricingtool.egg-info
 /venv
+/.ipynb_checkpoints
 
 *.pyc
 *.o
-.ipynb_checkpoints
+*.pptx
+.~*
 
 test.ipynb

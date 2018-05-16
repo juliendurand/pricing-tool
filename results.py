@@ -7,55 +7,45 @@ import metrics
 import preprocessing
 
 
-# print('deviance:', np.log(metrics.poisson_deviance(df.target, df.prediction,
-#       df.exposure)))
-# metrics.plot_lift_curve(df.target, df.prediction, df.exposure, n_band=20)
-
-
 class Results:
 
-    def __init__(self, path, name):
-        self.metadata = preprocessing.Metadata(path, name)
+    def __init__(self, path, metadata_path):
+        self.path = path
+        self.metadata = preprocessing.Metadata(metadata_path)
         self.metadata.load()
-        self.load_results()
-        self.load_data()
-        self.load_coeffs()
+        self.df = self.load_results()
+        self.data = self.load_data()
+        self.df_coeffs = self.load_coeffs()
         self.testdata = self.data[self.df.row, :]
-        self.train = {}
-        self.train['mean'] = round(np.sum(self.df.target) /
-                                   np.sum(self.df.exposure), 6)
-        self.test = {}
-        self.test['mean'] = round(np.sum(self.df.prediction) /
-                                  np.sum(self.df.exposure), 6)
-        self.test['rmse'] = round(metrics.root_mean_square_error(
-                                  self.df.target,
-                                  self.df.prediction,
-                                  self.df.exposure), 6)
-        self.test['gini'] = round(metrics.gini_emblem_fast(
-                                  self.df.target /self.df.exposure,
-                                  self.df.prediction / self.df.exposure,
-                                  self.df.exposure), 6) * 100
-        self.test['features'] = {}
-        for f in self.metadata.features:
-            self.test['features'][f] = {}
-            relativities = self.calculate_relativities(f)
-            self.test['features'][f]['relativities'] = {}
-            self.test['features'][f]['relativities']['data'] = relativities
+
 
     def load_results(self):
-        self.df = pd.read_csv("./data/results.csv")
+        return pd.read_csv(self.path + "/results.csv")
 
     def load_data(self):
         file_path = self.metadata.get_feature_filename()
         shape = (self.metadata.size, self.metadata.count_features())
-        self.data = np.memmap(file_path, dtype=np.dtype('u1'), shape=shape)
+        return np.memmap(file_path, dtype=np.dtype('u1'), shape=shape)
 
     def load_coeffs(self):
-        self.df_coeffs = pd.read_csv('data/mrh/coeffs.csv').as_matrix()
-        self.df_coeffs = np.exp(self.df_coeffs)
+        df_coeffs = pd.read_csv(self.path + "/coeffs.csv").as_matrix()
+        return np.exp(df_coeffs)
 
     def get_coeffs(self, feature_range):
         return self.df_coeffs[1 + np.array(feature_range)]
+
+    def gini(self):
+        return round(metrics.gini_emblem_fast(
+                                  self.df.target /self.df.exposure,
+                                  self.df.prediction / self.df.exposure,
+                                  self.df.exposure), 6) * 100
+
+    def rmse(self):
+        return round(metrics.root_mean_square_error(
+                                  self.df.target,
+                                  self.df.prediction,
+                                  self.df.exposure), 6)
+
 
     def fill_missing_modalities(self, df, modalities):
         for i in range(len(modalities)):
@@ -109,7 +99,9 @@ class Results:
                                  'Target']]
         return relativity
 
-    def plot_relativities(self, feature, relativity, path):
+    def plot_relativities(self, feature, path):
+        print("Plot Relativities ", feature)
+        relativity = self.calculate_relativities(feature)
         ar = np.arange(relativity.Prediction.size)
 
         # Create chart
@@ -145,6 +137,7 @@ class Results:
         return os.path.join('img', 'relativity_' + feature + '.png')
 
     def plot_lift_curve(self, path, n_band=10):
+        print("Plot Lift Curve")
         y = self.df.target
         y_pred = self.df.prediction
         weight = self.df.exposure

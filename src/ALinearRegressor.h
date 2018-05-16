@@ -39,7 +39,7 @@ public:
     void penalizeRidge(float learning_rate, float l2);
     void predict();
     double logLikelihood(const std::vector<int> &samples);
-    void writeResults(std::string filename , std::vector<int> test);
+    void writeResults(std::vector<int> test);
     int getMinCoeff(std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
     double getSpread(int feature);

@@ -35,7 +35,7 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
     double alpha = 0.03;
     int i = 0;
     float l2 = 0;
-    fitToConvergence(model, ds, i, blocksize, alpha, l2);
+    fitToConvergence(model, ds, i, blocksize, alpha, l2);;
     for(; model->selected_features.size() > 20; i++){
         model->fit(blocksize, alpha, l2);
         if(i % 10 == 0){
@@ -51,7 +51,7 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
             model->predict();
             model->printResults(ds->train, ds->test);
             model->printSelectedFeatures();
-            model->writeResults("./data/results.csv", ds->test);
+            model->writeResults(ds->test);
             std::cout << std::endl;
         }
         int remove_feature = model->getMinCoeff(model->selected_features);

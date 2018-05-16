@@ -163,12 +163,11 @@ std::string doubleToText(const double & d)
     return ss.str();
 }
 
-void ALinearRegressor::writeResults(std::string filename,
-                                    std::vector<int> test){
+void ALinearRegressor::writeResults(std::vector<int> test){
     std::cout << "Writting results." << std::endl;
 
     std::ofstream resultFile;
-    resultFile.open(filename.c_str(), std::ios::out);
+    resultFile.open(config->resultPath + "results.csv", std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;
     for(int i : test){
         resultFile << i << "," << exposure[i] << "," << y[i] << ","
@@ -177,7 +176,7 @@ void ALinearRegressor::writeResults(std::string filename,
     resultFile.close();
 
     std::ofstream coeffFile;
-    coeffFile.open("data/mrh/coeffs.csv", std::ios::out);
+    coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
     for(int j=0; j < nbCoeffs + 1; j++){
         double c = stdev[j] != 0 ? coeffs[j] / stdev[j] : 0;
@@ -339,7 +338,7 @@ std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
 void ALinearRegressor::writeGiniPath(){
     std::cout << "Writting Gini Path." << std::endl << std::endl;
     std::ofstream giniPathFile;
-    giniPathFile.open("data/mrh/ginipath.csv", std::ios::out);
+    giniPathFile.open(config->resultPath + "ginipath.csv", std::ios::out);
     giniPathFile << "Feature,Gini" << std::endl;
     for (auto p = giniPath.rbegin(); p != giniPath.rend(); p++) {
         giniPathFile << p->first << "," << p->second << std::endl;
