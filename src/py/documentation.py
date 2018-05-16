@@ -28,8 +28,9 @@ class Documentation:
         jinja2_loader = jinja2.FileSystemLoader('./templates/')
         self.jinja2_env = jinja2.Environment(loader=jinja2_loader)
 
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        img_path = os.path.join(self.path, 'img')
+        if not os.path.exists(img_path):
+            os.makedirs(img_path)
 
     def get_metadata(self):
         md_template = ''
