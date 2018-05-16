@@ -1,7 +1,7 @@
 {
     "filename": "./data/axaf_mrh_ddea_freq_tot.csv",
 
-    "path": "./data/dataset/mrha",
+    "path": "./dataset/mrh_ddea",
 
     "features": [
         "POL_mtcapass",
@@ -164,26 +164,8 @@
 
     "targets": [
         "anpol",
-        "chargeBDGm",
-        "chargeCATNATm",
-        "chargeCLIMm",
         "chargeDDEm",
-        "chargeDELECm",
-        "chargeINCattri",
-        "chargeINCgr",
-        "chargeRCm",
-        "chargeVOLm",
-        "nbsinBDG",
-        "nbsinCATNAT",
-        "nbsinCATNAT2",
-        "nbsinCLIM",
-        "nbsinDDE",
-        "nbsinDELEC",
-        "nbsinINC",
-        "nbsinINCattri",
-        "nbsinINCgr",
-        "nbsinRC",
-        "nbsinVOL"
+        "nbsinDDE"
     ],
 
     "filter": "def data_filter(row):\n    return True\n",

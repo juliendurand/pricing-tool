@@ -1,7 +1,7 @@
 {
     "filename": "./data/axaf_mrh_tot_freq_tot.csv",
 
-    "path": "./data/dataset/mrh",
+    "path": "./dataset/mrh_inc",
 
     "features": [
         "HAB_hab",

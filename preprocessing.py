@@ -180,14 +180,15 @@ class Metadata:
         data_filter = config['data_filter']
         features = config['features']
         targets = config['targets']
-        self.csv_filename = csv_filename
-        self.features = features
+
         if not features:
             raise Exception("No features found.")
-
-        self.targets = targets
         if not targets:
             raise Exception("No targets found.")
+
+        self.csv_filename = csv_filename
+        self.features = features
+        self.targets = targets
 
         print('Starting data importation from', csv_filename)
         nb_lines = count_line(csv_filename) - 1
@@ -206,20 +207,21 @@ class Metadata:
         print("Importing", '{:,}'.format(nb_lines).replace(',', ' '), "lines.")
 
         nb_fields = 0
+        fields = []
         features_index = []
         targets_index = []
         sep = detect_csv_separator(csv_filename)
         with open(csv_filename) as csv_file:
             line = csv_file.readline()[:-1]
-            self.fields = [s.strip() for s in line.split(sep)]
-            nb_fields = len(self.fields)
+            fields = [s.strip() for s in line.split(sep)]
+            nb_fields = len(fields)
 
-            features_index = [self.fields.index(f) for f in self.features]
+            features_index = [fields.index(f) for f in features]
             if len(features_index) != nb_features:
                 raise Exception("Invalid features")
 
-            targets_index = [self.fields.index(t) for t in self.targets]
-            if len(targets_index) != len(self.targets):
+            targets_index = [fields.index(t) for t in targets]
+            if len(targets_index) != len(targets):
                 raise Exception("Invalid targets")
 
         nb_observations = 0
@@ -240,7 +242,7 @@ class Metadata:
                     a = features_mapping[j].setdefault(v, \
                         len(features_mapping[j]))
                     if a > 200:
-                        raise Exception("Feature", self.features[j],
+                        raise Exception("Feature", features[j],
                                         "has too many modalities " +
                                         "( more than 200).")
                     observations[nb_observations, j] = a
@@ -265,7 +267,7 @@ class Metadata:
                                        (nb_observations))
 
         modalities = {f: features_mapping[i] for i, f in
-                      enumerate(self.features)}
+                      enumerate(features)}
         # invert index and modality and return list of modalities
         for k, m in modalities.items():
             m = {v: k for k, v in m.items()}
@@ -275,7 +277,7 @@ class Metadata:
                                 "therefore colinear to the intercept. Please "
                                 "remove it from the dataset as it will cause "
                                 "problems if included.")
-
+        self.fields = fields
         self.size = nb_observations
         self.set_modalities(modalities)
         self.save()

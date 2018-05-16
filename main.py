@@ -14,6 +14,7 @@ def get_result_path(name):
         result_name = config.readline()[:-1]
     return os.path.join("results", result_name)
 
+
 def compile():
     print("Compiling regression algorithms...")
     command = "time g++ -Wall -std=c++11 -O3 ./src/*.cpp -o ./bin/glm"

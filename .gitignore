@@ -2,6 +2,7 @@
 /build
 /dist
 /data
+/dataset
 /doc
 /results
 /pricingtool.egg-info
