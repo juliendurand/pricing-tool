@@ -19,10 +19,6 @@ class Result:
         self.df_coeffs = self.load_coeffs()
         self.testdata = self.data[self.df.row, :]
 
-        chart_path = os.path.join(self.path, 'img')
-        if not os.path.exists(chart_path):
-            os.makedirs(chart_path)
-
 
     def load_results(self):
         return pd.read_csv(self.path + "/results.csv")
