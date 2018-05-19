@@ -8,6 +8,16 @@
 #include "config.h"
 #include "dataset.h"
 
+struct FeatureResult {
+    int feature_idx;
+    std::string feature;
+    double gini;
+    double norm;
+    double spread100;
+    double spread95;
+    double rmse;
+};
+
 
 class ALinearRegressor
 {
@@ -30,7 +40,7 @@ public:
     std::set<int> selected_features;
     std::vector<float> dppred;
     std::vector<float> ypred;
-    std::vector< std::pair<std::string, float> > giniPath;
+    std::vector<FeatureResult> giniPath;
 
     ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
@@ -42,7 +52,8 @@ public:
     void writeResults(std::vector<int> test);
     int getMinCoeff(std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
-    double getSpread(int feature);
+    double getSpread95(int feature);
+    double getSpread100(int feature);
     void eraseFeature(int i, int feature);
     void printSelectedFeatures();
     double getNorm2CoeffDiff(double* coeffs2);

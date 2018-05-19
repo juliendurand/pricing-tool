@@ -19,6 +19,8 @@ public:
     Array<uint8_t>* x_data;
     Array<float>* weight_data;
     Array<float>* y_data;
+    Array<int32_t>* train_index;
+    Array<int32_t>* test_index;
 
     Dataset();
     Dataset(Config* config, float testPct);

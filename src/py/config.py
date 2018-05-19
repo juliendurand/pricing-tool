@@ -1,5 +1,6 @@
 import os
 
+
 class Config:
 
     def __init__(self, config_filename):

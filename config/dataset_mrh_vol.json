@@ -168,7 +168,11 @@
         "nbsinVOL"
     ],
 
+    "train_size": 0.8,
+
     "filter": "def data_filter(row):\n    return row['POL_vol'] == '1'\n",
 
-    "transform": "def data_transform(row):\n    row['POL_mtcapass'] = int(math.log(float(row['POL_mtcapass'])))\n    row['EXT_superficie_m2_num'] = int(math.log(float(row['EXT_superficie_m2_num']) + 2))\n"
+    "transform": "def data_transform(row):\n    row['POL_mtcapass'] = int(math.log(float(row['POL_mtcapass'])))\n    row['EXT_superficie_m2_num'] = int(math.log(float(row['EXT_superficie_m2_num']) + 2))\n",
+
+    "train": "def data_train(row):\n    return row['Random'] != '9' and row['Random'] != '10'\n"
 }

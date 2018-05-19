@@ -17,6 +17,8 @@ public:
     int n;
     int p;
     int m;
+    int trainSize;
+    int testSize;
     std::vector<std::string> features;
     std::vector<std::string> modalities;
     std::vector<int> offsets;
@@ -26,6 +28,8 @@ public:
     std::string getFeatureFilename();
     std::string getWeightFilename();
     std::string getTargetFilename();
+    std::string getTrainFilename();
+    std::string getTestFilename();
     int getFeatureIndex(const std::string& feature);
     int getFeatureFromModality(int m);
 };

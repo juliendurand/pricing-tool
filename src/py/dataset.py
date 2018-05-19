@@ -64,8 +64,8 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
     elapsed_time = int(time.time() - start_time)
     m = str(elapsed_time // 60).zfill(2)
     s = str(elapsed_time % 60).zfill(2)
-    print('\r%s |%s| %s%% %s in %sm%ss' % (prefix, bar, percent,
-          suffix, m, s), end='')
+    print('\r%s |%s| %s%% %s in %sm%ss' %
+          (prefix, bar, percent, suffix, m, s), end='')
     # Print New Line on Complete
     if iteration == total:
         print()
@@ -81,6 +81,8 @@ class Dataset:
         self.modalities = None
         self.targets = None
         self.csv_filename = None
+        self.train_size = None
+        self.test_size = None
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -125,29 +127,41 @@ class Dataset:
     def get_modalities(self, feature):
         return self.modalities[feature]
 
+    def get_feature_modality_by_index(self, idx):
+        offsets = self.get_offsets()
+        for feature_idx in range(self.count_features()):
+            if offsets[feature_idx + 1] > idx:
+                break
+        modality_idx = idx - offsets[feature_idx]
+        feature = self.features[feature_idx]
+        modality = self.modalities[feature][modality_idx]
+        return feature, modality
+
     def get_unused_fields(self):
         unused_fields = set(self.fields) - set(self.features) - \
             set(self.targets)
         return list(unused_fields)
 
-    def get_metadata_filename(self):
-        return os.path.join(self.path, 'metadata.json')
+    def get_dataset_filename(self):
+        return os.path.join(self.path, 'dataset.json')
 
     def save(self):
-        metadata_filename = self.get_metadata_filename()
-        with open(metadata_filename, 'w') as metadata_file:
-            json.dump(self.__dict__, metadata_file, indent=4)
-        print("Saved metadata to ", metadata_filename)
+        dataset_filename = self.get_dataset_filename()
+        with open(dataset_filename, 'w') as dataset_file:
+            json.dump(self.__dict__, dataset_file, indent=4)
+        print("Saved dataset to ", dataset_filename)
 
     def load(self):
-        metadata_filename = self.get_metadata_filename()
-        with open(metadata_filename, 'r') as metadata_file:
-            self.__dict__ = json.load(metadata_file)
+        dataset_filename = self.get_dataset_filename()
+        with open(dataset_filename, 'r') as dataset_file:
+            self.__dict__ = json.load(dataset_file)
 
     def save_simple_config(self):
-        config_filename = os.path.join(self.path, 'metadata.cfg')
+        config_filename = os.path.join(self.path, 'dataset.cfg')
         with open(config_filename, 'w') as config:
             config.write(str(self.size) + '\n')
+            config.write(str(self.train_size) + '\n')
+            config.write(str(self.test_size) + '\n')
             config.write(str(self.count_features()) + '\n')
             config.write(str(self.count_modalities()) + '\n')
             for i in range(self.count_features()):
@@ -166,10 +180,17 @@ class Dataset:
     def get_target_filename(self, target):
         return os.path.join(self.path, "column_" + target + ".dat")
 
+    def get_train_filename(self):
+        return os.path.join(self.path, "train.dat")
+
+    def get_test_filename(self):
+        return os.path.join(self.path, "test.dat")
+
     def process(self, config):
         csv_filename = config['filename']
         data_transform = config['data_transform']
         data_filter = config['data_filter']
+        data_train = config['data_train']
         features = config['features']
         targets = config['targets']
 
@@ -177,10 +198,6 @@ class Dataset:
             raise Exception("No features found.")
         if not targets:
             raise Exception("No targets found.")
-
-        self.csv_filename = csv_filename
-        self.features = features
-        self.targets = targets
 
         print('Starting data importation from', csv_filename)
         nb_lines = count_line(csv_filename) - 1
@@ -198,6 +215,9 @@ class Dataset:
         features_index = []
         targets_index = []
         nb_observations = 0
+        train_set = []
+        test_set = []
+        random = (np.random.rand(nb_lines) < config['train_size'])
 
         with open(csv_filename) as csv_file:
             reader = csv.DictReader(csv_file)
@@ -217,6 +237,10 @@ class Dataset:
                     continue
                 if data_transform:
                     data_transform(row)
+                if (data_train(row) if data_train else random[i]):
+                    train_set.append(i)
+                else:
+                    test_set.append(i)
                 values = list(row.values())
                 if len(values) != nb_fields:
                     raise Exception("Inconsistent number of fields",
@@ -224,8 +248,8 @@ class Dataset:
                                     "expecting", nb_fields)
                 for j, index in enumerate(features_index):
                     v = values[index]
-                    a = features_mapping[j].setdefault(v, \
-                        len(features_mapping[j]))
+                    a = features_mapping[j].setdefault(v,
+                                                    len(features_mapping[j]))
                     if a > 200:
                         raise Exception("Feature", features[j],
                                         "has too many modalities " +
@@ -246,10 +270,14 @@ class Dataset:
                                    (nb_observations, nb_features))
         for i, t in enumerate(targets):
             target = target_data[i]
-            create_data_file_from_list(target[:nb_observations],
-                                       self.get_target_filename(t),
-                                       np.dtype('float32'),
-                                       (nb_observations))
+        create_data_file_from_list(train_set,
+                                   self.get_train_filename(),
+                                   np.dtype('int32'),
+                                   (len(train_set)))
+        create_data_file_from_list(test_set,
+                                   self.get_test_filename(),
+                                   np.dtype('int32'),
+                                   (len(test_set)))
 
         modalities = {f: features_mapping[i] for i, f in enumerate(features)}
 
@@ -262,14 +290,20 @@ class Dataset:
                                 "therefore colinear to the intercept. Please "
                                 "remove it from the dataset as it will cause "
                                 "problems if included.")
-        self.fields = fields
+
+        self.csv_filename = csv_filename
         self.size = nb_observations
+        self.train_size = len(train_set)
+        self.test_size = len(test_set)
+        self.fields = fields
+        self.features = features
+        self.targets = targets
         self.set_modalities(modalities)
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        raise Exception("Invalid number of options, expecting only one : " \
+        raise Exception("Invalid number of options, expecting only one : "
                         "[config filename].")
     filename = sys.argv[1]
     print("Processing congif file :", filename)
@@ -278,8 +312,10 @@ if __name__ == '__main__':
         context = {"math": math}
         exec(config["filter"], context)
         exec(config["transform"], context)
+        exec(config["train"], context)
         config['data_transform'] = context['data_transform']
         config['data_filter'] = context['data_filter']
+        config['data_train'] = context['data_train']
         dataset = Dataset(config['path'])
         dataset.process(config)
         dataset.save()

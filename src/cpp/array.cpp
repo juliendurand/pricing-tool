@@ -72,5 +72,6 @@ int Array<T>::getSize(){
 }
 
 template class Array<uint8_t>;
+template class Array<int32_t>;
 template class Array<float>;
 template class Array<double>;

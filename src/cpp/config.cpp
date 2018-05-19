@@ -20,26 +20,28 @@ Config::Config(const std::string& name) : name(name) {
     cfgfile >> weight;
     cfgfile >> nbFeaturesInModel;
 
-    std::ifstream metadatafile(this->path  + "metadata.cfg");
-    metadatafile >> n;
-    metadatafile >> p;
-    metadatafile >> m;
+    std::ifstream datasetfile(this->path  + "dataset.cfg");
+    datasetfile >> n;
+    datasetfile >> trainSize;
+    datasetfile >> testSize;
+    datasetfile >> p;
+    datasetfile >> m;
 
     std::string f;
-    std::getline(metadatafile, f); // this is needed !!! (consume \n ?)
+    std::getline(datasetfile, f); // this is needed !!! (consume \n ?)
     for(int i = 0; i < p; i++){
-        std::getline(metadatafile, f);
+        std::getline(datasetfile, f);
         features.push_back(f);
     }
 
     for(int i = 0; i < m; i++){
-        std::getline(metadatafile, f);
+        std::getline(datasetfile, f);
         modalities.push_back(f);
     }
 
     int k;
     for(int i = 0; i < p + 1; i++){
-        metadatafile >> k;
+        datasetfile >> k;
         offsets.push_back(k);
     }
 
@@ -64,6 +66,14 @@ std::string Config::getWeightFilename(){
 
 std::string Config::getTargetFilename(){
     return path + "column_" + target + ".dat";
+}
+
+std::string getTrainFilename(){
+    return path + "train.dat";
+}
+
+std::string getTestFilename(){
+     return path + "test.dat";
 }
 
 int Config::getFeatureIndex(const std::string& feature){

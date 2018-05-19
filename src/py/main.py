@@ -3,7 +3,6 @@ import subprocess
 import sys
 
 import config
-import documentation
 
 
 def compile():
@@ -37,11 +36,10 @@ def generate_documentation(config):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        raise Exception("Invalid number of options, expecting only one : " \
+        raise Exception("Invalid number of options, expecting only one : "
                         "[config filename].")
     config_filename = sys.argv[1]
     configuration = config.Config(config_filename)
-
 
     compile()
     fit(configuration)

@@ -11,14 +11,30 @@ import dataset
 class Result:
 
     def __init__(self, config):
+        self.config = config
         self.path = config.get_result_path()
         self.dataset = dataset.Dataset(config.get_dataset_filename())
         self.dataset.load()
         self.df = self.load_results()
         self.data = self.load_data()
-        self.df_coeffs = self.load_coeffs()
-        self.testdata = self.data[self.df.row, :]
+        weight_filename = self.dataset.get_target_filename(config.weight)
+        self.weight = np.memmap(weight_filename, 'float32')
+        target_filename = self.dataset.get_target_filename(config.target)
+        self.target = np.memmap(target_filename, 'float32')
+        train_data_filename = self.dataset.get_train_filename()
+        self.train_data_index = np.memmap(train_data_filename, 'int32')
+        test_data_filename = self.dataset.get_test_filename()
+        self.test_data_index = np.memmap(test_data_filename, 'int32')
+        if self.config.loss == "gamma":
+            self.test_data_index = np.intersect1d(self.test_data_index,
+                                                  self.weight.nonzero())
+            self.train_data_index = np.intersect1d(self.train_data_index,
+                                                   self.weight.nonzero())
+        self.train_data = self.data[self.train_data_index, :]
+        self.test_data = self.data[self.test_data_index, :]
 
+        self.df_coeffs = self.load_coeffs()
+        self.gini_curve = self.load_gini_curve()
 
     def load_results(self):
         return pd.read_csv(self.path + "/results.csv")
@@ -32,30 +48,43 @@ class Result:
         df_coeffs = pd.read_csv(self.path + "/coeffs.csv").as_matrix()
         return np.exp(df_coeffs)
 
-    def get_coeffs(self, feature_range):
-        return self.df_coeffs[1 + np.array(feature_range)]
-
-    def gini(self):
-        return round(metrics.gini_emblem_fast(
-                                  self.df.target /self.df.exposure,
-                                  self.df.prediction / self.df.exposure,
-                                  self.df.exposure), 6) * 100
-
-    def rmse(self):
-        return round(metrics.root_mean_square_error(
-                                  self.df.target,
-                                  self.df.prediction,
-                                  self.df.exposure), 6)
-
-    def get_gini_curve(self, n=21):
+    def load_gini_curve(self):
         ginipath_filename = os.path.join(self.path, 'ginipath.csv')
         df = pd.read_csv(ginipath_filename)
         df.Gini *= 100
-        return df.head(n)
+        return df
+
+    def get_coeffs(self, feature_range):
+        return self.df_coeffs[1 + np.array(feature_range)]
+
+    def write_coeffs_as_csv(self):
+        clean_coeffs_filename = os.path.join(self.path, 'clean_coeffs.csv')
+        with open(clean_coeffs_filename, 'w') as coeffs_file:
+            coeffs_file.write('Feature,Modality,Coefficient\n')
+            coeffs_file.write('Intercept,,' +
+                              str(float(self.df_coeffs[0])) + '\n')
+            for i, coeff in enumerate(self.df_coeffs[1:]):
+                f, m = self.dataset.get_feature_modality_by_index(i)
+                coeffs_file.write(str(f) + ',' + str(m) + ',' +
+                                  str(float(coeff)) + '\n')
+
+    def gini(self):
+        return round(metrics.gini_emblem_fast(
+                     self.df.target / self.df.exposure,
+                     self.df.prediction / self.df.exposure,
+                     self.df.exposure), 6) * 100
+
+    def rmse(self):
+        return round(metrics.root_mean_square_error(
+                     self.df.target,
+                     self.df.prediction,
+                     self.df.exposure), 6)
+
+    def get_gini_curve(self, n=20):
+        return self.gini_curve.head(int(n) + 1)
 
     def plot_gini_curve(self, path, n=21):
         print('Plot Gini Curve')
-
         ginipath_filename = os.path.join(self.path, 'ginipath.csv')
         df = pd.read_csv(ginipath_filename)
         ar = np.arange(n)
@@ -92,7 +121,7 @@ class Result:
             # modalities are not integers -> that is perfectly ok
             pass
 
-        df['f'] = self.testdata[:, idx]
+        df['f'] = self.test_data[:, idx]
 
         relativity = df.groupby(['f']).agg({
                                            'exposure': 'sum',

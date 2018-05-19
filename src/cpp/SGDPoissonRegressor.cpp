@@ -68,15 +68,15 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
         }
     }
 
-    update[0] = rTotal;
-    for(int j = 0; j < nbCoeffs + 1 ; j++){
-        //double w = weights[j];
-        //if(w < std::sqrt(weights[0]) / 100){
+    coeffs[0] += rTotal / blocksize * learning_rate;
+    for(int j = 1; j < nbCoeffs + 1 ; j++){
+        double w = weights[j];
+        if(w < std::sqrt(weights[0]) / 10){
             // squeezing non significative coefficients to Zero
         //    coeffs[j] = 0; // this line is not required (just to be explicit) !
-        //}else{
-            coeffs[j] *= (1 - l2);
+        } else {
+            //coeffs[j] *= (1 - l2);
             coeffs[j] += (update[j] + rTotal * x0[j]) / blocksize * learning_rate;
-        //}
+        }
     }
 }
