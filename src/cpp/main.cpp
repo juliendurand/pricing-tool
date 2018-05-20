@@ -10,10 +10,9 @@ void fitToConvergence(ALinearRegressor* model, Dataset* ds, long& i,
     int nbIterationsSinceMinimum = 0;
     for(; nbIterationsSinceMinimum < precision; i++){
         model->fit(blocksize, alpha, l2);
-        if(i % 30 == 0){
+        if(i % 500 == 0){
             std::cout << i * blocksize << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
-            model->predict();
-            model->printResults(ds->train, ds->test);
+            model->printResults();
             double ll = model->logLikelihood(ds->train);
             if(ll < minll - 0.00001) {
                 minll = ll;
@@ -27,7 +26,6 @@ void fitToConvergence(ALinearRegressor* model, Dataset* ds, long& i,
 
 ALinearRegressor* fit(Config* config, Dataset* ds){
     SGDPoissonRegressor* model = new SGDPoissonRegressor(config, ds);
-
     std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
                            << " variables :" << std::endl;
 
@@ -40,27 +38,36 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
         model->fit(blocksize, alpha, l2);
         if(i % 20 == 0){
             int remove_feature = model->getMinCoeff(model->selected_features);
-            model->predict();
             model->eraseFeature(i * blocksize, remove_feature);
         }
     }
+
     for(; model->selected_features.size() > 0; i++){
         fitToConvergence(model, ds, i, blocksize, alpha, l2, 2);
-        if(model->selected_features.size() == config->nbFeaturesInModel){
+        /*if(model->selected_features.size() == config->nbFeaturesInModel){
             std::cout << std::endl << "Final results :" << std::endl
                       << "---------------" << std::endl;
-            model->predict();
-            model->printResults(ds->train, ds->test);
+            model->printResults();
             model->printSelectedFeatures();
             model->writeResults(ds->test);
             std::cout << std::endl;
-        }
+        }*/
         int remove_feature = model->getMinCoeff(model->selected_features);
         model->eraseFeature(i * blocksize, remove_feature);
     }
+
     fitToConvergence(model, ds, i, blocksize, alpha, l2, 1);
     model->eraseFeature(i * blocksize, -1);
     model->writeGiniPath();
+
+    model->addFeatures(model->getBestFeatures());
+    fitToConvergence(model, ds, i, blocksize, alpha, l2, 5);
+    std::cout << std::endl << "Final results :" << std::endl
+              << "---------------" << std::endl;
+    model->printResults();
+    model->printSelectedFeatures();
+    model->writeResults(ds->test);
+    std::cout << std::endl;
 
     return model;
 }

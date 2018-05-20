@@ -1,12 +1,16 @@
+FIX VOL
+exclude features
+fix documentation
+
 lasso/ridge penalty ?
-distribution of test/train
-ideal poisson distribution
 list of coeffs by feature included
 get pred for n feature on demand
+
+distribution of test/train
+ideal poisson distribution
+
 simple categorical smoothing
 spline interpolation
-split dataset in metadata
-
 
 C++ interface:
 --------------

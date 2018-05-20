@@ -78,5 +78,7 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
             //coeffs[j] *= (1 - l2);
             coeffs[j] += (update[j] + rTotal * x0[j]) / blocksize * learning_rate;
         }
+        //std::cout << j << ":" << coeffs[j] << ", ";
     }
+    //std::cout << update[1] << " " << rTotal << ":" << coeffs[1] << ", "  << std::endl;
 }

@@ -238,9 +238,9 @@ class Dataset:
                 if data_transform:
                     data_transform(row)
                 if (data_train(row) if data_train else random[i]):
-                    train_set.append(i)
+                    train_set.append(nb_observations)
                 else:
-                    test_set.append(i)
+                    test_set.append(nb_observations)
                 values = list(row.values())
                 if len(values) != nb_fields:
                     raise Exception("Inconsistent number of fields",

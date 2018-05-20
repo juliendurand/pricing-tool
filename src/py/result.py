@@ -45,7 +45,7 @@ class Result:
         return np.memmap(file_path, dtype=np.dtype('u1'), shape=shape)
 
     def load_coeffs(self):
-        df_coeffs = pd.read_csv(self.path + "/coeffs.csv").as_matrix()
+        df_coeffs = pd.read_csv(self.path + "/coeffs.csv").values
         return np.exp(df_coeffs)
 
     def load_gini_curve(self):
@@ -116,7 +116,7 @@ class Result:
         try:
             modalities = [float(m) for m in modalities]
             if sum([m - int(m) for m in modalities]) == 0:
-                modalities = [int(m) for m in modalities]
+                modalities = np.array([int(m) for m in modalities])
         except Exception:
             # modalities are not integers -> that is perfectly ok
             pass
@@ -139,6 +139,7 @@ class Result:
         relativity.Target /= df.target.mean()
         relativity.Target = relativity.Target.round(decimals=3)
         relativity = self.fill_missing_modalities(relativity, modalities)
+        relativity = relativity.sort_index()
         relativity['Modalities'] = modalities
         relativity['Coefficients'] = self.get_coeffs(
             self.dataset.get_feature_range(feature)
@@ -239,3 +240,29 @@ class Result:
         fig.savefig(filename, bbox_inches='tight')
         plt.close()
         return os.path.join('img', 'lift_curve.png')
+
+    def gini_coeffs(self, feature):
+        df = self.calculate_relativities(feature)
+        df = df.sort_values('Coefficients')
+        w = df.Exposure.values
+        c = df.Coefficients.values * w
+        g = 0
+        cc = 0
+        cw = 0
+        for i in range(len(c)):
+            g += w[i] * (2 * cc + c[i])
+            cc += c[i]
+            cw += w[i]
+        g = 1 - g / (cc * cw)
+        g = 0 if g < 0.00001 else g
+        return g
+
+
+if __name__ == '__main__':
+    import config
+    configuration = config.Config("config/model_charge_ddea.cfg")
+    r = Result(configuration)
+    for f in r.gini_curve['Feature']:
+        if f == 'Intercept':
+            continue
+        print(f, str(r.gini_coeffs(f)))

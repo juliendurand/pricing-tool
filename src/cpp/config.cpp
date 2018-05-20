@@ -68,11 +68,11 @@ std::string Config::getTargetFilename(){
     return path + "column_" + target + ".dat";
 }
 
-std::string getTrainFilename(){
+std::string Config::getTrainFilename(){
     return path + "train.dat";
 }
 
-std::string getTestFilename(){
+std::string Config::getTestFilename(){
      return path + "test.dat";
 }
 
