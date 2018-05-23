@@ -21,7 +21,6 @@ SGDPoissonRegressor::SGDPoissonRegressor(Config* config, Dataset* dataset):
     } else {
         throw std::invalid_argument( "Received invalid loss function." );
     }
-
 }
 
 void SGDPoissonRegressor::fitIntercept(){
@@ -43,7 +42,7 @@ void SGDPoissonRegressor::fitIntercept(){
     }
 }
 
-void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
+double SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
     double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs + 1 ; j++){
         dp0 += x0[j] * coeffs[j];
@@ -68,10 +67,23 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
         }
     }
 
+    update[0] = rTotal;
+    double sg2 = 0;
+    for(int j = 0; j < nbCoeffs + 1; j++){
+        if(x1[j] != 0){
+            double grad = (update[j] + rTotal * x0[j]) / blocksize;
+            g[j] = 0.9 * g[j] + /*0.1 **/ grad;
+            coeffs[j] += learning_rate * g[j];
+            //g2[j] = 0.999 * g2[j] +0.001 * grad * grad;
+            //sg2 += g2[j];
+        }
+    }
+
+    return std::sqrt(sg2 / (nbCoeffs + 1));
+/*
     coeffs[0] += rTotal / blocksize * learning_rate;
     for(int j = 1; j < nbCoeffs + 1 ; j++){
-        double w = weights[j];
-        if(w < std::sqrt(weights[0]) / 10){
+        if(weights[j] < std::sqrt(weights[0]) / 10){
             // squeezing non significative coefficients to Zero
         //    coeffs[j] = 0; // this line is not required (just to be explicit) !
         } else {
@@ -81,4 +93,5 @@ void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
         //std::cout << j << ":" << coeffs[j] << ", ";
     }
     //std::cout << update[1] << " " << rTotal << ":" << coeffs[1] << ", "  << std::endl;
+*/
 }

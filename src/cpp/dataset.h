@@ -14,6 +14,7 @@ public:
     float testPct;
     std::vector<int> train;
     std::vector<int> test;
+    std::vector<int> sample;
     std::mt19937 generator;
     std::uniform_int_distribution<std::mt19937::result_type> random;
     Array<uint8_t>* x_data;
@@ -21,6 +22,8 @@ public:
     Array<float>* y_data;
     Array<int32_t>* train_index;
     Array<int32_t>* test_index;
+    Array<int32_t>* sample_index;
+
 
     Dataset();
     Dataset(Config* config, float testPct);

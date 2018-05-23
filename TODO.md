@@ -1,8 +1,6 @@
-FIX VOL
 exclude features
 fix documentation
 
-lasso/ridge penalty ?
 list of coeffs by feature included
 get pred for n feature on demand
 
