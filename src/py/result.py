@@ -17,6 +17,7 @@ class Result:
         self.dataset.load()
         self.df = self.load_results()
         self.data = self.load_data()
+        self.selected_features = self.load_selected_features()
         weight_filename = self.dataset.get_target_filename(config.weight)
         self.weight = np.memmap(weight_filename, 'float32')
         target_filename = self.dataset.get_target_filename(config.target)
@@ -35,9 +36,10 @@ class Result:
 
         self.df_coeffs = self.load_coeffs()
         self.gini_curve = self.load_gini_curve()
+        self.nb_features = self.gini_curve.shape[0]
 
     def load_results(self):
-        return pd.read_csv(self.path + "/results.csv")
+        return pd.read_csv(os.path.join(self.path, "results.csv"))
 
     def load_data(self):
         file_path = self.dataset.get_feature_filename()
@@ -45,28 +47,40 @@ class Result:
         return np.memmap(file_path, dtype=np.dtype('u1'), shape=shape)
 
     def load_coeffs(self):
-        df_coeffs = pd.read_csv(self.path + "/coeffs.csv").values
+        df_coeffs = pd.read_csv(os.path.join(self.path, "coeffs.csv")).values
         return np.exp(df_coeffs)
 
     def load_gini_curve(self):
         ginipath_filename = os.path.join(self.path, 'ginipath.csv')
         df = pd.read_csv(ginipath_filename)
         df.Gini *= 100
+        df['% max Gini'] = df.Gini / df.Gini.max() * 100
+        df = df.round(2)
         return df
+
+    def load_selected_features(self):
+        selected_features_filename = os.path.join(self.path, 'features.csv')
+        df = pd.read_csv(selected_features_filename)
+        df.Gini *= 100
+        df['Gini Contribution'] = \
+            (df.Gini / df.Gini.max() * 100).diff().fillna(0)
+        df = df.round(2)
+        return df[1:]
 
     def get_coeffs(self, feature_range):
         return self.df_coeffs[1 + np.array(feature_range)]
 
-    def write_coeffs_as_csv(self):
-        clean_coeffs_filename = os.path.join(self.path, 'clean_coeffs.csv')
+    def write_coeffs_as_csv(self, path):
+        clean_coeffs_filename = os.path.join(path, 'coefficients.csv')
         with open(clean_coeffs_filename, 'w') as coeffs_file:
             coeffs_file.write('Feature,Modality,Coefficient\n')
-            coeffs_file.write('Intercept,,' +
+            coeffs_file.write('Intercept,Intercept,' +
                               str(float(self.df_coeffs[0])) + '\n')
             for i, coeff in enumerate(self.df_coeffs[1:]):
                 f, m = self.dataset.get_feature_modality_by_index(i)
-                coeffs_file.write(str(f) + ',' + str(m) + ',' +
-                                  str(float(coeff)) + '\n')
+                if self.selected_features.Feature.str.contains(f).any():
+                    coeffs_file.write(str(f) + ',' + str(m) + ',' +
+                                      str(round(float(coeff), 6)) + '\n')
 
     def gini(self):
         return round(metrics.gini_emblem_fast(

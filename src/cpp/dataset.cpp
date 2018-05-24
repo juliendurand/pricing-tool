@@ -26,10 +26,6 @@ Dataset::Dataset(Config* config, float testPercent){
     test = std::vector<int32_t>(train_data.end() - testSize, train_data.end());
     std::sort(test.begin(), test.end());
 
-    //std::set<int32_t> intersect;
-    //auto it = std::set_intersection(train.begin(), train.end(), test.begin(), test.end(), std::inserter(intersect, intersect.begin()));
-    //std::cout << "Size of intersection : " << intersect.size() << std::endl;
-
     sample_index = new Array<int32_t>(config->getTestFilename(), 1, config->testSize * 4);
     std::vector<int32_t> sample_data(sample_index->getData(), sample_index->getData() + config->testSize);
     sample.swap(sample_data);
@@ -50,28 +46,17 @@ int Dataset::next(){
 }
 
 void Dataset::filterNonZeroTarget(){
-    /*
-    std::vector<int> nonZeroTarget;
-    for(int i = 0; i < y_data->getSize(); i++){
-        if(y[i] == 0) continue;
-        nonZeroTarget.push_back(i);
-    }
-    std::shuffle(nonZeroTarget.begin(), nonZeroTarget.end(), generator);
-    std::size_t const testSize = static_cast<std::size_t>(nonZeroTarget.size() * testPct);
-    train = std::vector<int>(nonZeroTarget.begin(), nonZeroTarget.end() - testSize);
-    std::sort(train.begin(), train.end());
-    test = std::vector<int>(nonZeroTarget.end() - testSize, nonZeroTarget.end());
-    std::sort(test.begin(), test.end());
-    random = std::uniform_int_distribution<std::mt19937::result_type>(0, train.size());
-    */
     float* w = weight_data->getData();
 
-    auto end_train = std::remove_if(train.begin(), train.end(), [w](int i){return w[i] == 0;});
+    auto end_train = std::remove_if(train.begin(), train.end(),
+                                    [w](int i){return w[i] == 0;});
     train.erase(end_train, train.end());
 
-    auto end_test = std::remove_if(test.begin(), test.end(), [w](int i){return w[i] == 0;});
+    auto end_test = std::remove_if(test.begin(), test.end(),
+                                   [w](int i){return w[i] == 0;});
     test.erase(end_test, test.end());
 
-    auto end_sample = std::remove_if(sample.begin(), sample.end(), [w](int i){return w[i] == 0;});
+    auto end_sample = std::remove_if(sample.begin(), sample.end(),
+                                     [w](int i){return w[i] == 0;});
     sample.erase(end_sample, sample.end());
 }

@@ -1,4 +1,3 @@
-exclude features
 fix documentation
 
 list of coeffs by feature included

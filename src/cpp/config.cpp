@@ -20,6 +20,15 @@ Config::Config(const std::string& name) : name(name) {
     cfgfile >> weight;
     cfgfile >> nbFeaturesInModel;
 
+    std::string f;
+    while(cfgfile){
+        std::getline(cfgfile, f);
+        if(f.empty()){
+            continue;
+        }
+        excludedFeatures.push_back(f);
+    }
+
     std::ifstream datasetfile(this->path  + "dataset.cfg");
     datasetfile >> n;
     datasetfile >> trainSize;
@@ -27,7 +36,6 @@ Config::Config(const std::string& name) : name(name) {
     datasetfile >> p;
     datasetfile >> m;
 
-    std::string f;
     std::getline(datasetfile, f); // this is needed !!! (consume \n ?)
     for(int i = 0; i < p; i++){
         std::getline(datasetfile, f);
@@ -43,16 +51,6 @@ Config::Config(const std::string& name) : name(name) {
     for(int i = 0; i < p + 1; i++){
         datasetfile >> k;
         offsets.push_back(k);
-    }
-
-    std::ifstream excludedFeatureFile(this->path  + name + "_exclude.cfg");
-    while(excludedFeatureFile){
-        std::getline(excludedFeatureFile, f);
-        if(f.empty()){
-            continue;
-        }
-        std::cout << f << " f" << std::endl;
-        excludedFeatures.push_back(f);
     }
 }
 
@@ -79,10 +77,8 @@ std::string Config::getTestFilename(){
 int Config::getFeatureIndex(const std::string& feature){
     auto it = std::find(features.begin(), features.end(),
                          feature);
-    std::cout << feature << " " << std::endl;
     if(it == features.end()){
-        throw std::invalid_argument("ERROR : Excluded feature " + feature +
-                                    " can not be found." );
+        return -1;
     }
     auto idx = std::distance(features.begin(), it);
     return idx;

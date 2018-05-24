@@ -72,12 +72,19 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     }
     for(std::string feature : config->excludedFeatures){
         int featureIdx = config->getFeatureIndex(feature);
-        eraseFeatures({featureIdx});
+        if(featureIdx >= 0){
+            std::cout << "Excluded feature " << feature << std::endl;
+            eraseFeatures({featureIdx});
+        } else {
+            std::cout << "ERROR : Excluded feature " << feature
+                      << " can not be found." << std::endl;
+        }
     }
 
     ypred.reserve(n);
     dppred.reserve(n);
-    giniPath = std::vector<FeatureResult>(p + 1, FeatureResult());
+    giniPath = std::vector<FeatureResult>(selected_features.size() + 1,
+                                          FeatureResult());
 
     g.reserve(nbCoeffs + 1);
     g2.reserve(nbCoeffs + 1);
@@ -165,7 +172,7 @@ double ALinearRegressor::logLikelihood(const std::vector<int> &samples){
 std::string doubleToText(const double & d)
 {
     std::stringstream ss;
-    ss << std::setprecision( std::numeric_limits<int>::max() );
+    ss << std::setprecision(std::numeric_limits<int>::max());
     ss << d;
     return ss.str();
 }
@@ -186,11 +193,41 @@ void ALinearRegressor::writeResults(std::vector<int> test){
     std::ofstream coeffFile;
     coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
+    // FIXME for intercept
     for(int j=0; j < nbCoeffs + 1; j++){
         double c = stdev[j] != 0 ? coeffs[j] / stdev[j] : 0;
         coeffFile << doubleToText(c) << std::endl;
     }
     coeffFile.close();
+
+    std::ofstream selectedFeatureFile;
+    selectedFeatureFile.open(config->resultPath + "features.csv", std::ios::out);
+    selectedFeatureFile << "Feature,Gini,Spread 95/5,Spread 100/0" << std::endl;
+    for(int i = 0; i < selected_features.size() + 1; i++){
+        FeatureResult& fr = giniPath[i];
+        int f = fr.feature_idx;
+        selectedFeatureFile << fr.feature << ','
+                            << fr.gini << ','
+                            << getSpread95(f) << ','
+                            << getSpread100(f)
+                            << std::endl;
+    }
+    selectedFeatureFile.close();
+
+    std::ofstream giniPathFile;
+    giniPathFile.open(config->resultPath + "ginipath.csv", std::ios::out);
+    giniPathFile << "Feature,Gini,CoeffGini,Norm,Spread 100/0,Spread 95/5,RMSE" << std::endl;
+    for (FeatureResult& p : giniPath) {
+        giniPathFile << p.feature << ","
+                     << p.gini << ","
+                     << p.coeffGini << ","
+                     << p.norm << ","
+                     << p.spread100 << ","
+                     << p.spread95 << ","
+                     << p.rmse
+                     << std::endl;
+    }
+    giniPathFile.close();
 }
 
 int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
@@ -198,7 +235,6 @@ int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
     double minvalue = 100000000;
     for(int i = 0; i< p; i++){
         double s = getCoeffGini(i); //getCoeffGini(i);//getCoeffNorm2(i); // getCoeffNorm2(i);// * getSpread95(i) / getSpread100(i);
-        //std::cout << config->features[i] << " " << getCoeffGini(i) << std::endl;
         if((selected_features.count(i) > 0) && (s < minvalue)){
             minvalue = s;
             minidx = i;
@@ -220,6 +256,10 @@ double ALinearRegressor::getCoeffNorm2(int feature){
 }
 
 double ALinearRegressor::getCoeffGini(int feature){
+    if(feature < 0){
+        return 0;
+    }
+
     int nb_coeffs = offsets[feature + 1] - offsets[feature];
     std::vector<int> feature_idx(nb_coeffs);
     for(int i = 0; i < nb_coeffs; i++){
@@ -256,6 +296,10 @@ double ALinearRegressor::getCoeffGini(int feature){
 }
 
 double ALinearRegressor::getSpread100(int feature){
+    if(feature < 0){
+        return 0;
+    }
+
     double minvalue = 100000000;
     double maxvalue = 0;
 
@@ -269,6 +313,9 @@ double ALinearRegressor::getSpread100(int feature){
 }
 
 double ALinearRegressor::getSpread95(int feature){
+    if(feature < 0){
+        return 0;
+    }
     int nb_coeffs = offsets[feature + 1] - offsets[feature];
     std::vector<int> feature_idx(nb_coeffs);
     for(int i = 0; i < nb_coeffs; i++){
@@ -474,20 +521,6 @@ std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
   return idx;
 }
 
-void ALinearRegressor::writeGiniPath(){
-    std::cout << "Writting Gini Path." << std::endl << std::endl;
-    std::ofstream giniPathFile;
-    giniPathFile.open(config->resultPath + "ginipath.csv", std::ios::out);
-    giniPathFile << "Feature,Gini,CoeffGini,Norm,Spread 100/0,Spread 95/5,RMSE" << std::endl;
-    for (auto p = giniPath.begin(); p != giniPath.end(); p++) {
-        giniPathFile << p->feature << "," << p->gini << "," << p->coeffGini
-                     << "," << p->norm << "," << p->spread100 << ","
-                     << p->spread95 << "," << p->rmse
-                     << std::endl;
-    }
-    giniPathFile.close();
-}
-
 void ALinearRegressor::sortFeatures(){
     std::vector<int> diff(p+1);
     for(int i = 1; i < giniPath.size(); i++){
@@ -522,13 +555,6 @@ std::vector<int> ALinearRegressor::getBestFeatures(int maxNbFeatures,
         } else {
             break;
         }
-        /*std::cout << p->feature
-            << " : gini=" << p->gini
-            << " : norm=" << p->norm
-            << ", spread100=" << p->spread100
-            << ", spread95=" << p->spread95
-            << ", CGini=" << p->coeffGini
-            << std::endl;*/
         if(bestFeatures.size() >= maxNbFeatures){
             std::cout << "Stop adding features : max nb features reached("
                       << maxNbFeatures << (").") << std::endl;

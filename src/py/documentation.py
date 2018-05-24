@@ -11,7 +11,7 @@ import result
 
 
 def euro(n):
-    return '{:,.0f}'.format(n).replace(',', ' ') + " €"
+    return '{:,.0f}'.format(n).replace(',', ' ') + " &euro;"
 
 
 def thsep(n):
@@ -19,7 +19,11 @@ def thsep(n):
 
 
 def percent(p):
-    return '{:,.2f}'.format(p * 100) + '%'
+    return '{:,.2f}'.format(p * 100).replace(',', ' ') + '%'
+
+
+def twodp(p):
+    return '{:,.2f}'.format(p).replace(',', ' ')
 
 
 class Documentation:
@@ -43,12 +47,13 @@ class Documentation:
         self.jinja2_env.filters['euro'] = euro
         self.jinja2_env.filters['thsep'] = thsep
         self.jinja2_env.filters['percent'] = percent
+        self.jinja2_env.filters['twodp'] = twodp
 
         img_path = os.path.join(self.path, 'img')
         if not os.path.exists(img_path):
             os.makedirs(img_path)
 
-        self.result.write_coeffs_as_csv()
+        self.result.write_coeffs_as_csv(self.path)
 
     def get_metadata(self):
         md_template = ''

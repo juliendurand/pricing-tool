@@ -17,7 +17,7 @@ void fitToConvergence(ALinearRegressor* model, long& i,
             model->printResults();
             model->predict(model->dataset->train);
             double ll = model->logLikelihood(model->dataset->train);
-            if(ll < minll - 0.000001) {
+            if(ll < minll - 0.00001) {
                 minll = ll;
                 nbIterationsSinceMinimum = 0;
             } else {
@@ -33,7 +33,7 @@ void backwardStepwise(ALinearRegressor* model, long& i,
     int epoch = model->dataset->train.size() / blocksize;
     for(;; i++){
         model->fit(blocksize, alpha, 0);
-        if(i % (epoch / 10) == 0){
+        if(i % (epoch) == 0){
             if(model->selected_features.size() > 0){
                 int remove_feature = model->getMinCoeff(model->selected_features);
                 model->storeFeatureInGiniPath(remove_feature);
@@ -113,7 +113,6 @@ int main(int argc, char** argv){
 
     model->printResults();
     model->printSelectedFeatures(model->selected_features.size());
-    model->writeGiniPath();
     model->writeResults(ds.sample);
 
     std::cout << std::endl << "Finished OK." << std::endl;
