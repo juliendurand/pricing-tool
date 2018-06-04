@@ -7,6 +7,7 @@
 class Config
 {
 public:
+    std::string label;
     std::string path;
     std::string name;
     std::string resultPath;

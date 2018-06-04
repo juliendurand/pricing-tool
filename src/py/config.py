@@ -6,6 +6,7 @@ class Config:
     def __init__(self, config_filename):
         self.filename = config_filename
         with open(config_filename) as config_file:
+            self.label = config_file.readline().strip()
             self.dataset_filename = config_file.readline().strip()
             self.name = config_file.readline().strip()
             self.loss = config_file.readline().strip()

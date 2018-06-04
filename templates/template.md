@@ -2,9 +2,10 @@ author: Julien Durand
 version: 1
 title: Technical Model Documentation
 
-#{{title}}
+#{{result.label}}
+##{{title}}
 
-Document written by {{author}}.
+Modeling by {{author}}.
 
 ## Table of Content
 
@@ -12,7 +13,9 @@ Document written by {{author}}.
 
 <div class="pagebreak"></div>
 
-## Dataset
+## Modeling Database
+
+The modeling dataset contains {{result.nb_features}} features.
 
 <table style="width: 500px;">
     <tr>
@@ -75,43 +78,49 @@ Document written by {{author}}.
     {% endif %}
 </table>
 
-## Model Selection
+## Feature Selection
 
 ### Gini Curve
 
-The gini curve below provides the gini for models with between 0 and 20 features :
+The gini curve below provides the **train** set gini for models with 0 to 20 features :
 
 ![Gini Curve]({{result.plot_gini_curve(path)}})
 
 ### Features
 
-{{result.get_gini_curve(result.dataset.size).to_html(classes=['table-condensed', 'table-striped'])}}
+The table below shows the **train** set gini for models up to the maximum number of variables ({{result.nb_features}}).
+
+{{result.get_gini_curve(result.dataset.size)[["Feature", "Gini"]].to_html(classes=['table-condensed', 'table-striped'])}}
 
 <div class="pagebreak"></div>
 
-## Selected Model ({{result.config.nb_features}} Features)
+## Model Description
 
-This section details the metrics for the selected model with {{result.config.nb_features}} features.
+This section details the **test** dataset metrics for the selected model with {{result.config.nb_features}} features.
+
+### Déviance Reduction
+
+The model has a deviance reduction of : {{result.deviance_reduction() | percent}}
 
 ### Gini
 
-The model has a gini of : {{result.gini()}}%.
+The model has a gini of : {{result.gini() | percent}}
 
 ### RMSE
 
-The model has a root mean squared error of : {{result.rmse()}}.
+The model has a root mean squared error of : {{result.rmse() | twodp}}
 
 ### Features sorted by Gini Contribution
 
-{{result.get_gini_curve(result.config.nb_features).to_html(classes=['table-condensed', 'table-striped'])}}
-
-### Features sorted by Spread 100/0
-
-{{result.get_gini_curve(result.config.nb_features).sort_values('Spread 100/0', ascending=False).to_html(classes=['table-condensed', 'table-striped'])}}
+{{result.selected_features[["Feature", "Gini Contribution", "Spread 95/5", "Spread 100/0"]].to_html(classes=['table-condensed', 'table-striped'])}}
 
 ### Features sorted by Spread 95/5
 
-{{result.get_gini_curve(result.config.nb_features).sort_values('Spread 95/5', ascending=False).to_html(classes=['table-condensed', 'table-striped'])}}
+{{result.selected_features[["Feature", "Gini Contribution", "Spread 95/5", "Spread 100/0"]].sort_values('Spread 95/5', ascending=False).to_html(classes=['table-condensed', 'table-striped'])}}
+
+### Features sorted by Spread 100/0
+
+{{result.selected_features[["Feature", "Gini Contribution", "Spread 95/5", "Spread 100/0"]].sort_values('Spread 100/0', ascending=False).to_html(classes=['table-condensed', 'table-striped'])}}
 
 <div class="pagebreak"></div>
 
@@ -127,7 +136,7 @@ The model has a root mean squared error of : {{result.rmse()}}.
 
 #### {{feature}}
 
-This feature is #{{loop.index}} and is {% if loop.index > np.int(result.config.nb_features) %}**not** included{% else %}**included**{% endif %} included in the selected model.
+This feature is #{{loop.index}} and is {% if loop.index > np.int(result.config.nb_features) %}**not** included{% else %}**included**{% endif %} included in the model.
 
 {{result.calculate_relativities(feature).to_html(index=False, classes=['table-condensed', 'table-striped'])}}
 

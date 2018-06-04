@@ -1,6 +1,3 @@
-fix documentation
-
-list of coeffs by feature included
 get pred for n feature on demand
 
 distribution of test/train

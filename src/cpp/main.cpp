@@ -5,7 +5,8 @@
 
 
 void fitToConvergence(ALinearRegressor* model, long& i,
-                      int blocksize, double alpha, int precision){
+                      int blocksize, double alpha, int precision,
+                      float stopCriterion){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
     int epoch = model->dataset->train.size() / blocksize;
@@ -17,7 +18,7 @@ void fitToConvergence(ALinearRegressor* model, long& i,
             model->printResults();
             model->predict(model->dataset->train);
             double ll = model->logLikelihood(model->dataset->train);
-            if(ll < minll - 0.00001) {
+            if(ll < minll - stopCriterion) {
                 minll = ll;
                 nbIterationsSinceMinimum = 0;
             } else {
@@ -76,7 +77,8 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
     int blocksize = 200;
     double alpha = 0.0001;
     long i = 0;
-    fitToConvergence(model, i, blocksize, alpha, 1);
+    double stopCriterion = model->config->loss == "poisson" ? 0.00001 : 0.000001;
+    fitToConvergence(model, i, blocksize, alpha, 1, stopCriterion);
     model->printResults();
     backwardStepwise(model, i, blocksize, alpha);
 
@@ -91,7 +93,7 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
     forwardStepwise(model, i, blocksize, alpha, maxSortedFeatures);
     model->eraseAllFeatures();
     model->addFeatures(bestFeatures);
-    fitToConvergence(model, i, blocksize, alpha, 5);
+    fitToConvergence(model, i, blocksize, alpha, 5, stopCriterion);
 
     return model;
 }
@@ -104,7 +106,7 @@ int main(int argc, char** argv){
     std::string config_filename = argv[1];
 
     Config config(config_filename);
-    Dataset ds(&config, 0.2);
+    Dataset ds(&config, 0.5);
     ALinearRegressor* model = fit(&config, &ds);
 
     std::cout << std::endl

@@ -12,6 +12,7 @@ class Result:
 
     def __init__(self, config):
         self.config = config
+        self.label = config.label
         self.path = config.get_result_path()
         self.dataset = dataset.Dataset(config.get_dataset_filename())
         self.dataset.load()
@@ -82,17 +83,27 @@ class Result:
                     coeffs_file.write(str(f) + ',' + str(m) + ',' +
                                       str(round(float(coeff), 6)) + '\n')
 
+    def deviance_reduction(self):
+        m = metrics.poisson_deviance(self.df.target / self.df.exposure,
+                                     self.df.prediction / self.df.exposure,
+                                     self.df.exposure)
+        m0_pred = (self.df.target / self.df.exposure).mean()
+        m0 = metrics.poisson_deviance(self.df.target / self.df.exposure,
+                                      m0_pred,
+                                      self.df.exposure)
+        return (m - m0) / m0
+
     def gini(self):
-        return round(metrics.gini_emblem_fast(
-                     self.df.target / self.df.exposure,
-                     self.df.prediction / self.df.exposure,
-                     self.df.exposure), 6) * 100
+        return metrics.gini_emblem_fast(
+            self.df.target / self.df.exposure,
+            self.df.prediction / self.df.exposure,
+            self.df.exposure)
 
     def rmse(self):
-        return round(metrics.root_mean_square_error(
-                     self.df.target,
-                     self.df.prediction,
-                     self.df.exposure), 6)
+        return metrics.root_mean_square_error(
+            self.df.target,
+            self.df.prediction,
+            self.df.exposure)
 
     def get_gini_curve(self, n=20):
         return self.gini_curve.head(int(n) + 1)
@@ -101,6 +112,7 @@ class Result:
         print('Plot Gini Curve')
         ginipath_filename = os.path.join(self.path, 'ginipath.csv')
         df = pd.read_csv(ginipath_filename)
+        n = min(n, df.shape[0])
         ar = np.arange(n)
         gini = df.head(n).Gini * 100
         fig, ax = plt.subplots(figsize=(10, 8))

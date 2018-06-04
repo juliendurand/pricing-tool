@@ -8,6 +8,7 @@
 Config::Config(const std::string& name) : name(name) {
     std::cout << "Loading config file : " << name <<std::endl;
     std::ifstream cfgfile(name);
+    std::getline(cfgfile, label);
     cfgfile >> path;
     if(strcmp(&path.back(), "/") != 0){
         path += "/";
