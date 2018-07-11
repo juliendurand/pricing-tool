@@ -1,3 +1,5 @@
+Relativities : divide target and prediction by exposure ?
+
 get pred for n feature on demand
 
 distribution of test/train
