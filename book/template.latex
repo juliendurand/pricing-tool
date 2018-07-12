@@ -1,0 +1,115 @@
+\documentclass[11pt,twoside,openright]{memoir}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[dvips]{graphicx}
+\usepackage{xcolor}
+\usepackage{times}
+
+\usepackage[
+breaklinks=true,colorlinks=true,
+%linkcolor=blue,urlcolor=blue,citecolor=blue,% PDF VIEW
+linkcolor=black,urlcolor=black,citecolor=black,% PRINT
+bookmarks=true,bookmarksopenlevel=2]{hyperref}
+
+\setstocksize{9.25in}{6.125in}
+\settrimmedsize{9in}{6in}{*}
+\settrims{0.125in}{0.0625in}
+\settypeblocksize{*}{\lxvchars}{1.618}
+\setlrmargins{*}{*}{0.618}
+\setulmargins{*}{*}{1}
+\setbinding{0.625in}
+\checkandfixthelayout
+
+\usepackage[french,english]{babel}
+
+%%% STYLE OF PAGES NUMBERING
+\aliaspagestyle{chapter}{headings}
+\pagestyle{headings}
+
+%%% TITLE PAGE STYLE
+%\newlength\drop
+\makeatletter
+\newcommand*\titleM{\begingroup% Misericords, T&H p 153
+%\setlength\drop{0.08\textheight}
+\centering
+%\vspace*{2\drop}
+{\large $author$}\par
+%\vspace*{2\drop}
+\vfill
+{\Huge $title$}\\[\baselineskip]
+%{\scshape the subtitle}\\[\baselineskip]
+\vfill
+%{\scshape \@date}\par
+%\vspace*{2\drop}
+\endgroup}
+\makeatother
+
+%%% CHAPTER'S STYLE
+\makechapterstyle{clean}{
+    \renewcommand{\chapnamefont}{\centering\Large\normalfont}
+    \renewcommand{\chapnumfont}{\centering\Large\normalfont}
+    \renewcommand\chaptitlefont{\centering\Huge\normalfont}
+}
+\chapterstyle{clean}
+
+\maxsecnumdepth{subsection} % chapters, sections, and subsections are numbered
+\maxtocdepth{subsection} % chapters, sections, and subsections are in the Table of Contents
+
+%%% BLURB COMPLIANCY
+\pdfinfo{
+/Title ($title$)    % set your title here
+/Author ($author$)        % set author name
+/Subject ($subject$)      % set subject
+/Keywords ($keywords$) % set keywords
+/Trapped (False)
+/GTS_PDFXVersion (PDF/X-3:2002)
+}
+% I think Blurb ignores both the MediaBox and the TrimBox, but I put it anyway
+\pdfpageattr{
+/MediaBox [0 0 441.00000 666.00000]
+/TrimBox [0.00000 9.00000 432.00000 657.00000]}
+\pdfminorversion=3
+\pdfcatalog{
+/OutputIntents [ <<
+/Info (none)
+/Type /OutputIntent
+/S /GTS_PDFX
+/OutputConditionIdentifier (Blurb.com)
+/RegistryName (http://www.color.org/)
+>> ]
+}
+
+\title{$title$}
+\author{$author$}
+
+\OnehalfSpacing
+
+\begin{document}
+
+\selectlanguage{french}
+
+
+\begin{titlingpage}
+\titleM
+\end{titlingpage}
+\cleardoublepage
+
+\renewcommand{\contentsname}{Sommaire}
+\pagestyle{myheadings}
+\aliaspagestyle{cleared}{myheadings}
+\tableofcontents*
+\cleardoublepage
+\null
+\cleardoublepage
+\pagestyle{headings}
+
+$body$
+
+\appendix
+
+\bibliographystyle{unsrt}
+\bibliography{sample}
+
+\end{document}
+
