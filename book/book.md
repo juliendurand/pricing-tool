@@ -8,9 +8,9 @@ keywords: Tarification Assurance IARD Data-Science Big-Data
 \addcontentsline{toc}{chapter}{Introduction}
 \chapter*[Introduction]{Introduction}
 
-Les assureurs détiennent des millions de contrats IARD (Incendie, Accidents et Risques Divers) et souhaitent modéliser l'impact de dizaines, voire centaines de variables pour tarifer au juste prix chaque contrat. Pour avoir un ordre de grandeur, nous pouvons estimer qu'un assureur qui détient un portefeuille de quatre millions de contrats et qui souhaite mesurer l'impact de cent variables sur trois ans d'activité doit traiter 1,2 milliard de point de données. Cela représente 9,6 Go de donnée brute (en comptant une moyenne de 8 octets pour le stockage d'une donnée atomique). Ce volume croit avec la taille du portefeuille, la profondeur de l'historique et le nombre de variables étudiées. Les outils classiques de l'actuaire et du statisticien ne permettant pas de traiter des volumes aussi importants. La maitrise des technologies big data est donc un facteur clef de succès pour la tarification des contrats IARD.
+Les assureurs détiennent dans leur portefeuille des millions de contrats automobiles, habitations et professionnels. Ces activités, couramment regroupées sous le vocable IARD (Incendie, Accidents et Risques Divers) génèrent des volumes de données très importants. Pour améliorer leur compétitivité les compagnies d'assurance souhaitent modéliser l'impact de dizaines, voire centaines de variables. L'un des enjeux majeur est de tarifer au juste prix chaque contrat en fonction de ses caractéristiques individuelles tout en assurant la mutualistion des risques au niveau du portefeuille. Pour avoir un ordre de grandeur, nous pouvons estimer qu'un assureur qui détient un portefeuille de quatre millions de contrats et qui souhaite mesurer l'impact de cent variables sur trois ans d'activité doit traiter 1,2 milliard de point de données. Cela représente 9,6 Go de donnée brute (en comptant une moyenne de 8 octets pour le stockage d'une donnée atomique). Ce volume croit avec la taille du portefeuille, la profondeur de l'historique et le nombre de variables étudiées. Les outils classiques de l'actuaire et du statisticien sont peu adaptés à des volumes aussi importants. La maitrise des technologies big data est donc un facteur clef de succès pour la tarification des contrats IARD.
 
-Face à ce large volume de données, les principaux acteurs du secteur ont historiquement fait le choix de recourir à des solutions externes développées par des vendeurs spécialisés. Le bénéfice principal de cette approche est de fournir des résultats fiables en mutualisant les couts de recherche et développement. En revanche cette approche conduit à une logique de "boite noire" et limite les capacités d'innovations pour exploiter de nouveaux axes de différenciations tarifaires. Tous les assureurs utilisent le même modèle et la compétition se fait principalement sur la qualité et la quantité des données disponibles. Cela avantage les acteurs qui disposent des plus gros portefeuilles.
+Face à ce large volume de données, les principaux acteurs du secteur ont historiquement fait le choix de recourir à des solutions externes développées par des vendeurs spécialisés. Le bénéfice principal de cette approche est de fournir des résultats fiables en mutualisant les couts de recherche et développement. En revanche les algorithmes utilisés sont des "boites noires" et cela limite les capacités d'innovations pour exploiter de nouveaux axes de différenciations tarifaires. Les assureurs utilisent le même type de modèlisation et la compétition se fait principalement sur la qualité et la quantité des données disponibles. Cela avantage les acteurs qui disposent des plus gros portefeuilles et des meilleurs systèmes d'informations.
 
 Le big data et la data-science changent la donne en mettant à la disposition des actuaires des solutions en kit pour créer des modèles adaptés au business modèle et à la stratégie de leur compagnie.
 
@@ -18,7 +18,7 @@ L'objectif de ce livre est de fournir les bases méthodologiques et pratiques au
 
 Les méthodes proposées sont mis en oeuvre dans des exemples de code disponibles sur la plateforme de partage collaborative github.
 
-Ce livre contient intentionnellement peu de formules mathématiques car l'objectif est de proposer un cadre méthodologique permettant aux praticiens de développer leur propres algorithmes adaptés au contexte commercial et stratégique de leur entreprise.
+Ce livre contient intentionnellement peu de formules mathématiques car l'objectif est de proposer un cadre méthodologique permettant aux praticiens de développer des algorithmes adaptés au contexte commercial et stratégique de leur activité.
 
 # Principes de tarification IARD
 
@@ -27,18 +27,18 @@ Ce livre contient intentionnellement peu de formules mathématiques car l'object
 On distingue traditionnellement trois éléments dans la structure tarifaire :
 
 1. le **tarif technique** : cout des sinistres ;
-2. le **tarif analytique** : cout de production incluant les sinistres et les autres charges allouées à la branche par la comptabilité analytique ;
+2. le **tarif de revient** : cout de production incluant les sinistres et les autres charges allouées à la branche par la comptabilité analytique ;
 3. le **tarif commercial** : cout de production + marge.
 
 Le **tarif technique**, également appelé **prime pure**, reflète le coût du risque, c'est à dire le coût des sinistres attendus sur la période de couverture. Le tarif technique dépend à la fois du profil du client et du produit vendu. Par exemple le niveau des franchises affecte de manière directe le montant des sinistre. En conséquence le tarif technique dépend du niveau de franchise choisi. Le tarif technique est obtenu à partir d'un modèle d'apprentissage sur les sinistres passés et d'une série d'ajustement pour tenir compte des hypothèses d'évolutions des principaux paramètres.
 
-Le **tarif analytique** reflète le coût de production d'un contrat, c'est à dire la somme du coût des sinistres modélisé par le tarif technique et des autres charges imputées en comptabilité analytique. Ces charges comprennent notamment les frais généraux, les charges financières, les couts d'acquisitions, ... Pour obtenir le tarif opérationnel il est nécéssaire de modéliser les charges par contrat et d'ajouter le montant obtenu au tarif technique. Par construction le tarif opérationnel est toujours supérieur au tarif technique.
+Le **tarif de revient** reflète le coût de production d'un contrat, c'est à dire la somme du coût des sinistres modélisé par le tarif technique et des autres charges imputées en comptabilité analytique. Ces charges comprennent notamment les frais généraux, les charges financières, les couts marketing, le frais d'acquisitions, les commissions des intermédiaires, ... Pour obtenir le tarif de revient il est nécéssaire de modéliser les charges pour chaque contrat et d'ajouter le montant obtenu au tarif technique. Par construction le tarif de revient est toujours supérieur au tarif technique.
 
-Le **tarif commercial** est le tarif réellement proposé au client. Il est généralement supérieur au tarif opérationnel (et donc au tarif technique) afin de dégager une marge pour l'assureur. Toutefois il peut-être utile d'avoir sur certains segments un tarif commercial inférieur au tarif opérationnel. Par exemple un assureur pourrait envisager une stratégie consistant à proposer des tarifs d'assurance automobile très avantageux aux jeunes conducteurs qui ont une sinistralité élevée en pariant sur le fait que leur cout du risque va diminuer au fil des ans et que le contrat sera profitable à terme. Cela permet de renouveller le portefeuille en faisant payer la sinistralité des jeunes conducteurs par les clients plus expérimentés.
+Le **tarif commercial** est le tarif réellement proposé au client. Il est généralement supérieur au tarif de revient (et donc au tarif technique) afin de dégager une marge pour l'assureur. Toutefois il peut-être utile d'avoir sur certains segments un tarif commercial inférieur au tarif de revient. Par exemple un assureur pourrait envisager une stratégie consistant à proposer des tarifs d'assurance automobile très avantageux aux jeunes conducteurs qui ont une sinistralité élevée en pariant sur le fait que leur cout du risque va diminuer au fil des ans et que le contrat sera profitable à terme. Cela permet de renouveller le portefeuille en faisant payer la sinistralité des jeunes conducteurs par les clients plus expérimentés.
 
 La **marge technique** d'un contrat est égale à la différence entre le tarif commercial et le tarif technique.
 
-La  **marge opérationnelle** est égale à la différence entre le tarif commercial et le tarif opérationnel. La marge opérationnelle peut-être négative pour un contrat.
+La  **marge opérationnelle** est égale à la différence entre le tarif commercial et le tarif de revient. La marge opérationnelle peut-être négative pour un contrat.
 
 @TODO : graphique sur les différentes primes
 
@@ -48,7 +48,7 @@ Le modèle technique a pour objectif de prédire pour chaque contrat le cout des
 
 Il existe souvent des contraintes légales ou opérationnelles qui obligent à exclure certaines variables dans les processus de tarification opérationnels, à titre d'illustration voici deux exemples :
 
-- contrainte légale : dans le cadre de l'égalité des genre le législateur français interdit de prendre en compte la variable "sexe" dans la tarification des contrats d'assurance ;
+- contrainte légale : afin de respecter le principe d'égalité des genre le législateur français interdit de prendre en compte la variable "sexe" dans la tarification des contrats d'assurance ;
 - contrainte opérationnelle : certaines variables peuvent être inconnues ou invérifiables à la souscription. Il est préférable de ne pas les utiliser dans le tarif opérationnel. Par exemple le nombre de kilomètres parcourus avec le véhicule est une information peu vérifiable et il convient de l'utiliser avec prudence.
 
 Dans la pratique est il donc possible de construire plusieurs modèles techniques pour différents usages :
@@ -60,25 +60,59 @@ Dans la suite nous nous intéresserons particulièrement aux méthodes de calcul
 
 ### Modèle de Cout
 
-Le modèle de cout
-@TODO
+Le modèle de cout doit estimer pour chaque contrat la part des coûts fixes et des coûts variables qui lui sont imputables en comptabilité analytique.
+
+En théorie un assureur n'a pas intérêt à proposer un tarif inférieur au tarif technique plus les coûts variables affectés au contrat. En pratique comme la rentabilité d'un contrat s'apprécie sur une durée longue ce critère n'est pas déterminant et la distinction entre les coûts variables et les coûts fixes n'est pas obligatoire.
 
 ### Modèle Commercial
 
-Le modèle de tarification commercial mets en œuvre la stratégie commerciale de l'assureur. Il n'est pas obligatoirement le reflet des modèles techniques, toutefois il est très important de disposer d'outils permettant de mettre en regard le tarif commercial avec le tarif technique afin de garantir la maitrise des risques.
+Le modèle de tarification commercial mets en œuvre la stratégie commerciale de l'assureur. Il n'est pas nécessairement le reflet du modèle technique, toutefois il est très important de disposer d'outils permettant de mettre en regard le tarif commercial avec le tarif technique afin de garantir la maitrise des risques.
 
 ## L'approche actuarielle classique
 
-La pratique actuarielle modélise les risques par apprentissage statistique. On identifie une loi statistique qui sert de modèle à la réalité des processus observé et l'on cherche ensuite,
-La distribution de la prime pure par garantie ne suit pas une loi statistique simple. Il est donc
+La pratique actuarielle modélise les risques par apprentissage statistique. Dans cette approche, l'actuaire choisit une loi statistique qui sert de modèle pour représenter la réalité des processus observés. Cette loi est aussi appelée "loss function". L'apprentissage statistique est réalisé en recherchant les paramètres de la loi qui permettent d'obtenir le maximum de vraissemblance. En pratique l'algorithme d'apprentissage recherche les paramètres qui minimisent l'écart entre les observations et les prédictions.
 
-Les actuaires ont vérifié de manière empirique (@TODO mettre une référence) l'indépendance statistique du nombre et des coûts des sinistres déclarés.
+ Toutefois la modélisation des risques IARD est difficile car la prime pure (cpoût des sinistres) ne suit pas une loi statistique simple. Les actuaires ont vérifié de manière empirique (@TODO mettre une référence) qu'il est possible de décomposer la prime pure en deux composantes indépendantes :
 
-### Modélisation des fréquence par une loi de Poisson
+ 1. la *fréquence* : nombre de sinistres observés, normalisé sur la période de référence (en général un an) ;
+ 2. le *coût moyen* des sinistres déclarés.
 
-### Modélisation des couts par une loi Gamma
+ Comme nous pouvons en pratique faire l'hypothèse de l'indépendance statistique de ces deux variables aléatoires (corrélation nulle), il est possible d'exprimer la prime pure comme le produit de la fréquence et du cout moyen :
 
-## Classification des risques en catégories homogènes
+```
+PrimePure = Fréquence * Coût Moyen
+```
+
+La modélisation de la prime pure se fait donc en deux sous-parties parallèles : la modélisation de la fréquence et la modélisation des coûts moyens.
+
+Il est utile de vérifier en pratique que pour chaque garantie modélisée l'hypothèse d'indépendance de la fréquence et des coûts moyens est vérifiée. Si ce n'est pas le cas il convient de rechercher l'origine de la corrélation entre les deux composantes et corriger ce biais. En effet si cette hypothèse n'est pas vérifiée le modèle technique final peut-être fortement biaisé car les effets combinés seront sur ou sous-estimés.
+
+## Modèle de fréquence
+
+Le modèle de fréquence est entraîné sur la totalité de la base d'apprentissage, que le contrat soit ou non sinistré.
+
+En supposant que pour un contrat donné la probabilité d'avoir un sinistre  à chaque instant suive un processus de Bernouilli avec probabilité constante, le nombre de sinistre observés sur une année (période de référence) obéit à une loi binomiale négative. Or lorsque l'on répète le processus à l'inifini sur des périodes de temps de plus en plus courte la loi binomiale négative congerve asymptotiquement vers une loi de Poisson.
+
+Les actuaires font donc courrament l'hypothèse que la fréquence des sinistres suit une loi de Poisson.
+
+Cette hypothèse est très importante et doit être vérifiée en pratique avant chaque modélisation. Pour cette vérification il est recommandé de :
+
+1. vérifier que l'espérance et la variance de la distribution des fréquences observées sont égales (dans une marge de tolérance à définir, par exemple 10%);
+2. vérifier que la courbe de la distribution théorique, paramétrée par l'espérance de la distribution observée, se superpose de manière convenable avec la distribution observée.
+
+Si la loi de Poisson n'est pas vérifiée, et en particulier dans les situations où la variance est plus dispersée que l'espérance, il faut soit revoir la construction de la base d'apprentissage soit modéliser les fréquences avec une loi plus adaptée. @TODO (définir les lois plus adaptées)
+
+## Modèle de coût moyen
+
+Le modèle de cout moyen est réalisé seulement sur les contrats sinistrés, en effet les contrats non sinistrés n'ont pas d'observations pour le coût des sinistres.
+
+Pour les contrats sinistrés, la variable à apprendre est la moyenne des sinistres observés sur la période.
+
+Le cout d'un sinistre est supérieur à zéro et les actuaires font le plus souvent l'hypothèse d'une loi gamma.
+
+Il est également utile de vérifier en pratique que l'hypothèse de modélisation est raisonnable en supperposant la distribution des coûts moyens observée avec la loi gamma théorique issue des paramètres de la distribution observée.
+
+## Classification des risques
 
 Afin de réaliser une bonne modélisation il est important de catégoriser les risques dans des catégories homogènes afin de pouvoir isoler les facteurs de risques spécifique à chaque type de risque et identifier la loi de probabilité réelle de chaque catégorie.
 
@@ -101,59 +135,181 @@ Pour résumer il est recommandé de modéliser séparément :
 - au sein de chaque garantie les risques différents ;
 - lorsque nécéssaire : les sinistres attritionnels et les sinistres graves ;
 
-### Les modèles linéaires généralisés (GLM)
+## Les modèles linéaires généralisés (GLM)
 
-## La dimension géographique
+La loi de Poisson et la loi gamma appartiennent à la famille exponentielle. L'apprentissage statistique de modèles Poisson et gamma entrent dans le cadre théorique des modèles linéaires généralisés.
 
-Zonier
+## Le signal géographique
 
-Lissage spatial
+Pour quasiment toutes les garanties IARD, l'adresse du contrat (ou autre addresse pertinente) fait partie des variables explicatives de la sinistralité. Il est donc crucial de pouvoir capter le signal géographique pour obtenir le modèle le plus performant. Pour cela il existe deux approches traditionnelles :
 
-Données externes
+1. réaliser un *zonier* par **lissage spatial** des résidus afin de capturer les variations locales ;
+2. **utiliser des données externe** les intégrer dans le processus d'apprentissage, soit directement dans les GLM, soit par l'intermédiaire d'un apprentissage sur les résidus.
+
+### Lissage spatial
+
+Le lissage spatial est une méthode très attractive car elle permet de capturer le signal géographique sans avoir besoin d'ajouter de variables geographiques. Le lissage consiste à observer le voisinage d'un contrat pour en déduire la correction géographique locale à appliquer au modèle général. Le lissage réalisé sur la totalité du territoire permet de constituer un *zonier* qui découpe le territoire en zones auxquelles sont associées un coefficient local à intégrer dans le modèle GLM. Deux méthodes sont souvent utilisées en pratique pour réaliser ces zoniers :
+
+- en suivant un découpage administratif : région, département, canton, ville, arrondissement, IRIS (zone administrative de l'INSEE regroupant environ 2000 habitants) ;
+- par proximité géographique : méthode des plus proches voisins.
+
+### Données externes
+
+Il existe de nombreuses données geographiques externes fournies par des agences publiques ou des vendeurs spécialisés. Ces bases de données fournissent pour chaque point d'un territoire les valeur associées. Par exemple il est possible d'obtenir la densité de population, le nombre d'habitant de la commune, le pourcentage d'immeubles collectifs...
+
+Les jointures spatiales permetent d'associer à chaque contrat les données géographiques et de les inclure dans la base de modélisation. Il existe ensuite deux approches principales pour intégrer ces variables géographiques dans les modèles :
+
+1. Inclure les variables directement dans les base d'apprentissage des modéles GLM de fréquences et de coûts ;
+2. Construire un zonier avec des méthodes d'apprentissage non linéaire sur les résidus des modèles (linéraires) de fréquence et de coûts ;
+
+Si le choix numéro 2 est fait, c'est à dire construire un zonier sur les résidus des modèles linéraires, il est important d'utiliser un algorithme capable de capter les non linéarités sinon cela revient à la méthode 1 qui est plus simple à mettre en oeuvre.
+
+### Géocodage
+
+Pour réaliser une jointure spatiale de la base d'apprentissage avec des données externe il faut tout d'abord procéder au géocodage des addresses. Le géocodage consiste à transfomer une addresse texte en une position géographique dans un système géographique de référence, par exemple les coordonnées WGS84 utilisé par GPS.
+
+Pour réaliser le geocodage de la base d'apprentissage il est possible d'utiliser les APIs de Google, Microsoft, Apple... Toutefois ces APIs sont limités en nombre d'adresse et leur coût est souvent prohibitif lorsque l'on souhaite geocoder des millions de contrats.
+
+Il est également possible d'utiliser des API de géocodage fournies par des vendeurs spécialisés ou pour certains pays d'utiliser des bases d'addresses publique. C'est le cas de la France qui mets à disposition l'intégralité des adresses française dans une base de donnée librement utilisable, la BANO (Base d'Adresses Nationale Ouverte) :
+
+
+```
+https://www.data.gouv.fr/fr/datasets/
+    base-d-adresses-nationale-ouverte-bano/
+```
+
+Pour géocoder les addresses française, l'auteur vous recommande l'outil GeoAPI qu'il a conçu en collaboration avec Paulo de Vilhena :
+
+```
+https://github.com/DeVilhena-Paulo/Geocoding
+```
+
+### Jointure Spatiale
+
+Une jointure spatiale permet d'extraire les valeurs d'une base de données géographique à partir d'une clef déterminée par une adresse. Il est possible d'utiliser plusieurs types de clefs et c'est la structure de la base de donnée géographique qui guide le choix de la clef. Voici une liste non exhaustive des clefs de jointure géographique possibles :
+
+- code postal ;
+- numéro de commune ;
+- longitude et latitude ;
+- x,y dans une projection de cartographie (ex: Lambert93 en France) ;
+- clef propriétaire créé à partir de l'adresse ;
+- ...
+
+La base de donnée PostgreSQL, avec le plugin PostGIS est un outil vivement recommandé pour réaliser les jointures spatiales.
+
+Astuce : si vous devez réaliser une jointure spatiale avec un fichier contenant des polygones complexes (ex: fishier shapefile des zones de crues), il est souvent utile de commencer par triangulariser les polygones, en effet l'algorithme de recherche d'un point dans un polygone est beaucoup plus efficaces quand les polygones ont peu de cotés (le triange est le plus simple des polygones).
+
 
 # Préparation des Données
 
-Bases Contrats
+La phase de préparation des données est la phase la plus critique du processus de modélisation. Toute erreur dans cette étape sera transmise jusqu'en bout de chaine. Or il est souvent très difficile de détecter les erreurs commises dans la préparation des données, tandis qu'il est plus facile de détecter les erreurs de modélisation. Pour limiter les risques d'erreur il est recommandé de mettre en place un processus défensif :
 
-Bases Sinistres
+- automatisation des traitements pour limiter le risque d'erreur manuelle ;
+- documentation des traitements pour permettre la maintenance future ;
+- tests automatisés de cohérence des données ;
 
-Base d'événements
+En fonction de la maturité du système d'information il sera nécéssaires de réaliser un nombre d'étapes variables car certaines étapes seront peut-être réalisées de manière automatisée par votre SI. Par exemple certains système d'information propose directement une vision unifiées des événements contrats et sinistres et vous n'aurez pas besoin de faire cette réconciliation.
 
-Base Image
+Dans le cas le plus général la préparation des données pour la modélisation suit un processus en 8 étapes :
 
-Selection des données
+1. Extraction des mouvements des contrats ;
+2. Extraction des sinistres ;
+3. Jointure des contrats et des sinistres dans une base d'événements ;
+4. Création des images ;
+5. Sélection des données ;
+6. Discrétisation des facteurs ;
+7. Optimisation du format de stockage ;
+8. Création des métadata ;
+
+Chacune de ces étapes est détaillée dans la suite de ce chapitre.
+
+## Bases Contrats
+
+## Bases Sinistres
+
+## Base d'événements
+
+## Base Images
+
+## Selection des données
+
+Calcul de l'exposition
+
+## Discrétisation
+
+## Optimisation
+
+## Metadata
 
 # Construction des modèles
 
-Méthodologie
+## Méthodologie
 
-Metrique
+- test / train
+- cross validation
 
-Optimisation convexe
+## Optimisation convexe
 
-- Méthode d'ordre 1
+### Méthode d'ordre 1
 - Descente du Gradient
 - Descente par Coordonées
 - Descente du Gradient Stochastique
 
-Méthode d'ordre 2
+### Méthode d'ordre 2
 
 - Newton-Raphson
 - ...
 
-Selection des variables
-
+## Selection des variables
+- Manuelle
 - Greedy
 - Pénalisation
 
-Traitement des modalités à faible exposition
-
+## Traitement des modalités à faible exposition
 - Lissage
 - Smoothing
 
-Interactions entre variables
+## Variables Corrélées
 
-Lissage spatial
+## Interactions entre variables
+
+# Mesure de la performance
+
+## Réduction de la déviance
+
+### Déviance de la loi de Poisson
+
+### Déviance de la loi gamma
+
+## Gini
+
+### Courbe de Lorentz
+
+### Coefficient de Gini
+
+## RMSE
+
+## Spread
+
+### Spread 100/0
+
+### Spread 95/5
+
+## Courbe de Gain
+
+## Relativités
+
+## Résidus
+
+# Lissage spatial
+
+## Méthodologie
+
+## Algorithmes par aggrégation
+
+## Algorithme par proximité
+
+## Validation
 
 # Réconciliations comptable
 
@@ -167,24 +323,38 @@ Ajustement des niveaux de base
 
 # Documentation
 
-Dictionnaire des données
+## Dictionnaire des données
 
-Distribution des données modélisées
+## Traitements réalisés
 
-Modèles
+## Distribution des données modélisées
+
+## Modèles
 
 - Relativities
 - Base levels
 
-Courbe de gain (lift curve)
+## Métriques
 
-Résidus
+## Courbe d'efficience
 
-Courbe des relativités par variable
+## Liste des variables
+
+## Courbe de gain (lift curve)
+
+## Variable par gain de gini
+
+## Résidus
+
+## Courbe des relativités par variable
+
+## Documentation des bases levels
 
 # Validation
 
-Seconde Opinion
+## Check List
+
+## Seconde Opinion
 
 # Usages
 
@@ -243,7 +413,9 @@ Pour cela il faut calculer l’ELR en vision « photo » à chaque fin de pério
 
 ## Valeur client
 
-Modèle de Marge commerciale
+Modèle de Prime Commerciale
+
+Modèle de Marge
 
 Modèle de résiliation
 
@@ -254,4 +426,8 @@ Modèle de résiliation
 ### Renouvellement
 
 ### Avenant
+
+### Résiliations
+
+# Culture
 

@@ -6,11 +6,15 @@
 \usepackage{xcolor}
 \usepackage{times}
 
+
+
+
 \usepackage[
 breaklinks=true,colorlinks=true,
 %linkcolor=blue,urlcolor=blue,citecolor=blue,% PDF VIEW
 linkcolor=black,urlcolor=black,citecolor=black,% PRINT
-bookmarks=true,bookmarksopenlevel=2]{hyperref}
+bookmarks=true,bookmarksopenlevel=2 ]{hyperref}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 
 \setstocksize{9.25in}{6.125in}
 \settrimmedsize{9in}{6in}{*}
@@ -88,7 +92,6 @@ bookmarks=true,bookmarksopenlevel=2]{hyperref}
 \begin{document}
 
 \selectlanguage{french}
-
 
 \begin{titlingpage}
 \titleM
