@@ -208,7 +208,7 @@ La phase de préparation des données est la phase la plus critique du processus
 - documentation des traitements pour permettre la maintenance future ;
 - tests automatisés de cohérence des données ;
 
-En fonction de la maturité du système d'information il sera nécéssaire de réaliser un nombre d'étapes variables car certaines étapes seront peut-être réalisées de manière automatisée par votre SI. Par exemple certains système d'information propose directement une vision unifiées des événements contrats et sinistres et vous n'aurez pas besoin de faire cette réconciliation.
+En fonction de la maturité du système d'information vous devrez réaliser un nombre d'étapes variables car certaines étapes seront peut-être réalisées de manière automatisée par votre SI. Par exemple certains système d'information propose directement une vision unifiées des événements contrats et sinistres et vous n'aurez pas besoin de faire cette réconciliation.
 
 L'objectif général est de constituer une base d'images couvrant chacune une période de risque homogène pour un contrat. Chaque image possède une date de début et de fin d'effet, la liste des garanties couvertes, les facteurs de risque et enfin pour chaque type de sinistre : le nombre et le montant total.
 
@@ -230,7 +230,7 @@ Dans le cas le plus général la préparation des données pour la modélisation
 14. Création des métadata ;
 15. Réconciliation comptable.
 
-Chacune de ces étapes est détaillée dans la suite de ce chapitre.
+Chacune de ces étapes est détaillée dans la suite de ce chapitre et vous devez vous assurer que chacune d'entre elle est bien documentée pour pouvoir auditer la phase de préparation des données.
 
 ## L'approche Big Data : Utilisation de MapReduce
 
@@ -343,9 +343,35 @@ TODO
 
 TODO
 
-## Classification des features
+### Features Catégorielles et Ordinales
 
 TODO
+
+### Classification des features
+
+Une fois que vous aurez créer toutes les features nécéssaires à l'apprentissage, vous obtiendrez probablement une liste de plusieurs dizaines, voire plusieurs centaines de variable. Nous vous recommandons d'y mettre de d'ordre en classant vos variables et en les renommant de telle sorte que leur utilisation devienne intuitive et cohérente. Voici une liste d'idées que vous pouvez mettre en oeuvre :
+
+- Etablir une convention de nommage pour vos variables. Cette convention va définir la langue, la casse et les séparateurs utilisés, voici quelques exemples courants :
+
+    - CamelCase ;
+    - snake_case ;
+    - CAPITAL_CASE ;
+
+- Grouper les features par catégorie et préfixer les noms de variables. Par exemple si vos features sont issues de 4 bases de données différentes (client, contrat, sinistre, devis) vous pouvez envisager une notation similaire à celle-ci :
+
+    - client.feature_1, client.Feature_x... pour les variables de la base client ;
+    - contrat.features_1, conctrat.feature_x... pour les variables contrats ;
+    - sinistre.feature_x... pour les variables sinistres ;
+    - devis.feature_x... pour les variables devis ;
+
+- Identifier les interactions de manière intuitive. Une interaction peut être définie par la combinaison de plusieurs variables séparées par un caractère spécial, par exemple '\*' : Client.nb_contrats_*_type_logement.
+
+- Distinguer les variables catégorielles et ordinales :
+
+    - client.type_logement&, avec un caractère & à la fin pour identifier les variables catégorielles ;
+    - client.age#, avec un caractère # à la fin pour identifier les variables ordinales ;
+
+Libre à vous de choisir les catégories et les conventions qui vous semblent les plus pertinentes !
 
 ## Extraction des mouvements contrats
 
