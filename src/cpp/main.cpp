@@ -9,7 +9,7 @@ void fitToConvergence(ALinearRegressor* model, long& i,
                       float stopCriterion){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
-    int epoch = model->dataset->train.size() / blocksize;
+    int epoch = model->dataset->getSize() / blocksize;
     for(; nbIterationsSinceMinimum < precision; i++){
         model->fit(blocksize, alpha, 0);
         if(i % epoch == 0){
@@ -30,7 +30,7 @@ void fitToConvergence(ALinearRegressor* model, long& i,
 void backwardStepwise(ALinearRegressor* model, long& i,
                      int blocksize, double alpha){
     std::cout << "Backward Stepwise" << std::endl;
-    int epoch = model->dataset->train.size() / blocksize;
+    int epoch = model->dataset->getSize() / blocksize;
     for(;; i++){
         model->fit(blocksize, alpha, 0);
         if(i % (epoch) == 0){
@@ -51,7 +51,7 @@ void forwardStepwise(ALinearRegressor* model, long& i,
                      int blocksize, double alpha, int maxNbFeatures){
     std::cout << "Forward Stepwise" << std::endl;
     model->eraseAllFeatures();
-    int epoch = model->dataset->train.size() / blocksize;
+    int epoch = model->dataset->getSize() / blocksize;
     int k = 0;
     for(auto p : model->giniPath){
         int f = p.feature_idx;

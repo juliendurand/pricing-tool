@@ -17,20 +17,19 @@ private:
     Array<uint8_t>* x_data;
     Array<float>* weight_data;
     Array<float>* y_data;
-    Array<int32_t>* train_index;
-    Array<int32_t>* sample_index;
 
 public:
     std::vector<int> train;
     std::vector<int> test;
     std::vector<int> sample;
-
+public:
     Dataset(Config* config, float testPct);
+    int getSize();
     int next();
-    void filterNonZeroTarget();
     uint8_t* get_x();
     float* get_weight();
     float* get_y();
+    void filterNonZeroTarget();
 };
 
 #endif  // DATASET_H_
