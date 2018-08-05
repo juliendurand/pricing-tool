@@ -3,9 +3,11 @@
 
 #include <string>
 
+
 template <typename T>
 class Array
 {
+private:
     std::string filename;
     int p;
     int n;
@@ -15,7 +17,6 @@ class Array
     T* data;
 
 public:
-    Array();
     Array(std::string filename, int p, int n);
     ~Array();
     T* getData();

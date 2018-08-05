@@ -16,10 +16,6 @@ size_t getFilesize(const std::string filename) {
 }
 
 template<typename T>
-Array<T>::Array(){
-}
-
-template<typename T>
 Array<T>::Array(std::string filename, int p, int n):
     filename(filename), p(p), n(n)
 {

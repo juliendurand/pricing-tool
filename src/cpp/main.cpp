@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "config.h"
-#include "SGDPoissonRegressor.h"
+#include "SGDRegressor.h"
 
 
 void fitToConvergence(ALinearRegressor* model, long& i,
@@ -69,7 +69,7 @@ void forwardStepwise(ALinearRegressor* model, long& i,
 }
 
 ALinearRegressor* fit(Config* config, Dataset* ds){
-    SGDPoissonRegressor* model = new SGDPoissonRegressor(config, ds);
+    SGDRegressor* model = new SGDRegressor(config, ds);
     std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
                            << " variables :" << std::endl;
 

@@ -1,10 +1,10 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "SGDPoissonRegressor.h"
+#include "SGDRegressor.h"
 
 
-SGDPoissonRegressor::SGDPoissonRegressor(Config* config, Dataset* dataset):
+SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     ALinearRegressor(config, dataset)
 {
     update.reserve(nbCoeffs + 1);
@@ -23,7 +23,7 @@ SGDPoissonRegressor::SGDPoissonRegressor(Config* config, Dataset* dataset):
     }
 }
 
-void SGDPoissonRegressor::fitIntercept(){
+void SGDRegressor::fitIntercept(){
     double s = 0;
     double w = 0;
     for(int i : dataset->train){
@@ -42,7 +42,7 @@ void SGDPoissonRegressor::fitIntercept(){
     }
 }
 
-void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
+void SGDRegressor::fit(int blocksize, float learning_rate, float l2){
     double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs + 1; j++){
         dp0 += x0[j] * coeffs[j];

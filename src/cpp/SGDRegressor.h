@@ -1,20 +1,20 @@
-#ifndef SGDPOISSONREGRESSOR_H_
-#define SGDPOISSONREGRESSOR_H_
+#ifndef SGDREGRESSOR_H_
+#define SGDREGRESSOR_H_
 
 #include <vector>
 
 #include "ALinearRegressor.h"
 
 
-class SGDPoissonRegressor : public ALinearRegressor
+class SGDRegressor : public ALinearRegressor
 {
     std::vector<double> update;
     double (*gradLoss)(double, double, double);
 
 public:
-    SGDPoissonRegressor(Config* config, Dataset* dataset);
+    SGDRegressor(Config* config, Dataset* dataset);
     virtual void fit(int, float, float);
     void fitIntercept();
 };
 
-#endif  // SGDPOISSONREGRESSOR_H_
+#endif  // SGDREGRESSOR_H_
