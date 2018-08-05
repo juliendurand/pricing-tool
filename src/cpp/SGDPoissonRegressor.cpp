@@ -42,9 +42,9 @@ void SGDPoissonRegressor::fitIntercept(){
     }
 }
 
-double SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
+void SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
     double dp0 = coeffs[0];
-    for(int j = 1; j < nbCoeffs + 1 ; j++){
+    for(int j = 1; j < nbCoeffs + 1; j++){
         dp0 += x0[j] * coeffs[j];
         update[j] = 0;
     }
@@ -68,7 +68,7 @@ double SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
     }
 
     update[0] = rTotal;
-    double sg2 = 0;
+    //double sg2 = 0;
     for(int j = 0; j < nbCoeffs + 1; j++){
         if(x1[j] != 0){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
@@ -78,8 +78,6 @@ double SGDPoissonRegressor::fit(int blocksize, float learning_rate, float l2){
             //sg2 += g2[j];
         }
     }
-
-    return std::sqrt(sg2 / (nbCoeffs + 1));
 /*
     coeffs[0] += rTotal / blocksize * learning_rate;
     for(int j = 1; j < nbCoeffs + 1 ; j++){

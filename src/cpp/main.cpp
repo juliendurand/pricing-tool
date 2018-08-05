@@ -10,9 +10,8 @@ void fitToConvergence(ALinearRegressor* model, long& i,
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
     int epoch = model->dataset->train.size() / blocksize;
-    double sg = 0;
     for(; nbIterationsSinceMinimum < precision; i++){
-        sg = model->fit(blocksize, alpha, 0);
+        model->fit(blocksize, alpha, 0);
         if(i % epoch == 0){
             std::cout << i * blocksize << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
             model->printResults();

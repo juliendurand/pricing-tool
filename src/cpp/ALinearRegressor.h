@@ -48,7 +48,7 @@ public:
 
     ALinearRegressor(Config* config, Dataset* dataset);
     ~ALinearRegressor();
-    virtual double fit(int, float, float) = 0;
+    virtual void fit(int, float, float) = 0;
     int penalizeLasso(float learning_rate, float l1);
     void penalizeRidge(float learning_rate, float l2);
     void predict(const std::vector<int> &samples);
