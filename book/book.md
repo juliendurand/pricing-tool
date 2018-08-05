@@ -212,7 +212,7 @@ En fonction de la maturité du système d'information vous devrez réaliser un n
 
 L'objectif général est de constituer une base d'images couvrant chacune une période de risque homogène pour un contrat. Chaque image possède une date de début et de fin d'effet, la liste des garanties couvertes, les facteurs de risque et enfin pour chaque type de sinistre : le nombre et le montant total.
 
-Dans le cas le plus général la préparation des données pour la modélisation suit un processus en quinze étapes :
+Dans le cas le plus général la préparation des données pour la modélisation suit un processus en seize étapes :
 
 1. Définition du périmètre ;
 2. Identification des features ;
@@ -228,7 +228,8 @@ Dans le cas le plus général la préparation des données pour la modélisation
 12. Discrétisation des facteurs ;
 13. Optimisation du format de stockage ;
 14. Création des métadata ;
-15. Réconciliation comptable.
+15. Réconciliation comptable ;
+16. Documentation.
 
 Chacune de ces étapes est détaillée dans la suite de ce chapitre et vous devez vous assurer que chacune d'entre elle est bien documentée pour pouvoir auditer la phase de préparation des données.
 
@@ -252,6 +253,7 @@ Avant toute modélisation technique il est important de définir le périmètre 
 - garanties ;
 - période temporelle ;
 - canal de distribution ;
+- ...
 
 ### Produit
 
@@ -363,6 +365,7 @@ Une fois que vous aurez créer toutes les features nécéssaires à l'apprentiss
     - contrat.features_1, conctrat.feature_x... pour les variables contrats ;
     - sinistre.feature_x... pour les variables sinistres ;
     - devis.feature_x... pour les variables devis ;
+    - cible.nb_sinistres_rc, cible.cout_sinistres_rc... pour les variables cibles.
 
 - Identifier les interactions de manière intuitive. Une interaction peut être définie par la combinaison de plusieurs variables séparées par un caractère spécial, par exemple '\*' : Client.nb_contrats_*_type_logement.
 
@@ -447,13 +450,19 @@ Erreur possible : des sinistres déclarés en dehors de la période de couvertur
 
 Comme nous l'avons vu plus haut un même contrat est déoupé en plusieurs images de durée inégales afin de garantir que chaque image reflète un risque constant.
 
-Cette opération *map* ajoute, pour chaque image, sa durée d'exposition. L'exposition est la durée de couverture normalisée sur une année. Nous recommandons de calculer l'exposition comme la durée en jour de l'image divisée par 365. La durée de l'image doit être calculée en incluant la date de début et la date de fin car la date de fin, par construction, précéde d'un jour la date de début de l'image suivante.
+Cette opération *map* ajoute, pour chaque image, sa durée d'exposition. L'exposition est la durée de couverture normalisée sur une année. Nous recommandons de calculer l'exposition comme la durée en jour de l'image divisée par 365. La durée de l'image doit être calculée en incluant la date de début et la date de fin. En effet la date de fin, par construction, précède d'un jour la date de début de l'image suivante.
 
 Pour éviter d'avoir une exposition légèrement supérieure à 1 les années bisextiles nous recommandons de supprimer un jour d'exposition pour toutes les périodes contenant un 29 février.
 
 ## Filtrage des images
 
-Vous devrez parfois exclure certaines images de la base de modélisation. Par exemple les images avec une exposition nulle ou négative peuvent être exclues.
+Vous devrez parfois exclure certaines images de la base de modélisation, par exemple :
+
+- les images avec une exposition nulle ;
+- les sinistres ouverts à une valeur forfaitaires ;
+- ...
+
+Vous devez conserver et identifier toutes les images écartées de la base de modélisation. En effet vous devrez par la suite les réintégrer dans les calculs de réconciliation comptable.
 
 ## Discrétisation des facteurs
 
@@ -470,17 +479,70 @@ Nous recommandons donc de limiter le nombre de modalités par feature à 256 mod
 
 Cette opération *map* est optionnelle mais très utile pour la modélisation de grands portefeuilles.
 
+Les valeurs cibles et la variable "exposition" prennent des valeurs réelles continues et il est plus commode de conserver l'encodage standard en virgule flottante.
+
 ## Création des Metadata
 
-TODO
+Une fois votre base de donnée constituée, nous vous recommandons de constituer un fichier avec les metadata de la base de données afin de pouvoir les transmettre très facilement aux outils de modélisation. L'importance de cette étape est souvent sous-estimée car au moment de la création de la base les équipes ont toutes les données en tête. Toutefois cette étape est cruciale pour permettre l'industrialisation avec l'intégration des processus de préparation des données puis de modélisation. C'est aussi une étape essentielle pour la bonne documentation des travaux et garantir la capacité future à réutiliser et vérifier le travail réalisé. Nous vous recommandons d'utiliser un format structuré standard, par exemple le format JSON qui permet de garantir une très grand compatibilité. Voici une liste minimum des metadata que vous souhaiterez conserver dans un format structuré :
+
+- date de création ;
+- nom du projet ;
+- description ;
+- nombre de lignes ;
+- nombre et liste des features ;
+- nombre et liste des indicatrices de garantie ;
+- nombre et liste des cibles ;
+- nom de la variable "exposition" ;
+- nombre et liste des modalités ordonnée par feature ;
+- code numérique associé à chaque modalité ;
+
+TODO schéma de la base finale
 
 ## Réconciliation comptable
 
-TODO
+La réconciliation comptable est une étape de validation importante. Elle permet de vous assurer que votre base d'apprentissage est cohérente avec vos données business.
 
-Exposition
-Nombre de sinistre
-Cout total
+Pour cela vous devez confronter vos données avec une source indépendante, idéalement une source comptable de référence. Vous devez vous assurer, pour chaque période comptable de modélisation (en général une année), que les principales statistiques sont égales :
+
+- Exposition ;
+- Nombre de sinistre ;
+- Cout total ;
+
+Pour cela vous devrez calculer ces éléments d'un coté sur les images incluses dans la base de modélisation, et de l'autre sur les images exclues et additioner les deux pour confronter le résultat à la vision comptable.
+
+\clearpage
+
+Nous vous recommendons d'utiliser, pour chaque garantie, un tableau similaire à celui de la figure ci-dessous :
+
+![Tableau de Réconciliation comptable](img/img_datapre_reco.png){ height=60%  width=100% }
+\
+
+Points de vérification :
+
+ - L'exposition, la charge totale et le nombre de sinistres, doivent être comparables pour chaque année sur :
+    - le total de la base de modélisation, y compris les images exclues ;
+    - la base comptable.
+
+## Documentation
+
+La documentation de la phase de préparation des données est bien souvent lacunaire car les équipes pensent, à tort, que cela ne crée pas de valeur. Nous avons pu constater que les équipes passent souvent trop rapidement à la phase de modélisation sans avoir parfaitement documenté la constitution de la base. Ce qui semble un gain de temps à court terme, ce révèle souvent une perte de temps à long terme car il n'est pas rare de s'apercevoir en fin de modélisation que la base utilisée était biaisée et de devoir recommencer tout le travail.... C'est un exemple de confusion des priorités entre ce qui est urgent et ce qui est important.
+
+Mettre par écrit de manière formalisé toutes les étapes de la préparation de la base permet de partager les informations, de détecter et corriger les incohérences. De plus c'est sur la base de cette documentation que le management et les auditeurs externes se forgeront une idée de la qualité et donc de la confiance qui doit être accordée au travail réalisé. D'une certaine manière vous devez considérer que la documentation est le véritable "livrable" de la phase de préparation des données.
+
+Vous devez commencer à documenter les progrès dès le début de vos travaux et ensuite de manière continue jusqu'à l'achèvement complet. En procédant ainsi vous obtenez un double bénéfice. En premier lieu, cela facilite le travil de rédaction et de formalisation qui se réalise au quoditien et non pas à la fin, pressé par le temps. En second lieu la formalisation continue permet de partager les avancées, de détecter très tôt les éventuelles erreurs et permet de restituer tout le cheminement intellectuel qui a permit d'aboutir au résultat proposé.
+
+Pour obtenir une documentation de qualité, vous devez vous assurer que votre équipe ait les bons objectifs et la culture adaptée. Vous devez élaborer les objectifs de tels sorte que la documentation soit au coeur des résultats attendus. Par exemple vous pouvez formuler l'objectif : *la phase de data préparation est achevée lorsque l'équipe de seconde opinion valide la méthodologie sur la base de la documentation*.
+
+### Check-list
+
+Voici une check-list des éléments miminum qui doivent être documentés pour la phase de préparation des données :
+
+- dictionnaire des données ;
+- traitements réalisés avec la description textuelle et le code associé ;
+- données d'entrées ;
+- base(s) d'apprentissage générée(s) avec leurs metadata ;
+- calcul de la réconciliation comptable ;
+- distribution des sinistres en nombre et en coût.
 
 # Construction des modèles
 
@@ -491,6 +553,8 @@ Cout total
 - toujours utiliser l'année
 
 ## Optimisation convexe
+
+### Normalistion
 
 ### Méthode d'ordre 1
 - Descente du Gradient
@@ -673,3 +737,43 @@ Modèle de résiliation
 
 # Culture
 
+
+# Leviers
+
+## Data
+
+### Quantity
+
+Client interactions
+Digital
+Télématics
+External
+
+### Quality
+
+
+## Modélisation
+
+### Nombre de features
+
+### Profondeur d'historique
+
+### Recherche d'interaction
+
+### Sélection des variables
+
+### Sophistication des zoniers
+
+## Culture
+
+### Open Source
+
+Revue par les pairs
+
+### Documentation
+
+## Business Analytics
+
+ELR
+Expected Frequency
+Client Value
