@@ -4,16 +4,15 @@
 #include "SGDRegressor.h"
 
 
-void fitToConvergence(ALinearRegressor* model, long& i,
-                      int blocksize, double alpha, int precision,
+void fitToConvergence(SGDRegressor* model, long& i, int precision,
                       float stopCriterion){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
-    int epoch = model->dataset->getSize() / blocksize;
+    int epoch = model->dataset->getSize() / model->getBlockSize();
     for(; nbIterationsSinceMinimum < precision; i++){
-        model->fit(blocksize, alpha, 0);
+        model->fit();
         if(i % epoch == 0){
-            std::cout << i * blocksize << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
+            std::cout << i * model->getBlockSize() << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
             model->printResults();
             model->predict(model->dataset->train);
             double ll = model->logLikelihood(model->dataset->train);
@@ -27,12 +26,11 @@ void fitToConvergence(ALinearRegressor* model, long& i,
     }
 }
 
-void backwardStepwise(ALinearRegressor* model, long& i,
-                     int blocksize, double alpha){
+void backwardStepwise(SGDRegressor* model, long& i){
     std::cout << "Backward Stepwise" << std::endl;
-    int epoch = model->dataset->getSize() / blocksize;
+    int epoch = model->dataset->getSize() / model->getBlockSize();
     for(;; i++){
-        model->fit(blocksize, alpha, 0);
+        model->fit();
         if(i % (epoch) == 0){
             if(model->selected_features.size() > 0){
                 int remove_feature = model->getMinCoeff(model->selected_features);
@@ -47,18 +45,17 @@ void backwardStepwise(ALinearRegressor* model, long& i,
     }
 }
 
-void forwardStepwise(ALinearRegressor* model, long& i,
-                     int blocksize, double alpha, int maxNbFeatures){
+void forwardStepwise(SGDRegressor* model, long& i, int maxNbFeatures){
     std::cout << "Forward Stepwise" << std::endl;
     model->eraseAllFeatures();
-    int epoch = model->dataset->getSize() / blocksize;
+    int epoch = model->dataset->getSize() / model->getBlockSize();
     int k = 0;
     for(auto p : model->giniPath){
         int f = p.feature_idx;
         if(f >= 0){
             model->addFeatures({f});
             while(++i % epoch != 0){
-                model->fit(blocksize, alpha, 0);
+                model->fit();
             }
             model->storeFeatureInGiniPath(f);
             if(++k >= maxNbFeatures){
@@ -69,30 +66,30 @@ void forwardStepwise(ALinearRegressor* model, long& i,
 }
 
 ALinearRegressor* fit(Config* config, Dataset* ds){
-    SGDRegressor* model = new SGDRegressor(config, ds);
+    int blocksize = 200;
+    double learningRate = 0.0001;
+    SGDRegressor* model = new SGDRegressor(config, ds, blocksize, learningRate);
     std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
                            << " variables :" << std::endl;
 
-    int blocksize = 200;
-    double alpha = 0.0001;
     long i = 0;
     double stopCriterion = model->config->loss == "poisson" ? 0.00001 : 0.000001;
-    fitToConvergence(model, i, blocksize, alpha, 1, stopCriterion);
+    fitToConvergence(model, i, 1, stopCriterion);
     model->printResults();
-    backwardStepwise(model, i, blocksize, alpha);
+    backwardStepwise(model, i);
 
     int maxSortedFeatures = config->p;
     for(int k = 0; k < 6; k++){
         std::vector<int> bestFeatures = model->getBestFeatures(maxSortedFeatures, 0.0001);
         maxSortedFeatures = bestFeatures.size();
-        forwardStepwise(model, i, blocksize, alpha, maxSortedFeatures);
+        forwardStepwise(model, i, maxSortedFeatures);
     }
     maxSortedFeatures = std::min(maxSortedFeatures, model->config->nbFeaturesInModel);
     std::vector<int> bestFeatures = model->getBestFeatures(maxSortedFeatures, 0.0002);
-    forwardStepwise(model, i, blocksize, alpha, maxSortedFeatures);
+    forwardStepwise(model, i, maxSortedFeatures);
     model->eraseAllFeatures();
     model->addFeatures(bestFeatures);
-    fitToConvergence(model, i, blocksize, alpha, 5, stopCriterion);
+    fitToConvergence(model, i,  5, stopCriterion);
 
     return model;
 }

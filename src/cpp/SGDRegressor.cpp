@@ -1,29 +1,44 @@
 #include <iostream>
-#include <stdexcept>
 
 #include "SGDRegressor.h"
 
 
-SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
-    ALinearRegressor(config, dataset)
+SGDRegressor::SGDRegressor(Config* config, Dataset* dataset, int blocksize,
+                           float learningRate):
+    ALinearRegressor(config, dataset),
+    blocksize(blocksize),
+    learningRate(learningRate)
 {
     update.reserve(nbCoeffs + 1);
     if(config->loss == "gaussian"){
-        gradLoss = [](double y, double dp, double weight){return y - dp * weight;};
+        gradLoss = [](double y, double dp, double weight){
+            return y - dp * weight;
+        };
         std::cout << "Using gaussian loss" << std::endl;
     } else if(config->loss == "poisson") {
-        gradLoss = [](double y, double dp, double weight){return y - std::exp(dp) * weight;};
+        gradLoss = [](double y, double dp, double weight){
+            return y - std::exp(dp) * weight;
+        };
         std::cout << "Using poisson loss" << std::endl;
     } else if(config->loss == "gamma") {
-        gradLoss = [](double y, double dp, double weight){return y / (std::exp(dp) * weight) - 1;};
-        fitIntercept();
+        gradLoss = [](double y, double dp, double weight){
+            return y / (std::exp(dp) * weight) - 1;
+        };
         std::cout << "Using gamma loss" << std::endl;
     } else {
-        throw std::invalid_argument( "Received invalid loss function." );
+        throw std::invalid_argument("Received invalid loss function.");
     }
+    fitIntercept();
+}
+
+int SGDRegressor::getBlockSize(){
+    return blocksize;
 }
 
 void SGDRegressor::fitIntercept(){
+    // This calculation only works if :
+    //   - all coefficients are set to 0 ;
+    //   - or the features have *all* been normalized.
     double s = 0;
     double w = 0;
     for(int i : dataset->train){
@@ -42,7 +57,7 @@ void SGDRegressor::fitIntercept(){
     }
 }
 
-void SGDRegressor::fit(int blocksize, float learning_rate, float l2){
+void SGDRegressor::fit(){
     double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs + 1; j++){
         dp0 += x0[j] * coeffs[j];
@@ -68,14 +83,11 @@ void SGDRegressor::fit(int blocksize, float learning_rate, float l2){
     }
 
     update[0] = rTotal;
-    //double sg2 = 0;
     for(int j = 0; j < nbCoeffs + 1; j++){
         if(x1[j] != 0){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
             g[j] = 0.9 * g[j] + /*0.1 **/ grad;
-            coeffs[j] += learning_rate * g[j];
-            //g2[j] = 0.999 * g2[j] +0.001 * grad * grad;
-            //sg2 += g2[j];
+            coeffs[j] += learningRate * g[j];
         }
     }
 /*
