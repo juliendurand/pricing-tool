@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "dataset.h"
+
+#include <iostream>
 
 
 Dataset::Dataset(Config* config, float testPercent){

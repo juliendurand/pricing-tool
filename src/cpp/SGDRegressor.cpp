@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "SGDRegressor.h"
+
+#include <iostream>
 
 
 SGDRegressor::SGDRegressor(Config* config, Dataset* dataset, int blocksize,

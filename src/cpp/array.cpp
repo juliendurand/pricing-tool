@@ -1,3 +1,5 @@
+#include "array.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -5,8 +7,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
-#include "array.h"
 
 
 size_t getFilesize(const std::string filename) {

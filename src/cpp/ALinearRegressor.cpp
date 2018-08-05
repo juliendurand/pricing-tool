@@ -1,3 +1,5 @@
+#include "ALinearRegressor.h"
+
 #include <algorithm>
 #include <assert.h>
 #include <cinttypes>
@@ -15,7 +17,6 @@
 #include <unistd.h>
 
 #include "array.h"
-#include "ALinearRegressor.h"
 
 
 ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)

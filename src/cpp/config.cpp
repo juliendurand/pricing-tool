@@ -1,9 +1,10 @@
+#include "config.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-#include "config.h"
 
 Config::Config(const std::string& name) : name(name) {
     std::cout << "Loading config file : " << name <<std::endl;
