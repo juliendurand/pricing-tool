@@ -27,9 +27,9 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     nbCoeffs = config->m;
     offsets = config->offsets;
     features = config->features;
-    x = dataset->x_data->getData();
-    exposure = dataset->weight_data->getData();
-    y = dataset->y_data->getData();
+    x = dataset->get_x();
+    exposure = dataset->get_weight();
+    y = dataset->get_y();
 
     coeffs = new double[nbCoeffs + 1];
     weights = new double[nbCoeffs + 1];

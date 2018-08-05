@@ -2,8 +2,6 @@
 
 #include "dataset.h"
 
-Dataset::Dataset(){
-}
 
 Dataset::Dataset(Config* config, float testPercent){
     std::random_device rd;
@@ -59,4 +57,16 @@ void Dataset::filterNonZeroTarget(){
     auto end_sample = std::remove_if(sample.begin(), sample.end(),
                                      [w](int i){return w[i] == 0;});
     sample.erase(end_sample, sample.end());
+}
+
+uint8_t* Dataset::get_x(){
+    return x_data->getData();
+}
+
+float* Dataset::get_weight(){
+    return weight_data->getData();
+}
+
+float* Dataset::get_y(){
+    return y_data->getData();
 }
