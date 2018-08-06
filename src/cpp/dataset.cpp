@@ -8,13 +8,13 @@ Dataset::Dataset(Config* config, float testPercent){
     generator = std::mt19937(rd());
 
     x_data = new Array<uint8_t>(config->getFeatureFilename(), config->p,
-        config->n);
+        config->n, true);
     weight_data = new Array<float>(config->getWeightFilename(), 1,
-        config->n * 4);
-    y_data = new Array<float>(config->getTargetFilename(), 1, config->n * 4);
+        config->n, true);
+    y_data = new Array<float>(config->getTargetFilename(), 1, config->n, true);
 
     Array<int32_t> train_index(config->getTrainFilename(), 1,
-        config->trainSize * 4);
+        config->trainSize, true);
     std::vector<int32_t> train_data(train_index.getData(),
         train_index.getData() + config->trainSize);
 
@@ -31,7 +31,7 @@ Dataset::Dataset(Config* config, float testPercent){
     std::sort(test.begin(), test.end());
 
     Array<int32_t> sample_index(config->getTestFilename(), 1,
-        config->testSize * 4);
+        config->testSize, true);
     std::vector<int32_t> sample_data(sample_index.getData(),
         sample_index.getData() + config->testSize);
     sample.swap(sample_data);

@@ -8,20 +8,18 @@
 
 class SGDRegressor : public ALinearRegressor
 {
-private:
-    int blocksize;
-    float learningRate;
-    std::vector<double> update;
-    double (*gradLoss)(double, double, double);
-
 public:
     SGDRegressor(Config* config, Dataset* dataset, int blocksize,
                  float learningRate);
     int getBlockSize();
     virtual void fit();
 
-
 private:
+    int blocksize;
+    float learningRate;
+    std::vector<double> update;
+    double (*gradLoss)(double, double, double);
+
     void fitIntercept();
 };
 
