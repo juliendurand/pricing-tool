@@ -16,8 +16,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "array.h"
-
 
 ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
 {
@@ -32,11 +30,6 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     exposure = dataset->get_weight();
     y = dataset->get_y();
 
-    /*coeffs = new double[nbCoeffs + 1];
-    weights = new double[nbCoeffs + 1];
-    stdev = new double[nbCoeffs + 1];
-    x0 = new double[nbCoeffs + 1];
-    x1 = new double[nbCoeffs + 1];*/
     coeffs.reserve(nbCoeffs + 1);
     weights.reserve(nbCoeffs + 1);
     stdev.reserve(nbCoeffs + 1);

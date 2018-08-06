@@ -9,27 +9,23 @@
 #include <unistd.h>
 
 
-size_t getFilesize(const std::string filename) {
-    struct stat st;
-    stat(filename.c_str(), &st);
-    return st.st_size;
-}
-
 template<typename T>
 Array<T>::Array(std::string filename, int p, int n, bool readonly):
-    filename(filename), p(p), n(n)
+    filename(filename),
+    p(p),
+    n(n),
+    size_type(sizeof(T)),
+    readonly(readonly),
+    size(n * p * size_type)
 {
-    size_type = sizeof(T);
-
     std::cout << "Loading data file : " << filename << std::endl;
-    size = n * p * size_type;
 
     //Open file
     int open_flags = readonly ? O_RDONLY : O_RDWR | O_CREAT;
     fd = open(filename.c_str(), open_flags, static_cast<mode_t>(0777));
     assert(fd != -1);
 
-    size_t filesize = getFilesize(filename);
+    size_t filesize = getFilesize();
     if(readonly){
         assert(filesize == size);
     }
@@ -70,6 +66,13 @@ T* Array<T>::getData(){
 template<typename T>
 int Array<T>::getSize(){
     return size;
+}
+
+template<typename T>
+size_t Array<T>::getFilesize() {
+    struct stat st;
+    stat(filename.c_str(), &st);
+    return st.st_size;
 }
 
 template class Array<uint8_t>;

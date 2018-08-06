@@ -7,22 +7,24 @@
 template <typename T>
 class Array
 {
+public:
+    Array(const std::string filename, int p, int n, bool readonly);
+    ~Array();
+    T* getData();
+    int getSize();
+
 private:
-    std::string filename;
-    int p;
-    int n;
-    std::size_t size_type;
-    bool readonly;
-    int size;
+    const std::string filename;
+    const int p;
+    const int n;
+    const std::size_t size_type;
+    const bool readonly;
+    const int size;
     int fd;
     void* mmappt;
     T* data;
 
-public:
-    Array(std::string filename, int p, int n, bool readonly);
-    ~Array();
-    T* getData();
-    int getSize();
+    size_t getFilesize();
 };
 
 #endif  // ARRAY_H_

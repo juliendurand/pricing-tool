@@ -11,7 +11,6 @@
 class Dataset
 {
 private:
-    float testPct;
     std::mt19937 generator;
     std::uniform_int_distribution<std::mt19937::result_type> random;
     Array<uint8_t>* x_data;
@@ -23,7 +22,7 @@ public:
     std::vector<int> test;
     std::vector<int> sample;
 public:
-    Dataset(Config* config, float testPct);
+    Dataset(Config* config);
     int getSize();
     int next();
     uint8_t* get_x();

@@ -21,12 +21,13 @@ public:
     int m;
     int trainSize;
     int testSize;
+    double testPct;
     std::vector<std::string> features;
     std::vector<std::string> modalities;
     std::vector<int> offsets;
     std::vector<std::string> excludedFeatures;
 
-    Config(const std::string& filename);
+    Config(const std::string& filename, double testPct);
     std::string getFeatureFilename();
     std::string getWeightFilename();
     std::string getTargetFilename();

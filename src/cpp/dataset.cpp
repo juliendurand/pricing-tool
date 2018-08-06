@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-Dataset::Dataset(Config* config, float testPercent){
+Dataset::Dataset(Config* config){
     std::random_device rd;
     generator = std::mt19937(rd());
 
@@ -18,9 +18,8 @@ Dataset::Dataset(Config* config, float testPercent){
     std::vector<int32_t> train_data(train_index.getData(),
         train_index.getData() + config->trainSize);
 
-    testPct = testPercent;
     std::size_t const testSize = static_cast<std::size_t>(
-        config->trainSize * testPct);
+        config->trainSize * config->testPct);
     std::shuffle(train_data.begin(), train_data.end(), generator);
 
     train = std::vector<int32_t>(train_data.begin(),

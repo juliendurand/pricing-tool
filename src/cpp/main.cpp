@@ -101,8 +101,8 @@ int main(int argc, char** argv){
     }
     std::string config_filename = argv[1];
 
-    Config config(config_filename);
-    Dataset ds(&config, 0.5);
+    Config config(config_filename, 0.2);
+    Dataset ds(&config);
     ALinearRegressor* model = fit(&config, &ds);
 
     std::cout << std::endl
