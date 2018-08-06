@@ -3,11 +3,10 @@
 #include <iostream>
 
 
-SGDRegressor::SGDRegressor(Config* config, Dataset* dataset, int blocksize,
-                           float learningRate):
+SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     ALinearRegressor(config, dataset),
-    blocksize(blocksize),
-    learningRate(learningRate)
+    blocksize(200),
+    learningRate(0.0001)
 {
     update.reserve(nbCoeffs + 1);
     if(config->loss == "gaussian"){
@@ -29,6 +28,9 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset, int blocksize,
         throw std::invalid_argument("Received invalid loss function.");
     }
     fitIntercept();
+}
+
+SGDRegressor::~SGDRegressor(){
 }
 
 int SGDRegressor::getBlockSize(){

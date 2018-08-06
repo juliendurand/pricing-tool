@@ -47,10 +47,9 @@ public:
     std::vector<double> g;
 
     ALinearRegressor(Config* config, Dataset* dataset);
+    virtual ~ALinearRegressor();
     virtual void fit() = 0;
     void predict(const std::vector<int> &samples);
-    double logLikelihood(const std::vector<int> &samples);
-    void writeResults(const std::vector<int> test);
     int getMinCoeff(const std::set<int>& selected_features);
     double getCoeffNorm2(int feature);
     double getCoeffGini(int feature);
@@ -60,14 +59,15 @@ public:
     void eraseAllFeatures();
     void eraseFeatures(const std::vector<int> &features);
     void addFeatures(const std::vector<int> &features);
-    void printSelectedFeatures(int nbSelected);
+    void printSelectedFeatures();
+    double logLikelihood(const std::vector<int> &samples);
     double rmse(const std::vector<int> &samples);
     double gini(const std::vector<int> &samples);
     void printResults();
-    void writeGiniPath();
     void sortFeatures();
     void sortFeatures(int maxNbFeatures);
     const std::vector<int> getBestFeatures(int maxNbFeatures, double treshold);
+    void writeResults(const std::vector<int> test);
 
 private:
     const std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,

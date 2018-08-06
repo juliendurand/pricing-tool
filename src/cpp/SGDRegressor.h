@@ -9,8 +9,8 @@
 class SGDRegressor : public ALinearRegressor
 {
 public:
-    SGDRegressor(Config* config, Dataset* dataset, int blocksize,
-                 float learningRate);
+    SGDRegressor(Config* config, Dataset* dataset);
+    virtual ~SGDRegressor();
     int getBlockSize();
     virtual void fit();
 

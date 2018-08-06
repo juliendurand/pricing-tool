@@ -4,7 +4,16 @@
 #include "SGDRegressor.h"
 
 
-void fitToConvergence(SGDRegressor* model, long& i, int precision,
+void fitEpoch(SGDRegressor* model, long& i, float nb_epoch){
+    int epoch = model->dataset->getSize() / model->getBlockSize();
+    int nb_blocks = nb_epoch * epoch;
+    for(int j=0; j < nb_blocks; ++j){
+        model->fit();
+        ++i;
+    }
+}
+
+void fitUntilConvergence(SGDRegressor* model, long& i, int precision,
                       float stopCriterion){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
@@ -28,19 +37,16 @@ void fitToConvergence(SGDRegressor* model, long& i, int precision,
 
 void backwardStepwise(SGDRegressor* model, long& i){
     std::cout << "Backward Stepwise" << std::endl;
-    int epoch = model->dataset->getSize() / model->getBlockSize();
-    for(;; i++){
-        model->fit();
-        if(i % (epoch) == 0){
-            if(model->selected_features.size() > 0){
-                int remove_feature = model->getMinCoeff(model->selected_features);
-                model->storeFeatureInGiniPath(remove_feature);
-                model->eraseFeatures({remove_feature});
-            }
-            else{
-                model->storeFeatureInGiniPath(-1);
-                break;
-            }
+    for(;;){
+        fitEpoch(model, i, 1);
+        if(model->selected_features.size() > 0){
+            int remove_feature = model->getMinCoeff(model->selected_features);
+            model->storeFeatureInGiniPath(remove_feature);
+            model->eraseFeatures({remove_feature});
+        }
+        else{
+            model->storeFeatureInGiniPath(-1);
+            break;
         }
     }
 }
@@ -48,37 +54,30 @@ void backwardStepwise(SGDRegressor* model, long& i){
 void forwardStepwise(SGDRegressor* model, long& i, int maxNbFeatures){
     std::cout << "Forward Stepwise" << std::endl;
     model->eraseAllFeatures();
-    int epoch = model->dataset->getSize() / model->getBlockSize();
-    int k = 0;
     for(auto p : model->giniPath){
         int f = p.feature_idx;
         if(f >= 0){
             model->addFeatures({f});
-            while(++i % epoch != 0){
-                model->fit();
-            }
+            fitEpoch(model, i, 1);
             model->storeFeatureInGiniPath(f);
-            if(++k >= maxNbFeatures){
+            if(model->selected_features.size() >= maxNbFeatures){
                 break;
             }
         }
     }
 }
 
-ALinearRegressor* fit(Config* config, Dataset* ds){
-    int blocksize = 200;
-    double learningRate = 0.0001;
-    SGDRegressor* model = new SGDRegressor(config, ds, blocksize, learningRate);
-    std::cout << std::endl << "Fit Model for " << config->nbFeaturesInModel
+void fit(SGDRegressor* model){
+    std::cout << std::endl << "Fit Model for " << model->config->nbFeaturesInModel
                            << " variables :" << std::endl;
 
     long i = 0;
     double stopCriterion = model->config->loss == "poisson" ? 0.00001 : 0.000001;
-    fitToConvergence(model, i, 1, stopCriterion);
+    fitUntilConvergence(model, i, 1, stopCriterion);
     model->printResults();
     backwardStepwise(model, i);
 
-    int maxSortedFeatures = config->p;
+    int maxSortedFeatures = model->config->p;
     for(int k = 0; k < 6; k++){
         std::vector<int> bestFeatures = model->getBestFeatures(maxSortedFeatures, 0.0001);
         maxSortedFeatures = bestFeatures.size();
@@ -89,9 +88,7 @@ ALinearRegressor* fit(Config* config, Dataset* ds){
     forwardStepwise(model, i, maxSortedFeatures);
     model->eraseAllFeatures();
     model->addFeatures(bestFeatures);
-    fitToConvergence(model, i,  5, stopCriterion);
-
-    return model;
+    fitUntilConvergence(model, i,  5, stopCriterion);
 }
 
 int main(int argc, char** argv){
@@ -103,15 +100,17 @@ int main(int argc, char** argv){
 
     Config config(config_filename, 0.2);
     Dataset ds(&config);
-    ALinearRegressor* model = fit(&config, &ds);
+    SGDRegressor* model = new SGDRegressor(&config, &ds);
+    fit(model);
 
     std::cout << std::endl
               << "Final results :" << std::endl
               << "---------------" << std::endl;
 
     model->printResults();
-    model->printSelectedFeatures(model->selected_features.size());
+    model->printSelectedFeatures();
     model->writeResults(ds.getSample());
 
     std::cout << std::endl << "Finished OK." << std::endl;
+    delete model;
 }
