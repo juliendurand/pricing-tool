@@ -27,7 +27,7 @@ public:
     std::vector<int> offsets;
     std::vector<std::string> excludedFeatures;
 
-    Config(const std::string& filename, double testPct);
+    Config(const std::string& filename);
     std::string getFeatureFilename();
     std::string getWeightFilename();
     std::string getTargetFilename();

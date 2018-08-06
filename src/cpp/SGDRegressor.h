@@ -13,6 +13,8 @@ public:
     virtual ~SGDRegressor();
     int getBlockSize();
     virtual void fit();
+    void fitEpoch(long& i, float nb_epoch);
+    void fitUntilConvergence(long& i, int precision, float stopCriterion);
 
 private:
     int blocksize;

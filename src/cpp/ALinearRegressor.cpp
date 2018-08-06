@@ -301,19 +301,6 @@ void ALinearRegressor::addFeatures(const std::vector<int> &features){
     }
 }
 
-void ALinearRegressor::printSelectedFeatures(){
-    std::cout << "Selected Features :" <<std::endl;
-    for(int i = 1; i < selected_features.size() + 1; i++){
-        FeatureResult& p = giniPath[i];
-        std::cout << "        " << i << " : " << p.feature
-                  << " [N2=" << p.norm
-                  << ", CGini" << p.coeffGini * 100
-                  << "%, Spread(100/0)=" << p.spread100 * 100
-                  << "%, Spread(95/5)=" << p.spread95 * 100 << "%]"
-                  << std::endl;
-    }
-}
-
 double ALinearRegressor::logLikelihood(const std::vector<int> &samples){
     double ll = 0;
     if(config->loss == "gaussian"){
@@ -417,7 +404,7 @@ const std::vector<int> ALinearRegressor::getBestFeatures(int maxNbFeatures,
 
 void ALinearRegressor::writeResults(std::vector<int> test){
     predict(test);
-    std::cout << "Writting results." << std::endl;
+    std::cout << std::endl << "Saving results." << std::endl;
 
     std::ofstream resultFile;
     resultFile.open(config->resultPath + "results.csv", std::ios::out);

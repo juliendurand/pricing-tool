@@ -59,7 +59,6 @@ public:
     void eraseAllFeatures();
     void eraseFeatures(const std::vector<int> &features);
     void addFeatures(const std::vector<int> &features);
-    void printSelectedFeatures();
     double logLikelihood(const std::vector<int> &samples);
     double rmse(const std::vector<int> &samples);
     double gini(const std::vector<int> &samples);

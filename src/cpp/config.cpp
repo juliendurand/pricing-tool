@@ -6,8 +6,8 @@
 #include <stdexcept>
 
 
-Config::Config(const std::string& name, double testPct) :
-    name(name), testPct(testPct)
+Config::Config(const std::string& name) :
+    name(name), testPct(0.2)
 {
     std::cout << "Loading config file : " << name <<std::endl;
     std::ifstream cfgfile(name);

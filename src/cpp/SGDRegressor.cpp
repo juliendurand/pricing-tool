@@ -106,3 +106,34 @@ void SGDRegressor::fit(){
     //std::cout << update[1] << " " << rTotal << ":" << coeffs[1] << ", "  << std::endl;
 */
 }
+
+void SGDRegressor::fitEpoch(long& i, float nb_epoch){
+    int epoch = dataset->getSize() / getBlockSize();
+    int nb_blocks = nb_epoch * epoch;
+    for(int j=0; j < nb_blocks; ++j){
+        fit();
+        ++i;
+    }
+}
+
+void SGDRegressor::fitUntilConvergence(long& i, int precision,
+                      float stopCriterion){
+    double minll = 1e30;
+    int nbIterationsSinceMinimum = 0;
+    int epoch = dataset->getSize() / getBlockSize();
+    for(; nbIterationsSinceMinimum < precision; i++){
+        fit();
+        if(i % epoch == 0){
+            std::cout << i * getBlockSize() << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
+            printResults();
+            predict(dataset->getTrain());
+            double ll = logLikelihood(dataset->getTrain());
+            if(ll < minll - stopCriterion) {
+                minll = ll;
+                nbIterationsSinceMinimum = 0;
+            } else {
+                nbIterationsSinceMinimum++;
+            }
+        }
+    }
+}
