@@ -18,8 +18,8 @@ private:
     int blocksize;
     float learningRate;
     std::vector<double> update;
-    double (*gradLoss)(double, double, double);
 
+    double (*gradLoss)(double, double, double);
     void fitIntercept();
 };
 

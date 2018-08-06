@@ -85,7 +85,7 @@ void SGDRegressor::fit(){
     for(int j = 0; j < nbCoeffs + 1; j++){
         if(x1[j] != 0){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
-            g[j] = 0.9 * g[j] + /*0.1 **/ grad;
+            g[j] = 0.9 * g[j] + grad;
             coeffs[j] += learningRate * g[j];
         }
     }

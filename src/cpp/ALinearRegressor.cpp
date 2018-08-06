@@ -1,20 +1,10 @@
 #include "ALinearRegressor.h"
 
-#include <algorithm>
-#include <assert.h>
-#include <cinttypes>
-#include <cmath>
-#include <fcntl.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <map>
-#include <numeric>
 #include <string>
 #include <sstream>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 
 ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
@@ -86,10 +76,6 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     dppred.reserve(n);
     giniPath = std::vector<FeatureResult>(selected_features.size() + 1,
                                           FeatureResult());
-}
-
-ALinearRegressor::~ALinearRegressor()
-{
 }
 
 void ALinearRegressor::predict(const std::vector<int> &samples){
@@ -415,19 +401,6 @@ void ALinearRegressor::printSelectedFeatures(int nbSelected){
     }
 }
 
-double ALinearRegressor::getNorm2CoeffDiff(double* coeffs2){
-    int size = 0;
-    double s = 0;
-    for(int i = 0; i < config->m + 1; i++){
-        if(coeffs[i] != 0 || coeffs2[i] != 0){
-            size++;
-            double diff = (coeffs[i] - coeffs2[i]) / stdev[i];
-            s += diff * diff ;
-        }
-    }
-    return std::sqrt(s /  size);
-}
-
 double ALinearRegressor::rmse(const std::vector<int> &samples){
     double rmse = 0;
     double sexp = 0;
@@ -441,7 +414,7 @@ double ALinearRegressor::rmse(const std::vector<int> &samples){
 }
 
 double ALinearRegressor::gini(const std::vector<int> &samples){
-    std::vector<size_t> idx = reverse_sort_indexes(ypred, &exposure[0], samples);
+    std::vector<size_t> idx = reverse_sort_indexes(ypred, exposure, samples);
     double exposure_sum = 0;
     double obs_sum = 0;
     double rank_obs_sum = 0;
@@ -469,7 +442,7 @@ void ALinearRegressor::printResults(){
 }
 
 const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
-        const std::vector<float> &v, const float* w, const std::vector<int> &samples)
+        const std::vector<float>& v, const float* w, const std::vector<int>& samples)
 {
     // initialize original index locations
     std::vector<size_t> idx(samples.size());
@@ -488,15 +461,7 @@ const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
 }
 
 void ALinearRegressor::sortFeatures(){
-    std::vector<int> diff(p+1);
-    for(int i = 1; i < giniPath.size(); i++){
-        giniPath[i].diffGini = giniPath[i].gini - giniPath[i - 1].gini;
-    }
-    std::sort(giniPath.begin() + 1, giniPath.end(),
-        [diff](FeatureResult& i, FeatureResult& j) {
-            return i.diffGini > j.diffGini;
-        }
-    );
+    sortFeatures(giniPath.size());
 }
 
 void ALinearRegressor::sortFeatures(int maxNbFeatures){
