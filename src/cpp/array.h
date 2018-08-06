@@ -12,6 +12,7 @@ public:
     ~Array();
     T* getData();
     int getSize();
+    const T& operator[](size_t i) const;
 
 private:
     const std::string filename;

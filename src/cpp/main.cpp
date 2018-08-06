@@ -14,8 +14,8 @@ void fitToConvergence(SGDRegressor* model, long& i, int precision,
         if(i % epoch == 0){
             std::cout << i * model->getBlockSize() << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
             model->printResults();
-            model->predict(model->dataset->train);
-            double ll = model->logLikelihood(model->dataset->train);
+            model->predict(model->dataset->getTrain());
+            double ll = model->logLikelihood(model->dataset->getTrain());
             if(ll < minll - stopCriterion) {
                 minll = ll;
                 nbIterationsSinceMinimum = 0;
@@ -111,7 +111,7 @@ int main(int argc, char** argv){
 
     model->printResults();
     model->printSelectedFeatures(model->selected_features.size());
-    model->writeResults(ds.sample);
+    model->writeResults(ds.getSample());
 
     std::cout << std::endl << "Finished OK." << std::endl;
 }

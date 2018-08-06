@@ -69,6 +69,11 @@ int Array<T>::getSize(){
 }
 
 template<typename T>
+const T& Array<T>::operator[](size_t i) const{
+    return data[i];
+}
+
+template<typename T>
 size_t Array<T>::getFilesize() {
     struct stat st;
     stat(filename.c_str(), &st);

@@ -17,18 +17,19 @@
 #include <unistd.h>
 
 
-ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
+ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
+    config(config),
+    dataset(ds),
+    x(ds->get_x()),
+    y(ds->get_y()),
+    exposure(ds->get_weight())
 {
-    config = configuration;
-    dataset = ds;
     n = config->n;
     p = config->p;
     nbCoeffs = config->m;
     offsets = config->offsets;
     features = config->features;
-    x = dataset->get_x();
-    exposure = dataset->get_weight();
-    y = dataset->get_y();
+
 
     coeffs.reserve(nbCoeffs + 1);
     weights.reserve(nbCoeffs + 1);
@@ -43,11 +44,11 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
         weights[i] = 0;
     }
 
-    for(int i : dataset->train){
+    for(int i : dataset->getTrain()){
         weights[0] += exposure[i];
-        uint8_t*  xi = x + p * i;
+        int row = p * i;
         for(int j = 0; j < p; j++){
-            weights[xi[j] + offsets[j] + 1] += exposure[i];
+            weights[x[row + j] + offsets[j] + 1] += exposure[i];
         }
     }
 
@@ -97,10 +98,10 @@ void ALinearRegressor::predict(const std::vector<int> &samples){
         dp0 += x0[j] * coeffs[j];
     }
     for(int i : samples){
-        uint8_t* xi = x + p * i;
+        int row = p * i;
         double dp = coeffs[0] + dp0;
         for(int j : selected_features){
-            int k = offsets[j]+ xi[j] + 1;
+            int k = offsets[j] + x[row + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
         dppred[i] = dp;
@@ -325,17 +326,17 @@ double ALinearRegressor::getSpread95(int feature){
 void ALinearRegressor::storeFeatureInGiniPath(int f){
     int position = selected_features.size();
     FeatureResult fr;
-    predict(dataset->test);
+    predict(dataset->getTest());
     if(position == 0){
         fr = {
             -1,
             "Intercept",
-            gini(dataset->test),
+            gini(dataset->getTest()),
             0,
             0,
             0,
             0,
-            rmse(dataset->test),
+            rmse(dataset->getTest()),
             0
         };
         std::cout << "Storing Intercept." << std::endl;
@@ -343,12 +344,12 @@ void ALinearRegressor::storeFeatureInGiniPath(int f){
         fr = {
             f,
             config->features[f],
-            gini(dataset->test),
+            gini(dataset->getTest()),
             getCoeffGini(f),
             getCoeffNorm2(f),
             getSpread100(f),
             getSpread95(f),
-            rmse(dataset->test),
+            rmse(dataset->getTest()),
             0
         };
         std::cout << "Storing[" << position << "] "
@@ -440,7 +441,7 @@ double ALinearRegressor::rmse(const std::vector<int> &samples){
 }
 
 double ALinearRegressor::gini(const std::vector<int> &samples){
-    std::vector<size_t> idx = reverse_sort_indexes(ypred, exposure, samples);
+    std::vector<size_t> idx = reverse_sort_indexes(ypred, &exposure[0], samples);
     double exposure_sum = 0;
     double obs_sum = 0;
     double rank_obs_sum = 0;
@@ -455,20 +456,20 @@ double ALinearRegressor::gini(const std::vector<int> &samples){
 }
 
 void ALinearRegressor::printResults(){
-    predict(dataset->train);
-    predict(dataset->test);
-    predict(dataset->sample);
-    std::cout << "gini(train=" << gini(dataset->train)
-              << ", test="     << gini(dataset->test)
-              << ", sample="     << gini(dataset->sample) << ")"
+    predict(dataset->getTrain());
+    predict(dataset->getTest());
+    predict(dataset->getSample());
+    std::cout << "gini(train=" << gini(dataset->getTrain())
+              << ", test="     << gini(dataset->getTest())
+              << ", sample="     << gini(dataset->getSample()) << ")"
               << " | "
-              << "ll(train=" << logLikelihood(dataset->train)
-              << ", test="   << logLikelihood(dataset->test) << ")"
+              << "ll(train=" << logLikelihood(dataset->getTrain())
+              << ", test="   << logLikelihood(dataset->getTest()) << ")"
               << std::endl;
 }
 
 const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
-        const std::vector<float> &v, float* w, const std::vector<int> &samples)
+        const std::vector<float> &v, const float* w, const std::vector<int> &samples)
 {
     // initialize original index locations
     std::vector<size_t> idx(samples.size());

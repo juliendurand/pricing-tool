@@ -29,9 +29,9 @@ public:
     Dataset* dataset;
     int p;
     int n;
-    uint8_t* x;
-    float* y;
-    float* exposure;
+    const uint8_t* x;
+    const float* y;
+    const float* exposure;
     int nbCoeffs;
     std::vector<double> coeffs;
     std::vector<double> weights;
@@ -73,7 +73,7 @@ public:
 
 private:
     const std::vector<size_t> reverse_sort_indexes(const std::vector<float> &v,
-                                             float* w,
+                                             const float* w,
                                              const std::vector<int> &samples);
 
 };

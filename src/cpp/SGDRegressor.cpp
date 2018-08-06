@@ -41,7 +41,7 @@ void SGDRegressor::fitIntercept(){
     //   - or the features have *all* been normalized.
     double s = 0;
     double w = 0;
-    for(int i : dataset->train){
+    for(int i : dataset->getTrain()){
         s += y[i];
         w += exposure[i];
     }
@@ -67,17 +67,16 @@ void SGDRegressor::fit(){
     double rTotal = 0;
     for(int k = 0; k < blocksize; k++){
         int i = dataset->next();
-        uint8_t* xi = x + p * i;
 
         double dp = dp0;
         for(int j : selected_features){
-            int k = offsets[j]+ xi[j] + 1;
+            int k = offsets[j]+ x[p * i + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
         double r = gradLoss(y[i], dp, exposure[i]);
         rTotal += r;
         for(int j = 0; j < p ; j++){
-            int k = offsets[j]+ xi[j] + 1;
+            int k = offsets[j]+ x[p * i + j] + 1;
             update[k] += r * (x1[k] - x0[k]);
         }
     }
