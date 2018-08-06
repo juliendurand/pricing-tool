@@ -32,11 +32,17 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     exposure = dataset->get_weight();
     y = dataset->get_y();
 
-    coeffs = new double[nbCoeffs + 1];
+    /*coeffs = new double[nbCoeffs + 1];
     weights = new double[nbCoeffs + 1];
     stdev = new double[nbCoeffs + 1];
     x0 = new double[nbCoeffs + 1];
-    x1 = new double[nbCoeffs + 1];
+    x1 = new double[nbCoeffs + 1];*/
+    coeffs.reserve(nbCoeffs + 1);
+    weights.reserve(nbCoeffs + 1);
+    stdev.reserve(nbCoeffs + 1);
+    x0.reserve(nbCoeffs + 1);
+    x1.reserve(nbCoeffs + 1);
+    g.reserve(nbCoeffs + 1);
 
 
     for(int i = 0; i < nbCoeffs + 1; i++){
@@ -86,45 +92,10 @@ ALinearRegressor::ALinearRegressor(Config* configuration, Dataset* ds)
     dppred.reserve(n);
     giniPath = std::vector<FeatureResult>(selected_features.size() + 1,
                                           FeatureResult());
-
-    g.reserve(nbCoeffs + 1);
-    g2.reserve(nbCoeffs + 1);
-    for(int j = 0; j < nbCoeffs + 1 ; j++){
-        g[j] = 0;
-        g2[j] = 0;
-    }
 }
 
 ALinearRegressor::~ALinearRegressor()
 {
-    delete[] coeffs;
-    delete[] weights;
-    delete[] stdev;
-    delete[] x0;
-    delete[] x1;
-}
-
-int ALinearRegressor::penalizeLasso(float learning_rate, float l1){
-    int nb_coeffs_non_zero = 0;
-    for(int j = 0; j < nbCoeffs + 1; j++){
-        float c = coeffs[j];
-        if(c > l1 * learning_rate){
-            coeffs[j] -= l1 * learning_rate;
-            nb_coeffs_non_zero++;
-        } else if(c < -l1 * learning_rate){
-            coeffs[j] += l1 * learning_rate;
-            nb_coeffs_non_zero++;
-        } else {
-            coeffs[j] = 0;
-        }
-    }
-    return nb_coeffs_non_zero;
-}
-
-void ALinearRegressor::penalizeRidge(float learning_rate, float l2){
-    for(int j = 1; j < nbCoeffs + 1; j++){
-        coeffs[j] *= (1 - l2 * learning_rate);
-    }
 }
 
 void ALinearRegressor::predict(const std::vector<int> &samples){
@@ -231,7 +202,7 @@ void ALinearRegressor::writeResults(std::vector<int> test){
     giniPathFile.close();
 }
 
-int ALinearRegressor::getMinCoeff(std::set<int>& selected_features){
+int ALinearRegressor::getMinCoeff(const std::set<int>& selected_features){
     int minidx = -1;
     double minvalue = 100000000;
     for(int i = 0; i< p; i++){
@@ -503,7 +474,7 @@ void ALinearRegressor::printResults(){
               << std::endl;
 }
 
-std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
+const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
         const std::vector<float> &v, float* w, const std::vector<int> &samples)
 {
     // initialize original index locations
@@ -546,7 +517,7 @@ void ALinearRegressor::sortFeatures(int maxNbFeatures){
     );
 }
 
-std::vector<int> ALinearRegressor::getBestFeatures(int maxNbFeatures,
+const std::vector<int> ALinearRegressor::getBestFeatures(int maxNbFeatures,
                                                    double treshold){
     sortFeatures(maxNbFeatures);
     std::vector<int> bestFeatures;
