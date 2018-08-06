@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "config.h"
 #include "SGDRegressor.h"
 
 

@@ -5,8 +5,8 @@
 #include <vector>
 #include <set>
 
-#include "config.h"
-#include "dataset.h"
+#include "Config.h"
+#include "Dataset.h"
 
 
 struct FeatureResult {

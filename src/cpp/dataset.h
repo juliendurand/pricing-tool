@@ -4,8 +4,8 @@
 #include <random>
 #include <vector>
 
-#include "array.h"
-#include "config.h"
+#include "Array.h"
+#include "Config.h"
 
 
 class Dataset
