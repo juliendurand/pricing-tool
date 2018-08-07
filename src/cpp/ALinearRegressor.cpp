@@ -7,14 +7,6 @@
 #include <string>
 
 
-std::string doubleToText(const double & d)
-{
-    std::stringstream ss;
-    ss << std::setprecision(std::numeric_limits<int>::max());
-    ss << d;
-    return ss.str();
-}
-
 ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     config(config),
     dataset(ds),
@@ -67,6 +59,18 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
 }
 
 ALinearRegressor::~ALinearRegressor(){
+}
+
+std::vector<double> ALinearRegressor::getCoeffs(){
+    std::vector<double> results(coeffs.size(), 0);
+    results[0] = coeffs[0];
+    for(int i = 1; i < coeffs.size(); i++){
+        if(stdev[i] != 0){
+            results[i] = coeffs[i] / stdev[i];
+            results[0] -= results[i] * (weights[i] / weights[0]);
+        }
+    }
+    return results;
 }
 
 void ALinearRegressor::predict(const std::vector<int> &samples){
@@ -324,10 +328,8 @@ void ALinearRegressor::writeResults(std::vector<int> test){
     std::ofstream coeffFile;
     coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
-    // FIXME for intercept
-    for(int j=0; j < nbCoeffs + 1; j++){
-        double c = stdev[j] != 0 ? coeffs[j] / stdev[j] : 0;
-        coeffFile << doubleToText(c) << std::endl;
+    for(double c : getCoeffs()){
+        coeffFile << c << std::endl;
     }
     coeffFile.close();
 }

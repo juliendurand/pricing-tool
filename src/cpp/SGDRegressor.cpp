@@ -9,17 +9,25 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     learningRate(0.0001)
 {
     update.resize(nbCoeffs + 1, 0);
-    if(config->loss == "gaussian"){
+    selectGradLoss(config->loss);
+    fitIntercept();
+}
+
+SGDRegressor::~SGDRegressor(){
+}
+
+void SGDRegressor::selectGradLoss(const std::string loss){
+    if(loss == "gaussian"){
         gradLoss = [](double y, double dp, double weight){
             return y - dp * weight;
         };
         std::cout << "Using gaussian loss" << std::endl;
-    } else if(config->loss == "poisson") {
+    } else if(loss == "poisson") {
         gradLoss = [](double y, double dp, double weight){
             return y - std::exp(dp) * weight;
         };
         std::cout << "Using poisson loss" << std::endl;
-    } else if(config->loss == "gamma") {
+    } else if(loss == "gamma") {
         gradLoss = [](double y, double dp, double weight){
             return y / (std::exp(dp) * weight) - 1;
         };
@@ -27,10 +35,6 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     } else {
         throw std::invalid_argument("Received invalid loss function.");
     }
-    fitIntercept();
-}
-
-SGDRegressor::~SGDRegressor(){
 }
 
 void SGDRegressor::fitIntercept(){

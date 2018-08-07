@@ -21,6 +21,7 @@ private:
     std::vector<double> update;
 
     double (*gradLoss)(double, double, double);
+    void selectGradLoss(const std::string loss);
     void fitIntercept();
 };
 

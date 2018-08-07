@@ -21,6 +21,7 @@ public:
     ALinearRegressor(Config* config, Dataset* dataset);
     virtual ~ALinearRegressor();
     virtual void fit() = 0;
+    std::vector<double> getCoeffs();
     void predict(const std::vector<int> &samples);
     int getMinCoeff();
     double getCoeffNorm2(int feature);

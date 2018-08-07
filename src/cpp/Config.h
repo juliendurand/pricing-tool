@@ -8,9 +8,10 @@
 class Config
 {
 public:
+    const std::string name;
+    const double testPct;
     std::string label;
     std::string path;
-    std::string name;
     std::string resultPath;
     std::string target;
     std::string weight;
@@ -21,7 +22,6 @@ public:
     int m;
     int trainSize;
     int testSize;
-    double testPct;
     std::vector<std::string> features;
     std::vector<std::string> modalities;
     std::vector<int> offsets;

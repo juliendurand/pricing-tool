@@ -12,9 +12,11 @@
 *.pyc
 *.o
 *.pptx
+*.ppt
 *.pdf
 *.docx
 *.doc
+~*
 .~*
 
 test.ipynb

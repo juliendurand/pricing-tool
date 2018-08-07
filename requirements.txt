@@ -1,8 +1,5 @@
 numpy
 pandas
-sklearn
-jupyter
 matplotlib
-scipy
 markdown
 jinja2
