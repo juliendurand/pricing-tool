@@ -90,17 +90,17 @@ void FeatureSelector::writeResults(){
 void FeatureSelector::storeFeatureInGiniPath(int f){
     int position = model->selected_features.size();
     FeatureResult fr;
-    model->predict(model->dataset->getTest());
+    std::unique_ptr<ModelResult> testResult =  model->predict(model->dataset->getTest());
     if(position == 0){
         fr = {
             -1,
             "Intercept",
-            model->gini(model->dataset->getTest()),
+            testResult->gini(),
             0,
             0,
             0,
             0,
-            model->rmse(model->dataset->getTest()),
+            testResult->rmse(),
             0
         };
         std::cout << "Storing Intercept." << std::endl;
@@ -108,12 +108,12 @@ void FeatureSelector::storeFeatureInGiniPath(int f){
         fr = {
             f,
             model->config->features[f],
-            model->gini(model->dataset->getTest()),
+            testResult->gini(),
             model->getCoeffGini(f),
             model->getCoeffNorm2(f),
             model->getSpread100(f),
             model->getSpread95(f),
-            model->rmse(model->dataset->getTest()),
+            testResult->rmse(),
             0
         };
         std::cout << "Storing[" << position << "] "

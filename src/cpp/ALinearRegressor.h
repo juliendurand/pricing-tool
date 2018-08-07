@@ -9,6 +9,29 @@
 #include "Dataset.h"
 
 
+class ModelResult
+{
+public:
+    std::vector<int> id;
+    std::vector<double> y;
+    std::vector<double> y_pred;
+    std::vector<double> weights;
+    std::vector<double> dp; // dot product of coefficients with observations
+
+    ModelResult(int size, const std::string loss);
+    void setObservation(int position, int id, double y, double y_pred,
+        double weight, double dp);
+    double logLikelihood();
+    double rmse();
+    double gini();
+
+private:
+    const std::string loss;
+    const std::vector<size_t> reverse_sort_indexes(
+        const std::vector<double>& v, const std::vector<double>& w);
+};
+
+
 class ALinearRegressor
 {
 public:
@@ -22,7 +45,7 @@ public:
     virtual ~ALinearRegressor();
     virtual void fit() = 0;
     std::vector<double> getCoeffs();
-    void predict(const std::vector<int> &samples);
+    std::unique_ptr<ModelResult> predict(const std::vector<int> &samples);
     int getMinCoeff();
     double getCoeffNorm2(int feature);
     double getCoeffGini(int feature);
@@ -31,9 +54,6 @@ public:
     void eraseAllFeatures();
     void eraseFeatures(const std::vector<int> &features);
     void addFeatures(const std::vector<int> &features);
-    double logLikelihood(const std::vector<int> &samples);
-    double rmse(const std::vector<int> &samples);
-    double gini(const std::vector<int> &samples);
     void printResults();
     void writeResults(const std::vector<int> test);
 

@@ -115,8 +115,8 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                       << " iteration since min " << nbIterationsSinceMinimum
                       << std::endl;
             printResults();
-            predict(dataset->getTrain());
-            double ll = logLikelihood(dataset->getTrain());
+            auto trainResult = predict(dataset->getTrain());
+            double ll = trainResult->logLikelihood();
             if(ll < minll - stopCriterion) {
                 minll = ll;
                 nbIterationsSinceMinimum = 0;

@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <string>
 
 
 ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
@@ -73,11 +72,14 @@ std::vector<double> ALinearRegressor::getCoeffs(){
     return results;
 }
 
-void ALinearRegressor::predict(const std::vector<int> &samples){
+std::unique_ptr<ModelResult> ALinearRegressor::predict(const std::vector<int> &samples){
+    ModelResult* result = new ModelResult(samples.size(), config->loss);
+
     double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs; j++){
         dp0 += x0[j] * coeffs[j];
     }
+    int j = 0;
     for(int i : samples){
         double dp = dp0;
         for(int j : selected_features){
@@ -86,7 +88,10 @@ void ALinearRegressor::predict(const std::vector<int> &samples){
         }
         dppred[i] = dp;
         ypred[i] = exp(dp) * exposure[i];
+        result->setObservation(j, i, y[i], ypred[i], exposure[i], dppred[i]);
+        ++j;
     }
+    return std::unique_ptr<ModelResult>(result);
 }
 
 int ALinearRegressor::getMinCoeff(){
@@ -246,69 +251,16 @@ void ALinearRegressor::addFeatures(const std::vector<int> &features){
     }
 }
 
-double ALinearRegressor::logLikelihood(const std::vector<int> &samples){
-    double ll = 0;
-    if(config->loss == "gaussian"){
-        for(int i : samples){
-            double dp = dppred[i];
-            double ei = exposure[i];
-            ll += std::sqrt(ei * dp - y[i]);
-        }
-    } else if(config->loss == "poisson") {
-        for(int i : samples){
-            double dp = dppred[i];
-            double ei = exposure[i];
-            ll += ei * std::exp(dp) - y[i] * dp + std::log(ei);
-        }
-    } else if(config->loss == "gamma") {
-        for(int i : samples){
-            double dp = dppred[i];
-            double ei = exposure[i];
-            ll += y[i] / (ei * std::exp(dp)) + dp;
-        }
-    } else {
-        throw std::invalid_argument( "Received invalid loss function." );
-    }
-    return ll / samples.size();
-}
-
-double ALinearRegressor::rmse(const std::vector<int> &samples){
-    double rmse = 0;
-    double sexp = 0;
-    for(int j=0; j < samples.size(); j++){
-        int i = samples[j];
-        double e = y[i] - ypred[i];
-        rmse += e * e;
-        sexp += exposure[i];
-    }
-    return std::sqrt(rmse/sexp);
-}
-
-double ALinearRegressor::gini(const std::vector<int> &samples){
-    std::vector<size_t> idx = reverse_sort_indexes(ypred, exposure, samples);
-    double exposure_sum = 0;
-    double obs_sum = 0;
-    double rank_obs_sum = 0;
-    for(int i : idx){
-        int obs = samples[i];
-        double e = exposure[obs];
-        exposure_sum += e;
-        obs_sum += y[obs];
-        rank_obs_sum += y[obs] * (exposure_sum - 0.5 * e);
-    }
-    return 1 - (2 / (exposure_sum * obs_sum)) * rank_obs_sum;
-}
-
 void ALinearRegressor::printResults(){
-    predict(dataset->getTrain());
-    predict(dataset->getTest());
-    predict(dataset->getSample());
-    std::cout << "gini(train=" << gini(dataset->getTrain())
-              << ", test="     << gini(dataset->getTest())
-              << ", sample="     << gini(dataset->getSample()) << ")"
+    std::unique_ptr<ModelResult> trainResult = predict(dataset->getTrain());
+    std::unique_ptr<ModelResult> testResult = predict(dataset->getTest());
+    std::unique_ptr<ModelResult> sampleResult = predict(dataset->getSample());
+    std::cout << "gini(train=" << trainResult->gini()
+              << ", test="     << testResult->gini()
+              << ", sample="     << sampleResult->gini() << ")"
               << " | "
-              << "ll(train=" << logLikelihood(dataset->getTrain())
-              << ", test="   << logLikelihood(dataset->getTest()) << ")"
+              << "ll(train=" << trainResult->logLikelihood()
+              << ", test="   << testResult->logLikelihood() << ")"
               << std::endl;
 }
 
