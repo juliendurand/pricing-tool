@@ -170,7 +170,8 @@ double ALinearRegressor::getSpread95(int feature){
     }
     std::sort(feature_idx.begin(), feature_idx.end(),
         [this](size_t i, size_t j) {
-            return std::exp(this->coeffs[i + 1] / this->stdev[i + 1]) < std::exp(this->coeffs[j + 1] / this->stdev[j + 1]);
+            return std::exp(this->coeffs[i + 1] / this->stdev[i + 1])
+                   < std::exp(this->coeffs[j + 1] / this->stdev[j + 1]);
         }
     );
     std::vector<double> cum_weight(nb_coeffs);
@@ -332,7 +333,8 @@ void ALinearRegressor::writeResults(std::vector<int> test){
 }
 
 const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
-        const std::vector<float>& v, const float* w, const std::vector<int>& samples)
+        const std::vector<float>& v, const float* w,
+        const std::vector<int>& samples)
 {
     // initialize original index locations
     std::vector<size_t> idx(samples.size());

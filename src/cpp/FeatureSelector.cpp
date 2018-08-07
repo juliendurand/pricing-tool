@@ -17,18 +17,21 @@ void FeatureSelector::fit(){
                            << " variables :" << std::endl;
 
     long i = 0;
-    double stopCriterion = (model->config->loss == "poisson") ? 0.00001 : 0.000001;
+    double stopCriterion = (model->config->loss == "poisson")
+                           ? 0.00001 : 0.000001;
     model->fitUntilConvergence(i, 1, stopCriterion);
     model->printResults();
     backwardStepwise(i);
 
     int maxSortedFeatures = model->config->p;
     for(int k = 0; k < 6; k++){
-        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0001);
+        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures,
+                                                        0.0001);
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }
-    maxSortedFeatures = std::min(maxSortedFeatures, model->config->nbFeaturesInModel);
+    maxSortedFeatures = std::min(maxSortedFeatures,
+                                 model->config->nbFeaturesInModel);
     std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0002);
     forwardStepwise(i, maxSortedFeatures);
     model->eraseAllFeatures();
@@ -51,8 +54,10 @@ void FeatureSelector::printSelectedFeatures(){
 
 void FeatureSelector::writeResults(){
     std::ofstream selectedFeatureFile;
-    selectedFeatureFile.open(model->config->resultPath + "features.csv", std::ios::out);
-    selectedFeatureFile << "Feature,Gini,Spread 95/5,Spread 100/0" << std::endl;
+    selectedFeatureFile.open(model->config->resultPath + "features.csv",
+                             std::ios::out);
+    selectedFeatureFile << "Feature,Gini,Spread 95/5,Spread 100/0"
+                        << std::endl;
     for(int i = 0; i < model->selected_features.size() + 1; i++){
         FeatureResult& fr = giniPath[i];
         int f = fr.feature_idx;
@@ -65,8 +70,10 @@ void FeatureSelector::writeResults(){
     selectedFeatureFile.close();
 
     std::ofstream giniPathFile;
-    giniPathFile.open(model->config->resultPath + "ginipath.csv", std::ios::out);
-    giniPathFile << "Feature,Gini,CoeffGini,Norm,Spread 100/0,Spread 95/5,RMSE" << std::endl;
+    giniPathFile.open(model->config->resultPath + "ginipath.csv",
+                      std::ios::out);
+    giniPathFile << "Feature,Gini,CoeffGini,Norm,Spread 100/0,Spread 95/5,RMSE"
+                 << std::endl;
     for (FeatureResult& p : giniPath) {
         giniPathFile << p.feature << ","
                      << p.gini << ","
@@ -161,7 +168,8 @@ void FeatureSelector::sortFeatures(int maxNbFeatures){
     for(int i = 1; i < giniPath.size(); i++){
         giniPath[i].diffGini = giniPath[i].gini - giniPath[i - 1].gini;
     }
-    std::sort(giniPath.begin() + 1, std::min(giniPath.end(), giniPath.begin() + maxNbFeatures+ 1),
+    std::sort(giniPath.begin() + 1, std::min(giniPath.end(),
+              giniPath.begin() + maxNbFeatures+ 1),
         [](FeatureResult& i, FeatureResult& j) {
             return i.diffGini > j.diffGini;
         }
