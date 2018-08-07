@@ -8,7 +8,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     blocksize(200),
     learningRate(0.0001)
 {
-    update.resize(nbCoeffs + 1, 0);
+    update.resize(coeffs.size(), 0);
     selectGradLoss(config->loss);
     fitIntercept();
 }
@@ -61,7 +61,7 @@ void SGDRegressor::fitIntercept(){
 
 void SGDRegressor::fit(){
     double dp0 = coeffs[0];
-    for(int j = 1; j < nbCoeffs + 1; j++){
+    for(int j = 1; j < coeffs.size(); j++){
         dp0 += x0[j] * coeffs[j];
         update[j] = 0;
     }
@@ -84,7 +84,7 @@ void SGDRegressor::fit(){
     }
 
     update[0] = rTotal;
-    for(int j = 0; j < nbCoeffs + 1; j++){
+    for(int j = 0; j < coeffs.size(); j++){
         if(x1[j] != 0){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
             g[j] = 0.9 * g[j] + grad;
@@ -115,7 +115,8 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                       << " iteration since min " << nbIterationsSinceMinimum
                       << std::endl;
             printResults();
-            auto trainResult = predict(dataset->getTrain());
+            auto coeffs = getCoeffs();
+            auto trainResult = coeffs->predict(dataset, dataset->getTrain());
             double ll = trainResult->logLikelihood();
             if(ll < minll - stopCriterion) {
                 minll = ll;

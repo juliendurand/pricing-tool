@@ -90,7 +90,8 @@ void FeatureSelector::writeResults(){
 void FeatureSelector::storeFeatureInGiniPath(int f){
     int position = model->selected_features.size();
     FeatureResult fr;
-    std::unique_ptr<ModelResult> testResult =  model->predict(model->dataset->getTest());
+    auto coeffs = model->getCoeffs();
+    auto testResult =  coeffs->predict(model->dataset, model->dataset->getTest());
     if(position == 0){
         fr = {
             -1,

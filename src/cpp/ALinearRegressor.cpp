@@ -1,6 +1,5 @@
 #include "ALinearRegressor.h"
 
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -14,18 +13,16 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     x(ds->get_x()),
     y(ds->get_y()),
     exposure(ds->get_weight()),
-    nbCoeffs(config->m),
     offsets(config->offsets),
     features(config->features)
 {
-    coeffs.resize(nbCoeffs + 1, 0);
-    weights.resize(nbCoeffs + 1, 0);
-    stdev.resize(nbCoeffs + 1, 0);
-    x0.resize(nbCoeffs + 1, 0);
-    x1.resize(nbCoeffs + 1, 0);
-    g.resize(nbCoeffs + 1, 0);
-    ypred.resize(n, 0);
-    dppred.resize(n, 0);
+    int nbCoeffs = config->m + 1;
+    coeffs.resize(nbCoeffs, 0);
+    weights.resize(nbCoeffs, 0);
+    stdev.resize(nbCoeffs, 0);
+    x0.resize(nbCoeffs, 0);
+    x1.resize(nbCoeffs, 0);
+    g.resize(nbCoeffs, 0);
 
     for(int i : dataset->getTrain()){
         weights[0] += exposure[i];
@@ -34,7 +31,7 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
         }
     }
 
-    for(int i = 0; i < nbCoeffs + 1; i++){
+    for(int i = 0; i < nbCoeffs; i++){
         double w = weights[i] / weights[0];
         stdev[i] = std::sqrt(w - w * w);
     }
@@ -60,7 +57,7 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
 ALinearRegressor::~ALinearRegressor(){
 }
 
-std::vector<double> ALinearRegressor::getCoeffs(){
+std::unique_ptr<Coefficients> ALinearRegressor::getCoeffs(){
     std::vector<double> results(coeffs.size(), 0);
     results[0] = coeffs[0];
     for(int i = 1; i < coeffs.size(); i++){
@@ -69,29 +66,8 @@ std::vector<double> ALinearRegressor::getCoeffs(){
             results[0] -= results[i] * (weights[i] / weights[0]);
         }
     }
-    return results;
-}
-
-std::unique_ptr<ModelResult> ALinearRegressor::predict(const std::vector<int> &samples){
-    ModelResult* result = new ModelResult(samples.size(), config->loss);
-
-    double dp0 = coeffs[0];
-    for(int j = 1; j < nbCoeffs; j++){
-        dp0 += x0[j] * coeffs[j];
-    }
-    int j = 0;
-    for(int i : samples){
-        double dp = dp0;
-        for(int j : selected_features){
-            int k = offsets[j] + x[p * i + j] + 1;
-            dp += (x1[k] - x0[k]) * coeffs[k];
-        }
-        dppred[i] = dp;
-        ypred[i] = exp(dp) * exposure[i];
-        result->setObservation(j, i, y[i], ypred[i], exposure[i], dppred[i]);
-        ++j;
-    }
-    return std::unique_ptr<ModelResult>(result);
+    return std::unique_ptr<Coefficients>(new Coefficients(config, results,
+                                                          selected_features));
 }
 
 int ALinearRegressor::getMinCoeff(){
@@ -252,9 +228,10 @@ void ALinearRegressor::addFeatures(const std::vector<int> &features){
 }
 
 void ALinearRegressor::printResults(){
-    std::unique_ptr<ModelResult> trainResult = predict(dataset->getTrain());
-    std::unique_ptr<ModelResult> testResult = predict(dataset->getTest());
-    std::unique_ptr<ModelResult> sampleResult = predict(dataset->getSample());
+    auto c = getCoeffs();
+    std::unique_ptr<ModelResult> trainResult = c->predict(dataset, dataset->getTrain());
+    std::unique_ptr<ModelResult> testResult = c->predict(dataset, dataset->getTest());
+    std::unique_ptr<ModelResult> sampleResult = c->predict(dataset, dataset->getSample());
     std::cout << "gini(train=" << trainResult->gini()
               << ", test="     << testResult->gini()
               << ", sample="     << sampleResult->gini() << ")"
@@ -262,28 +239,6 @@ void ALinearRegressor::printResults(){
               << "ll(train=" << trainResult->logLikelihood()
               << ", test="   << testResult->logLikelihood() << ")"
               << std::endl;
-}
-
-void ALinearRegressor::writeResults(std::vector<int> test){
-    predict(test);
-    std::cout << std::endl << "Saving results." << std::endl;
-
-    std::ofstream resultFile;
-    resultFile.open(config->resultPath + "results.csv", std::ios::out);
-    resultFile << "row,exposure,target,prediction" << std::endl;
-    for(int i : test){
-        resultFile << i << "," << exposure[i] << "," << y[i] << ","
-            << ypred[i] << std::endl;
-    }
-    resultFile.close();
-
-    std::ofstream coeffFile;
-    coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
-    coeffFile << "Coeffs" << std::endl;
-    for(double c : getCoeffs()){
-        coeffFile << c << std::endl;
-    }
-    coeffFile.close();
 }
 
 const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(

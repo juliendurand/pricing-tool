@@ -20,6 +20,7 @@ public:
     double logLikelihood();
     double rmse();
     double gini();
+    void writeResults(std::string resultPath);
 
 private:
     const std::string loss;

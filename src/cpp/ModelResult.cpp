@@ -1,7 +1,9 @@
 #include "ModelResult.h"
 
 #include <cmath>
+#include <fstream>
 #include <numeric>
+#include <iostream>
 
 
 ModelResult::ModelResult(const int size, const std::string loss) :
@@ -83,4 +85,17 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
     );
 
   return idx;
+}
+
+void ModelResult::writeResults(std::string resultPath){
+    std::cout << std::endl << "Saving results." << std::endl;
+
+    std::ofstream resultFile;
+    resultFile.open(resultPath + "results.csv", std::ios::out);
+    resultFile << "row,exposure,target,prediction" << std::endl;
+    for(int i = 0; i < y.size(); ++i){
+        resultFile << i << "," << weights[i] << "," << y[i] << ","
+            << y_pred[i] << std::endl;
+    }
+    resultFile.close();
 }
