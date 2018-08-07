@@ -24,6 +24,7 @@ int main(int argc, char** argv){
               << "Final results :" << std::endl
               << "---------------" << std::endl;
     fs.printSelectedFeatures();
+    fs.writeResults();
     model.printResults();
     model.writeResults(ds.getSample());
 

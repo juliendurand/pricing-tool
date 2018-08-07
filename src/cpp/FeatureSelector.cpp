@@ -1,43 +1,14 @@
 #include "FeatureSelector.h"
 
+#include <fstream>
 #include <iostream>
 
 
 FeatureSelector::FeatureSelector(SGDRegressor* model):
     model(model)
 {
-}
-
-void FeatureSelector::backwardStepwise(long& i){
-    std::cout << "Backward Stepwise" << std::endl;
-    for(;;){
-        model->fitEpoch(i, 1);
-        if(model->selected_features.size() > 0){
-            int remove_feature = model->getMinCoeff(model->selected_features);
-            model->storeFeatureInGiniPath(remove_feature);
-            model->eraseFeatures({remove_feature});
-        }
-        else{
-            model->storeFeatureInGiniPath(-1);
-            break;
-        }
-    }
-}
-
-void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures){
-    std::cout << "Forward Stepwise" << std::endl;
-    model->eraseAllFeatures();
-    for(auto p : model->giniPath){
-        int f = p.feature_idx;
-        if(f >= 0){
-            model->addFeatures({f});
-            model->fitEpoch(i, 1);
-            model->storeFeatureInGiniPath(f);
-            if(model->selected_features.size() >= maxNbFeatures){
-                break;
-            }
-        }
-    }
+    giniPath = std::vector<FeatureResult>(model->selected_features.size() + 1,
+                                          FeatureResult());
 }
 
 void FeatureSelector::fit(){
@@ -53,12 +24,12 @@ void FeatureSelector::fit(){
 
     int maxSortedFeatures = model->config->p;
     for(int k = 0; k < 6; k++){
-        std::vector<int> bestFeatures = model->getBestFeatures(maxSortedFeatures, 0.0001);
+        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0001);
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }
     maxSortedFeatures = std::min(maxSortedFeatures, model->config->nbFeaturesInModel);
-    std::vector<int> bestFeatures = model->getBestFeatures(maxSortedFeatures, 0.0002);
+    std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0002);
     forwardStepwise(i, maxSortedFeatures);
     model->eraseAllFeatures();
     model->addFeatures(bestFeatures);
@@ -68,7 +39,7 @@ void FeatureSelector::fit(){
 void FeatureSelector::printSelectedFeatures(){
     std::cout << "Selected Features :" <<std::endl;
     for(int i = 1; i < model->selected_features.size() + 1; i++){
-        FeatureResult& p = model->giniPath[i];
+        FeatureResult& p = giniPath[i];
         std::cout << "        " << i << " : " << p.feature
                   << " [N2=" << p.norm
                   << ", CGini" << p.coeffGini * 100
@@ -76,4 +47,142 @@ void FeatureSelector::printSelectedFeatures(){
                   << "%, Spread(95/5)=" << p.spread95 * 100 << "%]"
                   << std::endl;
     }
+}
+
+void FeatureSelector::writeResults(){
+    std::ofstream selectedFeatureFile;
+    selectedFeatureFile.open(model->config->resultPath + "features.csv", std::ios::out);
+    selectedFeatureFile << "Feature,Gini,Spread 95/5,Spread 100/0" << std::endl;
+    for(int i = 0; i < model->selected_features.size() + 1; i++){
+        FeatureResult& fr = giniPath[i];
+        int f = fr.feature_idx;
+        selectedFeatureFile << fr.feature << ','
+                            << fr.gini << ','
+                            << model->getSpread95(f) << ','
+                            << model->getSpread100(f)
+                            << std::endl;
+    }
+    selectedFeatureFile.close();
+
+    std::ofstream giniPathFile;
+    giniPathFile.open(model->config->resultPath + "ginipath.csv", std::ios::out);
+    giniPathFile << "Feature,Gini,CoeffGini,Norm,Spread 100/0,Spread 95/5,RMSE" << std::endl;
+    for (FeatureResult& p : giniPath) {
+        giniPathFile << p.feature << ","
+                     << p.gini << ","
+                     << p.coeffGini << ","
+                     << p.norm << ","
+                     << p.spread100 << ","
+                     << p.spread95 << ","
+                     << p.rmse
+                     << std::endl;
+    }
+    giniPathFile.close();
+}
+
+void FeatureSelector::storeFeatureInGiniPath(int f){
+    int position = model->selected_features.size();
+    FeatureResult fr;
+    model->predict(model->dataset->getTest());
+    if(position == 0){
+        fr = {
+            -1,
+            "Intercept",
+            model->gini(model->dataset->getTest()),
+            0,
+            0,
+            0,
+            0,
+            model->rmse(model->dataset->getTest()),
+            0
+        };
+        std::cout << "Storing Intercept." << std::endl;
+    } else {
+        fr = {
+            f,
+            model->config->features[f],
+            model->gini(model->dataset->getTest()),
+            model->getCoeffGini(f),
+            model->getCoeffNorm2(f),
+            model->getSpread100(f),
+            model->getSpread95(f),
+            model->rmse(model->dataset->getTest()),
+            0
+        };
+        std::cout << "Storing[" << position << "] "
+                  << fr.feature
+                  << " Gini=" << fr.gini
+                  << " Norm2=" << fr.norm
+                  << " CGini=" << fr.coeffGini
+                  << " Spread100=" << fr.spread100
+                  << " Spread95=" << fr.spread95
+                  << std::endl;
+    }
+    giniPath[position] = fr;
+}
+
+void FeatureSelector::backwardStepwise(long& i){
+    std::cout << "Backward Stepwise" << std::endl;
+    for(;;){
+        model->fitEpoch(i, 1);
+        if(model->selected_features.size() > 0){
+            int remove_feature = model->getMinCoeff();
+            storeFeatureInGiniPath(remove_feature);
+            model->eraseFeatures({remove_feature});
+        }
+        else{
+            storeFeatureInGiniPath(-1);
+            break;
+        }
+    }
+}
+
+void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures){
+    std::cout << "Forward Stepwise" << std::endl;
+    model->eraseAllFeatures();
+    for(auto p : giniPath){
+        int f = p.feature_idx;
+        if(f >= 0){
+            model->addFeatures({f});
+            model->fitEpoch(i, 1);
+            storeFeatureInGiniPath(f);
+            if(model->selected_features.size() >= maxNbFeatures){
+                break;
+            }
+        }
+    }
+}
+
+void FeatureSelector::sortFeatures(){
+    sortFeatures(giniPath.size());
+}
+
+void FeatureSelector::sortFeatures(int maxNbFeatures){
+    for(int i = 1; i < giniPath.size(); i++){
+        giniPath[i].diffGini = giniPath[i].gini - giniPath[i - 1].gini;
+    }
+    std::sort(giniPath.begin() + 1, std::min(giniPath.end(), giniPath.begin() + maxNbFeatures+ 1),
+        [](FeatureResult& i, FeatureResult& j) {
+            return i.diffGini > j.diffGini;
+        }
+    );
+}
+
+const std::vector<int> FeatureSelector::getBestFeatures(int maxNbFeatures,
+                                                   double treshold){
+    sortFeatures(maxNbFeatures);
+    std::vector<int> bestFeatures;
+    for (auto p = giniPath.begin() + 1; p != giniPath.end(); p++) {
+        if(p->diffGini > treshold){
+            bestFeatures.push_back(p->feature_idx);
+        } else {
+            break;
+        }
+        if(bestFeatures.size() >= maxNbFeatures){
+            std::cout << "Stop adding features : max nb features reached("
+                      << maxNbFeatures << (").") << std::endl;
+            break;
+        }
+    }
+    return bestFeatures;
 }
