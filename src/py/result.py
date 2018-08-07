@@ -94,7 +94,7 @@ class Result:
         return (m - m0) / m0
 
     def gini(self):
-        return metrics.gini_emblem_fast(
+        return metrics.gini(
             self.df.target / self.df.exposure,
             self.df.prediction / self.df.exposure,
             self.df.exposure)

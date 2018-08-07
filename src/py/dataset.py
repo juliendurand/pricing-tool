@@ -9,6 +9,9 @@ import time
 import numpy as np
 
 
+start_time = 0
+
+
 def count_line(filename):
     f = open(filename, 'rb')
     bufgen = it.takewhile(lambda x: x, (f.raw.read(1024 * 1024)
@@ -36,9 +39,6 @@ def create_data_file_from_list(lst, out_filename, dtype, shape):
 
 def load_data(file_path, dtype='int32', shape=None):
     return np.memmap(file_path, dtype=dtype, shape=shape)
-
-
-start_time = 0
 
 
 def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
@@ -249,7 +249,8 @@ class Dataset:
                 for j, index in enumerate(features_index):
                     v = values[index]
                     a = features_mapping[j].setdefault(v,
-                                                    len(features_mapping[j]))
+                                                       len(features_mapping[j])
+                                                       )
                     if a > 200:
                         raise Exception("Feature", features[j],
                                         "has too many modalities " +

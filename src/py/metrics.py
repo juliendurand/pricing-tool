@@ -1,5 +1,4 @@
 """
-Contains functions that are able to reproduce Emblem's metrics and plots.
 Each function in this module has at least three arguments,
 which are numpy arrays of the same size.
 
@@ -319,7 +318,7 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000,
         weight = np.repeat([1. / n_samples], n_samples)
 
     # Id of each column
-    obs_col, pred_col, w_col, rank_col = (0, 1, 2, 3)
+    obs_col, pred_col, w_col, rank_col = 0, 1, 2, 3
 
     # Order data following prediction
     ordered_data = np.column_stack((y, y_pred, weight, np.zeros(y.shape[0])))
@@ -369,8 +368,7 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000,
         return gini
 
 
-def gini_emblem_fast(y, y_pred, weights=None, normalize_gini=False,
-                     verbose=False):
+def gini(y, y_pred, weights=None, normalize_gini=False, verbose=False):
     # We compute Gini coefficient for the model col_score
     gini_model = area_lorentz_fast(y, y_pred, weights)
     if verbose:
