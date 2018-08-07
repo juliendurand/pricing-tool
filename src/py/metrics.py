@@ -63,7 +63,6 @@ def binomial_deviance(y, y_pred, weight=None):
 def gamma_deviance(y, y_pred, weight=None):
     """
     Deviance function for gamma model.
-    Exactly the same as the one implement in Emblem.
 
     Parameters
     ----------
@@ -280,7 +279,7 @@ def binomial_pseudo_r2(y, y_pred, weight=None):
 def area_lorentz_fast(y, y_pred, weight=None, resolution=5000,
                       interpolation="constant", plot=False):
     '''
-    Reproduces the weighted gini of emblem
+    Calcultate the weighted gini.
 
     Parameters
     ----------
@@ -369,25 +368,17 @@ def area_lorentz_fast(y, y_pred, weight=None, resolution=5000,
 
 
 def gini(y, y_pred, weights=None, normalize_gini=False, verbose=False):
-    # We compute Gini coefficient for the model col_score
-    gini_model = area_lorentz_fast(y, y_pred, weights)
+    # compute the weighted Gini
+    gini = area_lorentz_fast(y, y_pred, weights)
     if verbose:
-        print("Gini coefficient for prediction", " without normalization:",
-              gini_model)
-    # Emblem by default returns the non-normalized version of the Gini
+        print("Gini coefficient for prediction without normalization:", gini)
     if normalize_gini:
-        # We compute the gini coefficient for the "perfect model":
+        # compute the weighted Gini for the "perfect model"
         gini_perfect_model = area_lorentz_fast(y, y, weights)
+        # normalization
+        gini = gini / gini_perfect_model
         if verbose:
             print("Gini coefficient of 'perfect' model:", gini_perfect_model)
-
-        # We normalize the Gini coefficient:
-        gini = gini_model / gini_perfect_model
-        if verbose:
             print("The Gini coefficient for prediction after normalization :",
                   gini)
-        return gini
-
-    else:
-        # We don't normalize the Gini coefficient:
-        return gini_model
+    return gini
