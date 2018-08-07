@@ -8,7 +8,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     blocksize(200),
     learningRate(0.0001)
 {
-    update.reserve(nbCoeffs + 1);
+    update.resize(nbCoeffs + 1, 0);
     if(config->loss == "gaussian"){
         gradLoss = [](double y, double dp, double weight){
             return y - dp * weight;
@@ -31,10 +31,6 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
 }
 
 SGDRegressor::~SGDRegressor(){
-}
-
-int SGDRegressor::getBlockSize(){
-    return blocksize;
 }
 
 void SGDRegressor::fitIntercept(){
@@ -91,24 +87,10 @@ void SGDRegressor::fit(){
             coeffs[j] += learningRate * g[j];
         }
     }
-/*
-    coeffs[0] += rTotal / blocksize * learning_rate;
-    for(int j = 1; j < nbCoeffs + 1 ; j++){
-        if(weights[j] < std::sqrt(weights[0]) / 10){
-            // squeezing non significative coefficients to Zero
-        //    coeffs[j] = 0; // this line is not required (just to be explicit) !
-        } else {
-            //coeffs[j] *= (1 - l2);
-            coeffs[j] += (update[j] + rTotal * x0[j]) / blocksize * learning_rate;
-        }
-        //std::cout << j << ":" << coeffs[j] << ", ";
-    }
-    //std::cout << update[1] << " " << rTotal << ":" << coeffs[1] << ", "  << std::endl;
-*/
 }
 
 void SGDRegressor::fitEpoch(long& i, float nb_epoch){
-    int epoch = dataset->getSize() / getBlockSize();
+    int epoch = dataset->getSize() / blocksize;
     int nb_blocks = nb_epoch * epoch;
     for(int j=0; j < nb_blocks; ++j){
         fit();
@@ -120,11 +102,11 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                       float stopCriterion){
     double minll = 1e30;
     int nbIterationsSinceMinimum = 0;
-    int epoch = dataset->getSize() / getBlockSize();
+    int epoch = dataset->getSize() / blocksize;
     for(; nbIterationsSinceMinimum < precision; i++){
         fit();
         if(i % epoch == 0){
-            std::cout << i * getBlockSize() << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
+            std::cout << i * blocksize << "th iteration : " << " minll " << minll << " iteration since min " << nbIterationsSinceMinimum << std::endl;
             printResults();
             predict(dataset->getTrain());
             double ll = logLikelihood(dataset->getTrain());

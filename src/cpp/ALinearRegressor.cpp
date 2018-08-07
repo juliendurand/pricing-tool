@@ -27,54 +27,40 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     offsets(config->offsets),
     features(config->features)
 {
-    coeffs.reserve(nbCoeffs + 1);
-    weights.reserve(nbCoeffs + 1);
-    stdev.reserve(nbCoeffs + 1);
-    x0.reserve(nbCoeffs + 1);
-    x1.reserve(nbCoeffs + 1);
-    g.reserve(nbCoeffs + 1);
-    ypred.reserve(n);
-    dppred.reserve(n);
-
-    for(int i = 0; i < nbCoeffs + 1; i++){
-        coeffs[i] = 0;
-        weights[i] = 0;
-    }
+    coeffs.resize(nbCoeffs + 1, 0);
+    weights.resize(nbCoeffs + 1, 0);
+    stdev.resize(nbCoeffs + 1, 0);
+    x0.resize(nbCoeffs + 1, 0);
+    x1.resize(nbCoeffs + 1, 0);
+    g.resize(nbCoeffs + 1, 0);
+    ypred.resize(n, 0);
+    dppred.resize(n, 0);
 
     for(int i : dataset->getTrain()){
         weights[0] += exposure[i];
-        int row = p * i;
         for(int j = 0; j < p; j++){
-            weights[x[row + j] + offsets[j] + 1] += exposure[i];
+            weights[x[p * i+ j] + offsets[j] + 1] += exposure[i];
         }
     }
 
-    stdev[0] = 1;
+    for(int i = 0; i < nbCoeffs + 1; i++){
+        double w = weights[i] / weights[0];
+        stdev[i] = std::sqrt(w - w * w);
+    }
+
     x0[0] = 1;
     x1[0] = 1;
-    for(int i = 1; i < nbCoeffs + 1; i++){
-        double w = weights[i] / weights[0];
-        double s= std::sqrt(w - w * w);
-        stdev[i] = s;
-        if(s > 0 && (weights[i] > std::sqrt(weights[0]) / 10)){
-            x1[i] = (1 - w) / s;
-            x0[i] = (0 - w) / s;
-        } else {
-            x1[i] = 0;
-            x0[i] = 0;
-        }
-    }
 
-    for(int i=0; i < p; i++){
-        selected_features.insert(i);
+    for(int i = 0; i < p; i++){
+            addFeatures({i});
     }
     for(std::string feature : config->excludedFeatures){
         int featureIdx = config->getFeatureIndex(feature);
         if(featureIdx >= 0){
-            std::cout << "Excluded feature " << feature << std::endl;
+            std::cout << "Exclude feature " << feature << std::endl;
             eraseFeatures({featureIdx});
         } else {
-            std::cout << "ERROR : Excluded feature " << feature
+            std::cout << "WARNING : Excluded feature " << feature
                       << " can not be found." << std::endl;
         }
     }
@@ -84,15 +70,14 @@ ALinearRegressor::~ALinearRegressor(){
 }
 
 void ALinearRegressor::predict(const std::vector<int> &samples){
-    double dp0 = 0;
+    double dp0 = coeffs[0];
     for(int j = 1; j < nbCoeffs; j++){
         dp0 += x0[j] * coeffs[j];
     }
     for(int i : samples){
-        int row = p * i;
-        double dp = coeffs[0] + dp0;
+        double dp = dp0;
         for(int j : selected_features){
-            int k = offsets[j] + x[row + j] + 1;
+            int k = offsets[j] + x[p * i + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
         dppred[i] = dp;
@@ -102,10 +87,10 @@ void ALinearRegressor::predict(const std::vector<int> &samples){
 
 int ALinearRegressor::getMinCoeff(){
     int minidx = -1;
-    double minvalue = 100000000;
-    for(int i = 0; i< p; i++){
+    double minvalue = 0;
+    for(int i : selected_features){
         double s = getCoeffGini(i);
-        if((selected_features.count(i) > 0) && (s < minvalue)){
+        if(minidx == -1 || s < minvalue){
             minvalue = s;
             minidx = i;
         }
@@ -244,8 +229,7 @@ void ALinearRegressor::addFeatures(const std::vector<int> &features){
             j < config->offsets[f + 1]; j++){
             int i = j + 1;
             double w = weights[i] / weights[0];
-            double s= std::sqrt(w - w * w);
-            stdev[i] = s;
+            double s = stdev[i];
             if(s > 0 && (weights[i] > std::sqrt(weights[0]) / 10)){
                 x1[i] = (1 - w) / s;
                 x0[i] = (0 - w) / s;
