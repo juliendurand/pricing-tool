@@ -6,6 +6,14 @@
 
 #include "Config.h"
 
+// Encapsulate the prediction for a glm model and provides useful metrics to
+// evaluate the quality of fit.
+//
+// Params :
+//      - size : number of observations ;
+//      - config : glm regression configuration.
+//
+// Usage : the public methods provide the key metrics to evalate a glm fit.
 
 class ModelResult
 {
@@ -20,7 +28,6 @@ public:
 
 private:
     Config* config;
-    const std::string loss;
     std::vector<int> id;
     std::vector<double> y;
     std::vector<double> y_pred;

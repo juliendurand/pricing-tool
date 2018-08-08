@@ -82,6 +82,7 @@ std::string Config::getTestFilename()
      return path + "test.dat";
 }
 
+// Returns the feature index from the feature name
 int Config::getFeatureIndex(const std::string& feature)
 {
     auto it = std::find(features.begin(), features.end(),
@@ -93,6 +94,7 @@ int Config::getFeatureIndex(const std::string& feature)
     return idx;
 }
 
+// Returns the feature index containing the modality m.
 int Config::getFeatureFromModality(int m)
 {
     for(int i = 0; i < features.size(); i++){

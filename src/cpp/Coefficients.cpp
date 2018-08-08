@@ -2,6 +2,15 @@
 
 #include <fstream>
 
+// Provide an absraction for the coefficient of a linear model. The class also
+// provide a method (predict) to apply the model on a dataset and several
+// metrics related to the coefficients (Norm2, CGini, Spread100/0, Spread95/5).
+//
+// Params :
+//      - config : regression configuration ;
+//      - coeffs : the list of coefficients fitted by the linear model ;
+//      - weights : the total weight of training observations by modality ;
+//      - selected_features : active set of features.
 
 Coefficients::Coefficients(Config* config,
     const std::vector<double>& coeffs,

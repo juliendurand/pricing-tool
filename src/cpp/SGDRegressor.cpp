@@ -22,6 +22,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
 
     selectGradLoss(config->loss);
 
+    // Calculates active exposure for every modality
     for(int i : dataset->getTrain()){
         weights[0] += weight[i];
         for(int j = 0; j < p; j++){
@@ -29,6 +30,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
         }
     }
 
+    // Normalization of data (scaling)
     for(int i = 0; i < config->m + 1; i++){
         double w = weights[i] / weights[0];
         double s = std::sqrt(w - w * w);
@@ -46,6 +48,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
         }
     }
 
+    // add all features and then excludes as required from configuration
     for(int i = 0; i < p; i++){
             addFeatures({i});
     }
@@ -60,10 +63,8 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
         }
     }
 
+    // Ensures warm start
     fitIntercept();
-}
-
-SGDRegressor::~SGDRegressor(){
 }
 
 void SGDRegressor::selectGradLoss(const std::string loss){
@@ -87,9 +88,11 @@ void SGDRegressor::selectGradLoss(const std::string loss){
     }
 }
 
+
+// Provides a good estimates for the intercept in order to get a "Warm Start".
 void SGDRegressor::fitIntercept()
 {
-    // This calculation only works if :
+    // This calculation is correct only if :
     //   - all coefficients are set to 0 ;
     //   - or the features have *all* been normalized.
     float* weight = dataset->get_weight();
@@ -113,6 +116,7 @@ void SGDRegressor::fitIntercept()
     }
 }
 
+// Stochastic Gradient Descent with accelerated momentum and mini-batch
 void SGDRegressor::fit()
 {
     int p = config->p;
@@ -122,6 +126,7 @@ void SGDRegressor::fit()
 
     std::fill(update.begin(), update.end(), 0); // set all values to 0
 
+    // dot-product value for intercept + null observations
     double dp0 = coeffs[0];
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
@@ -130,24 +135,34 @@ void SGDRegressor::fit()
     }
 
     double rTotal = 0;
-    for(int b = 0; b < blocksize; b++){
-        int i = dataset->next();
+    for(int b = 0; b < blocksize; b++){ // mini-batch
+        int i = dataset->next(); // get a random observation
+
 
         double dp = dp0;
         for(int j : selected_features){
             int k = config->offsets[j] + x[p * i + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
+
+        // calculates the error with the appropriate loss function
         double r = gradLoss(y[i], dp, weight[i]);
+
+        // calculate the base update for each modality
         for(int j : selected_features){
             int k = config->offsets[j]+ x[p * i + j] + 1;
             update[k] += r * (x1[k] - x0[k]);
         }
+
+        // total error for the mini-batch
         rTotal += r;
     }
 
+    // update intercept with momentum
     g[0] = 0.9 * g[0] + rTotal / blocksize;
     coeffs[0] += learningRate * g[0];
+
+    // update each modality with momentum
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
@@ -157,6 +172,7 @@ void SGDRegressor::fit()
     }
 }
 
+// Return un-normalized coefficients (final regression coefficients)
 std::unique_ptr<Coefficients> SGDRegressor::getCoeffs()
 {
     std::vector<double> results(coeffs.size(), 0);
@@ -179,6 +195,9 @@ std::set<int> SGDRegressor::getSelectedFeatures() const
     return selected_features;
 }
 
+// Fit as many blocks as required to reach the size of the training set. Note
+// that due to the randomness of the picking process, there is no guarantee
+// that all observations will be used. (some others may be used several times).
 void SGDRegressor::fitEpoch(long& i, float nb_epoch)
 {
     int epoch = dataset->getSize() / blocksize;
@@ -202,7 +221,7 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                       << " minll " << minll
                       << " iteration since min " << nbIterationsSinceMinimum
                       << std::endl;
-            printResults();
+            //printResults();
             auto coeffs = getCoeffs();
             auto trainResult = coeffs->predict(dataset, dataset->getTrain());
             double ll = trainResult->logLikelihood();
@@ -228,7 +247,7 @@ void SGDRegressor::eraseFeatures(const std::vector<int> &features)
     for(int f : features){
         selected_features.erase(f);
         for(int j = config->offsets[f]; j < config->offsets[f + 1]; j++){
-            coeffs[j + 1] = 0;
+            coeffs[j + 1] = 0; // reset regression coefficient to 0.
         }
     }
 }

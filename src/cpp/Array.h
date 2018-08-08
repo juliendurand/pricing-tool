@@ -3,6 +3,20 @@
 
 #include <string>
 
+// Provides read access to a 2-dimensional numpy array persisted on disk. Uses
+// mmap to ensure optimal performance.
+//
+// Template :
+//      - the template type T is used to determine the type of data in the
+//        numpy array.
+//
+// Params :
+//      - filename : name of the file containing the numpy array ;
+//      - p : number of features (horizontal dimension) ;
+//      - n : number of observations (vertical dimension) ;
+//
+// Usage : a pointer to the file content is available with getData(). To access
+//         the value in column i and row j : getData()[i + j * p].
 
 template <typename T>
 class Array

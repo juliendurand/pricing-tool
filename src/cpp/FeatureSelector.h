@@ -3,7 +3,7 @@
 
 #include "SGDRegressor.h"
 
-
+// Container for feature related metrics.
 struct FeatureResult
 {
     int feature_idx;
@@ -17,6 +17,16 @@ struct FeatureResult
     double diffGini;
 };
 
+
+// Greedy feature selection process for glm models. This is based on backward
+// and forward stepwise. This process is empirical and *MIGHT NOt* be suited
+// for all use cases.
+//
+// Params :
+//      - model : glm regression model serving as a basis for the feature
+//                selection process.
+//
+// Usage : use with caution as this process may not be suited to all usages.
 
 class FeatureSelector
 {

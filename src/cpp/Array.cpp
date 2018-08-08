@@ -41,6 +41,7 @@ Array<T>::~Array()
     close(fd);
 }
 
+// Provide a pointer to the content of the numpy array.
 template<typename T>
 T* Array<T>::getData()
 {
@@ -53,6 +54,7 @@ const T& Array<T>::operator[](size_t i) const
     return data[i];
 }
 
+// Returns the size in bytes of the file containing the numpy array.
 template<typename T>
 size_t Array<T>::getFilesize()
 {

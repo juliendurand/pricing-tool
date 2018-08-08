@@ -26,6 +26,7 @@ void ModelResult::setObservation(int position, int id, double y, double y_pred,
     this->dp[position] = dp;
 }
 
+// Calculates the log-likelihood for several glm loss functions
 double ModelResult::logLikelihood()
 {
     double ll = 0;
@@ -49,6 +50,7 @@ double ModelResult::logLikelihood()
     return ll / y.size();
 }
 
+// Calculates the oot mean square error
 double ModelResult::rmse()
 {
     double rmse = 0;
@@ -61,6 +63,7 @@ double ModelResult::rmse()
     return std::sqrt(rmse/sexp);
 }
 
+// Calculate the gini coefficient of the prediction.
 double ModelResult::gini()
 {
     std::vector<size_t> idx = reverse_sort_indexes(y_pred, weights);
@@ -92,6 +95,7 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
   return idx;
 }
 
+// Persists the prediction in the filesystem
 void ModelResult::saveResults()
 {
     std::cout << std::endl << "Saving results." << std::endl;

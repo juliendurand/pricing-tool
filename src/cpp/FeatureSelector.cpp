@@ -7,8 +7,9 @@
 FeatureSelector::FeatureSelector(SGDRegressor* model):
     model(model)
 {
-    giniPath = std::vector<FeatureResult>(model->getSelectedFeatures().size() + 1,
-                                          FeatureResult());
+    giniPath = std::vector<FeatureResult>(
+        model->getSelectedFeatures().size() + 1,
+        FeatureResult());
 }
 
 void FeatureSelector::fit()
@@ -22,6 +23,7 @@ void FeatureSelector::fit()
                            ? 0.00001 : 0.000001;
     model->fitUntilConvergence(i, 1, stopCriterion);
     model->printResults();
+
     backwardStepwise(i);
 
     int maxSortedFeatures = model->config->p;
@@ -31,10 +33,12 @@ void FeatureSelector::fit()
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }
+
     maxSortedFeatures = std::min(maxSortedFeatures,
                                  model->config->nbFeaturesInModel);
     std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0002);
     forwardStepwise(i, maxSortedFeatures);
+
     model->eraseAllFeatures();
     model->addFeatures(bestFeatures);
     model->fitUntilConvergence(i,  5, stopCriterion);

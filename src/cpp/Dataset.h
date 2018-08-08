@@ -7,20 +7,30 @@
 #include "Array.h"
 #include "Config.h"
 
+// Contains the train, test and sample datasets. When using a gamma
+// loss function the data is filtered to exclude all observations with
+// a weight equals to 0.
+//
+// Params :
+//      - config : the regression configuration.
+//
+// Usage : the public methods provide acces to the regression data, with
+//         all types of data (observations, weight, target) and dataset (train,
+//         test, sample).
 
 class Dataset
 {
 public:
     Dataset(Config* config);
     int getSize();
-    int next();
-    uint8_t* get_x();
-    float* get_weight();
-    float* get_y();
-    std::vector<int>& getTrain();
-    std::vector<int>& getTest();
-    std::vector<int>& getSample();
-    void filterNonZeroTarget();
+    int next(); // provide a random observation from the train set.
+    uint8_t* get_x(); // observations.
+    float* get_weight(); // weight or exposure.
+    float* get_y(); // target
+    std::vector<int>& getTrain(); // list of indices for train set
+    std::vector<int>& getTest(); // list of indices for test set
+    std::vector<int>& getSample(); // list of indices for sample set
+    void filterNonZeroWeight(); // exclude all zero weighted observations.
 
 private:
     std::mt19937 generator;
