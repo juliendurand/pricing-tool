@@ -42,7 +42,10 @@ void FeatureSelector::fit()
 
 void FeatureSelector::printSelectedFeatures()
 {
-    std::cout << "Selected Features :" <<std::endl;
+    std::cout << std::endl
+              << "Final results :" << std::endl
+              << "---------------" << std::endl
+              << "Selected Features :" <<std::endl;
     for(int i = 1; i < model->getSelectedFeatures().size() + 1; i++){
         FeatureResult& p = giniPath[i];
         std::cout << "        " << i << " : " << p.feature
@@ -52,9 +55,10 @@ void FeatureSelector::printSelectedFeatures()
                   << "%, Spread(95/5)=" << p.spread95 << "%]"
                   << std::endl;
     }
+    model->printResults();
 }
 
-void FeatureSelector::writeResults()
+void FeatureSelector::saveResults()
 {
     auto coeffs = model->getCoeffs();
     std::ofstream selectedFeatureFile;

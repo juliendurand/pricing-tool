@@ -17,13 +17,14 @@ struct FeatureResult
     double diffGini;
 };
 
+
 class FeatureSelector
 {
 public:
     FeatureSelector(SGDRegressor* model);
     void fit();
     void printSelectedFeatures();
-    void writeResults();
+    void saveResults();
 
 private:
     SGDRegressor* model;

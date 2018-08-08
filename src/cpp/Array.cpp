@@ -10,43 +10,25 @@
 
 
 template<typename T>
-Array<T>::Array(std::string filename, int p, int n, bool readonly):
+Array<T>::Array(std::string filename, int p, int n):
     filename(filename),
     p(p),
     n(n),
     size_type(sizeof(T)),
-    readonly(readonly),
     size(n * p * size_type)
 {
     std::cout << "Loading data file : " << filename << std::endl;
 
-    //Open file
-    int open_flags = readonly ? O_RDONLY : O_RDWR | O_CREAT;
-    fd = open(filename.c_str(), open_flags, static_cast<mode_t>(0777));
+    // Open file
+    fd = open(filename.c_str(), O_RDONLY, static_cast<mode_t>(0777));
     assert(fd != -1);
 
+    // Check file size
     size_t filesize = getFilesize();
-    if(readonly){
-        assert(filesize == size);
-    }
-    else if(size != filesize){
-        if (lseek(fd, size - 1, SEEK_SET) == -1)
-        {
-            close(fd);
-            perror("Error calling lseek() to 'stretch' the file");
-            exit(EXIT_FAILURE);
-        }
-        if (write(fd, "", 1) == -1)
-        {
-            close(fd);
-            perror("Error writing last byte of the file");
-            exit(EXIT_FAILURE);
-        }
-    }
+    assert(filesize == size);
 
-    //Execute mmap
-    int mmap_flags = readonly ? PROT_READ : PROT_READ | PROT_WRITE;
-    mmappt = mmap(NULL, size, mmap_flags, MAP_SHARED, fd, 0);
+    // Execute mmap
+    mmappt = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
     assert(mmappt != MAP_FAILED);
     data = reinterpret_cast<T*>(mmappt);
 }
@@ -63,12 +45,6 @@ template<typename T>
 T* Array<T>::getData()
 {
     return data;
-}
-
-template<typename T>
-int Array<T>::getSize()
-{
-    return size;
 }
 
 template<typename T>

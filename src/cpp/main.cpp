@@ -14,22 +14,22 @@ int main(int argc, char** argv)
     }
 
     std::string config_filename = argv[1];
-    Config config(config_filename);
-    Dataset ds(&config);
+    Config config(config_filename); // Load config file.
+    Dataset ds(&config); // Load dataset.
 
-    SGDRegressor model(&config, &ds);
-    FeatureSelector fs(&model);
-    fs.fit();
+    SGDRegressor model(&config, &ds); // Create the regression engine.
+    FeatureSelector fs(&model); // Create the feature selection engine.
 
-    std::cout << std::endl
-              << "Final results :" << std::endl
-              << "---------------" << std::endl;
-    fs.printSelectedFeatures();
-    fs.writeResults();
-    model.printResults();
+    fs.fit(); // Perform all the calculations.
+
+    fs.printSelectedFeatures(); // Print final results.
+
+    // Save results to disk.
+    fs.saveResults();
     auto coeffs = model.getCoeffs();
+    coeffs->saveResults();
     auto result = coeffs->predict(&ds, ds.getSample());
-    coeffs->writeResults();
-    result->writeResults();
+    result->saveResults();
+
     std::cout << std::endl << "Finished OK." << std::endl;
 }

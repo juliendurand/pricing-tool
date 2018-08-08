@@ -159,7 +159,7 @@ double Coefficients::getSpread95(int feature)
     return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
-void Coefficients::writeResults()
+void Coefficients::saveResults()
 {
     std::ofstream coeffFile;
     coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);

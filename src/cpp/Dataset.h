@@ -10,16 +10,6 @@
 
 class Dataset
 {
-private:
-    std::mt19937 generator;
-    std::uniform_int_distribution<std::mt19937::result_type> random;
-    Array<uint8_t> x_data;
-    Array<float> weight_data;
-    Array<float> y_data;
-    std::vector<int> train;
-    std::vector<int> test;
-    std::vector<int> sample;
-
 public:
     Dataset(Config* config);
     int getSize();
@@ -31,6 +21,16 @@ public:
     std::vector<int>& getTest();
     std::vector<int>& getSample();
     void filterNonZeroTarget();
+
+private:
+    std::mt19937 generator;
+    std::uniform_int_distribution<std::mt19937::result_type> random;
+    Array<uint8_t> x_data;
+    Array<float> weight_data;
+    Array<float> y_data;
+    std::vector<int> train;
+    std::vector<int> test;
+    std::vector<int> sample;
 };
 
 #endif  // DATASET_H_

@@ -4,15 +4,15 @@
 
 
 Dataset::Dataset(Config* config):
-    x_data(config->getFeatureFilename(), config->p, config->n, true),
-    weight_data(config->getWeightFilename(), 1, config->n, true),
-    y_data(config->getTargetFilename(), 1, config->n, true)
+    x_data(config->getFeatureFilename(), config->p, config->n),
+    weight_data(config->getWeightFilename(), 1, config->n),
+    y_data(config->getTargetFilename(), 1, config->n)
 {
     std::random_device rd;
     generator = std::mt19937(rd());
 
     Array<int32_t> train_index(config->getTrainFilename(), 1,
-        config->trainSize, true);
+        config->trainSize);
     std::vector<int32_t> train_data(train_index.getData(),
         train_index.getData() + config->trainSize);
 
@@ -28,7 +28,7 @@ Dataset::Dataset(Config* config):
     std::sort(test.begin(), test.end());
 
     Array<int32_t> sample_index(config->getTestFilename(), 1,
-        config->testSize, true);
+        config->testSize);
     std::vector<int32_t> sample_data(sample_index.getData(),
         sample_index.getData() + config->testSize);
     sample.swap(sample_data);

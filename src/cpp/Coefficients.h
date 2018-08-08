@@ -24,7 +24,7 @@ public:
     double getCoeffGini(int feature);
     double getSpread95(int feature);
     double getSpread100(int feature);
-    void writeResults();
+    void saveResults();
 
 private:
     Config* config;

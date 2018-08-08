@@ -92,7 +92,7 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
   return idx;
 }
 
-void ModelResult::writeResults()
+void ModelResult::saveResults()
 {
     std::cout << std::endl << "Saving results." << std::endl;
 
