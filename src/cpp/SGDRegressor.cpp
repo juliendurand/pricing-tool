@@ -161,12 +161,15 @@ std::unique_ptr<Coefficients> SGDRegressor::getCoeffs()
 {
     std::vector<double> results(coeffs.size(), 0);
     results[0] = coeffs[0];
-    for(int i = 1; i < coeffs.size(); i++){
-        if(stdev[i] != 0){
-            results[i] = coeffs[i] / stdev[i];
-            results[0] -= results[i] * (weights[i] / weights[0]);
+    for(int i : selected_features){
+        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
+            if(stdev[j + 1] != 0){
+                results[j + 1] = coeffs[j + 1] / stdev[j + 1];
+                results[0] -= results[j + 1] * (weights[j + 1] / weights[0]);
+            }
         }
     }
+
     auto ptr = new Coefficients(config, results, weights, selected_features);
     return std::unique_ptr<Coefficients>(ptr);
 }
