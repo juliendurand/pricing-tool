@@ -7,7 +7,7 @@ import config
 
 def compile():
     print("Compiling regression algorithms...")
-    command = "time g++ -Wall -std=c++11 -O3 ./src/cpp/*.cpp -o ./bin/glm"
+    command = "time c++ -Wall -std=c++11 -O3 ./src/cpp/*.cpp -o ./bin/glm"
     result = subprocess.run(command, shell=True)
     if result.returncode != 0:
         raise Exception("Fatal Error during compilation.")
