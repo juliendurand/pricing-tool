@@ -160,7 +160,6 @@ class Result:
             'prediction': 'Prediction',
         }, axis=1)
 
-        # TODO : divide target and prediction by exposure ?
         relativity.Exposure = relativity.Exposure.astype('int')
         relativity.Prediction /= df.target.mean()
         relativity.Prediction = relativity.Prediction.round(decimals=3)

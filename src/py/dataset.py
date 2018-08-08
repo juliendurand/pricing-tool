@@ -13,6 +13,9 @@ start_time = 0
 
 
 def count_line(filename):
+    '''
+    Fast count the number of lines in a file.
+    '''
     f = open(filename, 'rb')
     bufgen = it.takewhile(lambda x: x, (f.raw.read(1024 * 1024)
                                         for _ in it.repeat(None)))
@@ -38,6 +41,9 @@ def create_data_file_from_list(lst, out_filename, dtype, shape):
 
 
 def load_data(file_path, dtype='int32', shape=None):
+    '''
+    Loads a numpy array in memory from the filesystem.
+    '''
     return np.memmap(file_path, dtype=dtype, shape=shape)
 
 
@@ -72,6 +78,9 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
 
 
 class Dataset:
+    '''
+    Encapsulate all the data en metadata for a glm regression.
+    '''
 
     def __init__(self, path):
         self.path = path
@@ -307,7 +316,7 @@ if __name__ == '__main__':
         raise Exception("Invalid number of options, expecting only one : "
                         "[config filename].")
     filename = sys.argv[1]
-    print("Processing congif file :", filename)
+    print("Processing config file :", filename)
     with open(filename) as config_file:
         config = json.load(config_file)
         context = {"math": math}

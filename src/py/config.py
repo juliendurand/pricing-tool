@@ -2,6 +2,9 @@ import os
 
 
 class Config:
+    '''
+    Configuration for a glm regression.
+    '''
 
     def __init__(self, config_filename):
         self.filename = config_filename

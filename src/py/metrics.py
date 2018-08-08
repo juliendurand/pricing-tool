@@ -10,12 +10,12 @@ where ``**kwargs`` are **named** extra-parameters.
 import numpy as np
 
 
-def mean_absolute_error(y, y_hat, exposure):
-    return np.sum(np.abs(y_hat - y)) / np.sum(exposure)
+def mean_absolute_error(y, y_pred, weight=None):
+    return np.sum(np.abs(y - y_pred)) / np.sum(weight)
 
 
-def root_mean_square_error(y, y_hat, exposure):
-    return np.sqrt(np.sum(np.square(y - y_hat)) / np.sum(exposure))
+def root_mean_square_error(y, y_pred, weight=None):
+    return np.sqrt(np.sum(np.square(y - y_pred)) / np.sum(weight))
 
 
 def check_deviance(y, y_pred, weight=None):
@@ -322,7 +322,22 @@ def area_lorentz_fast(y, y_pred, weight=None):
 
 
 def gini(y, y_pred, weights=None, normalize_gini=False):
-    # compute the weighted Gini
+    '''
+    Calcultate the weighted gini.
+
+    Parameters
+    ----------
+
+    y : ndarray
+        array containing the TRUE response
+    y_pred : ndarray
+        array containing the value predicted by the model
+    weight : ndarray, optional
+        array containing the weight (default 1)
+    normalize_gini : boolean, optional
+        flag to get the standard or normalized gini coefficient
+
+    '''
     gini = area_lorentz_fast(y, y_pred, weights)
     if normalize_gini:
         # compute the weighted Gini for the "perfect model"

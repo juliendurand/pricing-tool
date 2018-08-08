@@ -27,6 +27,10 @@ def twodp(p):
 
 
 class Documentation:
+    '''
+    Create the documentation for a glm regression run, using jinja2 as a
+    template engine and markdown for the syntax.
+    '''
 
     def __init__(self, config):
         self.path = config.get_doc_path()
