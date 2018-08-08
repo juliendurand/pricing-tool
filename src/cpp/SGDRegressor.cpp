@@ -4,12 +4,53 @@
 
 
 SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
-    ALinearRegressor(config, dataset),
+    config(config),
+    dataset(dataset),
     blocksize(200),
-    learningRate(0.0001)
+    learningRate(0.0001),
+    coeffs(config->m + 1, 0),
+    update(config->m + 1, 0),
+    weights(config->m + 1, 0),
+    stdev(config->m + 1, 0),
+    x0(config->m + 1, 0),
+    x1(config->m + 1, 0),
+    g(config->m + 1, 0)
 {
-    update.resize(coeffs.size(), 0);
     selectGradLoss(config->loss);
+
+    int p = config->p;
+    uint8_t* x = dataset->get_x();
+    float* weight = dataset->get_weight();
+
+    for(int i : dataset->getTrain()){
+        weights[0] += weight[i];
+        for(int j = 0; j < p; j++){
+            weights[x[p * i + j] + config->offsets[j] + 1] += weight[i];
+        }
+    }
+
+    for(int i = 0; i < config->m + 1; i++){
+        double w = weights[i] / weights[0];
+        stdev[i] = std::sqrt(w - w * w);
+    }
+
+    x0[0] = 1;
+    x1[0] = 1;
+
+    for(int i = 0; i < p; i++){
+            addFeatures({i});
+    }
+    for(std::string feature : config->excludedFeatures){
+        int featureIdx = config->getFeatureIndex(feature);
+        if(featureIdx >= 0){
+            std::cout << "Exclude feature " << feature << std::endl;
+            eraseFeatures({featureIdx});
+        } else {
+            std::cout << "WARNING : Excluded feature " << feature
+                      << " can not be found." << std::endl;
+        }
+    }
+
     fitIntercept();
 }
 
@@ -63,41 +104,64 @@ void SGDRegressor::fitIntercept(){
 }
 
 void SGDRegressor::fit(){
+    int p = config->p;
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
     float* y = dataset->get_y();
 
+    std::fill(update.begin(), update.end(), 0); // set all values to 0
+
     double dp0 = coeffs[0];
-    for(int j = 1; j < coeffs.size(); j++){
-        dp0 += x0[j] * coeffs[j];
-        update[j] = 0;
+    for(int i : selected_features){
+        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
+            dp0 += x0[j + 1] * coeffs[j + 1];
+        }
     }
 
     double rTotal = 0;
-    for(int k = 0; k < blocksize; k++){
+    for(int b = 0; b < blocksize; b++){
         int i = dataset->next();
 
         double dp = dp0;
         for(int j : selected_features){
-            int k = config->offsets[j]+ x[p * i + j] + 1;
+            int k = config->offsets[j] + x[p * i + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
         double r = gradLoss(y[i], dp, weight[i]);
-        rTotal += r;
-        for(int j = 0; j < p ; j++){
+        for(int j : selected_features){
             int k = config->offsets[j]+ x[p * i + j] + 1;
             update[k] += r * (x1[k] - x0[k]);
         }
+        rTotal += r;
     }
 
-    update[0] = rTotal;
-    for(int j = 0; j < coeffs.size(); j++){
-        if(x1[j] != 0){
+    g[0] = 0.9 * g[0] + rTotal / blocksize;
+    coeffs[0] += learningRate * g[0];
+    for(int i : selected_features){
+        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
             double grad = (update[j] + rTotal * x0[j]) / blocksize;
             g[j] = 0.9 * g[j] + grad;
             coeffs[j] += learningRate * g[j];
         }
     }
+}
+
+std::unique_ptr<Coefficients> SGDRegressor::getCoeffs(){
+    std::vector<double> results(coeffs.size(), 0);
+    results[0] = coeffs[0];
+    for(int i = 1; i < coeffs.size(); i++){
+        if(stdev[i] != 0){
+            results[i] = coeffs[i] / stdev[i];
+            results[0] -= results[i] * (weights[i] / weights[0]);
+        }
+    }
+    return std::unique_ptr<Coefficients>(new Coefficients(config, results,
+                                                          weights,
+                                                          selected_features));
+}
+
+std::set<int> SGDRegressor::getSelectedFeatures() const{
+    return selected_features;
 }
 
 void SGDRegressor::fitEpoch(long& i, float nb_epoch){
@@ -130,6 +194,41 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                 nbIterationsSinceMinimum = 0;
             } else {
                 nbIterationsSinceMinimum++;
+            }
+        }
+    }
+}
+
+void SGDRegressor::eraseAllFeatures(){
+    std::vector<int> allFeatures(selected_features.begin(),
+                                 selected_features.end());
+    eraseFeatures(allFeatures);
+}
+
+void SGDRegressor::eraseFeatures(const std::vector<int> &features){
+    for(int f : features){
+        selected_features.erase(f);
+        for(int j = config->offsets[f];
+            j < config->offsets[f + 1]; j++){
+            coeffs[j + 1] = 0;
+        }
+    }
+}
+
+void SGDRegressor::addFeatures(const std::vector<int> &features){
+    for(int f : features){
+        selected_features.insert(f);
+        for(int j = config->offsets[f];
+            j < config->offsets[f + 1]; j++){
+            int i = j + 1;
+            double w = weights[i] / weights[0];
+            double s = stdev[i];
+            if(s > 0 && (weights[i] > std::sqrt(weights[0]) / 10)){
+                x0[i] = (0 - w) / s;
+                x1[i] = (1 - w) / s;
+            } else {
+                x0[i] = 0;
+                x1[i] = 0;
             }
         }
     }

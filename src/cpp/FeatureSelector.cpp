@@ -7,7 +7,7 @@
 FeatureSelector::FeatureSelector(SGDRegressor* model):
     model(model)
 {
-    giniPath = std::vector<FeatureResult>(model->selected_features.size() + 1,
+    giniPath = std::vector<FeatureResult>(model->getSelectedFeatures().size() + 1,
                                           FeatureResult());
 }
 
@@ -41,7 +41,7 @@ void FeatureSelector::fit(){
 
 void FeatureSelector::printSelectedFeatures(){
     std::cout << "Selected Features :" <<std::endl;
-    for(int i = 1; i < model->selected_features.size() + 1; i++){
+    for(int i = 1; i < model->getSelectedFeatures().size() + 1; i++){
         FeatureResult& p = giniPath[i];
         std::cout << "        " << i << " : " << p.feature
                   << " [N2=" << p.norm
@@ -59,7 +59,7 @@ void FeatureSelector::writeResults(){
                              std::ios::out);
     selectedFeatureFile << "Feature,Gini,Spread 95/5,Spread 100/0"
                         << std::endl;
-    for(int i = 0; i < model->selected_features.size() + 1; i++){
+    for(int i = 0; i < model->getSelectedFeatures().size() + 1; i++){
         FeatureResult& fr = giniPath[i];
         int f = fr.feature_idx;
         selectedFeatureFile << fr.feature << ','
@@ -89,7 +89,7 @@ void FeatureSelector::writeResults(){
 }
 
 void FeatureSelector::storeFeatureInGiniPath(int f){
-    int position = model->selected_features.size();
+    int position = model->getSelectedFeatures().size();
     FeatureResult fr;
     auto coeffs = model->getCoeffs();
     auto testResult =  coeffs->predict(model->dataset, model->dataset->getTest());
@@ -134,7 +134,7 @@ void FeatureSelector::backwardStepwise(long& i){
     std::cout << "Backward Stepwise" << std::endl;
     for(;;){
         model->fitEpoch(i, 1);
-        if(model->selected_features.size() > 0){
+        if(model->getSelectedFeatures().size() > 0){
             auto coeffs = model->getCoeffs();
             int remove_feature = coeffs->getMinCoeff();
             storeFeatureInGiniPath(remove_feature);
@@ -156,7 +156,7 @@ void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures){
             model->addFeatures({f});
             model->fitEpoch(i, 1);
             storeFeatureInGiniPath(f);
-            if(model->selected_features.size() >= maxNbFeatures){
+            if(model->getSelectedFeatures().size() >= maxNbFeatures){
                 break;
             }
         }
