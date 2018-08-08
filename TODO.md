@@ -1,3 +1,3 @@
-distribution of test/train
-ideal poisson distribution
-spline interpolation
+- distribution of test/train
+- ideal poisson distribution
+- spline interpolation
