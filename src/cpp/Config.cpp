@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 
 
 Config::Config(const std::string& name) :
