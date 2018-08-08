@@ -36,7 +36,8 @@ std::unique_ptr<ModelResult> Coefficients::predict(Dataset* dataset,
     return std::unique_ptr<ModelResult>(result);
 }
 
-int Coefficients::getMinCoeff(){
+int Coefficients::getMinCoeff()
+{
     int minidx = -1;
     double minvalue = 0;
     for(int i : selected_features){
@@ -49,7 +50,8 @@ int Coefficients::getMinCoeff(){
     return minidx;
 }
 
-double Coefficients::getCoeffNorm2(int feature){
+double Coefficients::getCoeffNorm2(int feature)
+{
     if(feature < 0){
         return 0;
     }
@@ -66,7 +68,8 @@ double Coefficients::getCoeffNorm2(int feature){
     return std::sqrt(sc / sw);
 }
 
-double Coefficients::getCoeffGini(int feature){
+double Coefficients::getCoeffGini(int feature)
+{
     if(feature < 0){
         return 0;
     }
@@ -98,7 +101,8 @@ double Coefficients::getCoeffGini(int feature){
     return g * 100;
 }
 
-double Coefficients::getSpread100(int feature){
+double Coefficients::getSpread100(int feature)
+{
     if(feature < 0){
         return 0;
     }
@@ -115,7 +119,8 @@ double Coefficients::getSpread100(int feature){
     return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
-double Coefficients::getSpread95(int feature){
+double Coefficients::getSpread95(int feature)
+{
     if(feature < 0){
         return 0;
     }
@@ -154,7 +159,8 @@ double Coefficients::getSpread95(int feature){
     return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
-void Coefficients::writeResults(){
+void Coefficients::writeResults()
+{
     std::ofstream coeffFile;
     coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;

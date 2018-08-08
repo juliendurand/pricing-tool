@@ -4,7 +4,8 @@
 #include "SGDRegressor.h"
 
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
     if(argc != 2){
         std::cout
             << "Invalid parameters. Expecting 1 parameter : [config file]."

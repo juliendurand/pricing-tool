@@ -17,7 +17,8 @@ ModelResult::ModelResult(const int size, Config* config) :
 }
 
 void ModelResult::setObservation(int position, int id, double y, double y_pred,
-        double weight, double dp){
+        double weight, double dp)
+{
     this->id[position] = id;
     this->y[position] = y;
     this->y_pred[position] = y_pred;
@@ -25,7 +26,8 @@ void ModelResult::setObservation(int position, int id, double y, double y_pred,
     this->dp[position] = dp;
 }
 
-double ModelResult::logLikelihood(){
+double ModelResult::logLikelihood()
+{
     double ll = 0;
     std::string loss = config->loss;
     if(loss == "gaussian"){
@@ -47,7 +49,8 @@ double ModelResult::logLikelihood(){
     return ll / y.size();
 }
 
-double ModelResult::rmse(){
+double ModelResult::rmse()
+{
     double rmse = 0;
     double sexp = 0;
     for(int i = 0; i < y.size(); i++){
@@ -58,7 +61,8 @@ double ModelResult::rmse(){
     return std::sqrt(rmse/sexp);
 }
 
-double ModelResult::gini(){
+double ModelResult::gini()
+{
     std::vector<size_t> idx = reverse_sort_indexes(y_pred, weights);
     double exposure_sum = 0;
     double obs_sum = 0;
@@ -88,7 +92,8 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
   return idx;
 }
 
-void ModelResult::writeResults(){
+void ModelResult::writeResults()
+{
     std::cout << std::endl << "Saving results." << std::endl;
 
     std::ofstream resultFile;

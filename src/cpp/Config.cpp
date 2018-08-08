@@ -58,27 +58,33 @@ Config::Config(const std::string& name) :
     }
 }
 
-std::string Config::getFeatureFilename(){
+std::string Config::getFeatureFilename()
+{
     return path + "features.dat";
 }
 
-std::string Config::getWeightFilename(){
+std::string Config::getWeightFilename()
+{
     return path + "column_" + weight + ".dat";
 }
 
-std::string Config::getTargetFilename(){
+std::string Config::getTargetFilename()
+{
     return path + "column_" + target + ".dat";
 }
 
-std::string Config::getTrainFilename(){
+std::string Config::getTrainFilename()
+{
     return path + "train.dat";
 }
 
-std::string Config::getTestFilename(){
+std::string Config::getTestFilename()
+{
      return path + "test.dat";
 }
 
-int Config::getFeatureIndex(const std::string& feature){
+int Config::getFeatureIndex(const std::string& feature)
+{
     auto it = std::find(features.begin(), features.end(),
                          feature);
     if(it == features.end()){
@@ -88,7 +94,8 @@ int Config::getFeatureIndex(const std::string& feature){
     return idx;
 }
 
-int Config::getFeatureFromModality(int m){
+int Config::getFeatureFromModality(int m)
+{
     for(int i = 0; i < features.size(); i++){
         if(m >= offsets[i] && m < offsets[i + 1]){
             return i;

@@ -4,7 +4,8 @@
 #include "SGDRegressor.h"
 
 
-struct FeatureResult {
+struct FeatureResult
+{
     int feature_idx;
     std::string feature;
     double gini;
@@ -34,7 +35,6 @@ private:
     void sortFeatures();
     void sortFeatures(int maxNbFeatures);
     const std::vector<int> getBestFeatures(int maxNbFeatures, double treshold);
-    void printResults();
 };
 
 #endif  // FEATURESELECTOR_H_

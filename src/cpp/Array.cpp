@@ -52,29 +52,34 @@ Array<T>::Array(std::string filename, int p, int n, bool readonly):
 }
 
 template<typename T>
-Array<T>::~Array(){
+Array<T>::~Array()
+{
     int rc = munmap(mmappt, size);
     assert(rc == 0);
     close(fd);
 }
 
 template<typename T>
-T* Array<T>::getData(){
+T* Array<T>::getData()
+{
     return data;
 }
 
 template<typename T>
-int Array<T>::getSize(){
+int Array<T>::getSize()
+{
     return size;
 }
 
 template<typename T>
-const T& Array<T>::operator[](size_t i) const{
+const T& Array<T>::operator[](size_t i) const
+{
     return data[i];
 }
 
 template<typename T>
-size_t Array<T>::getFilesize() {
+size_t Array<T>::getFilesize()
+{
     struct stat st;
     stat(filename.c_str(), &st);
     return st.st_size;

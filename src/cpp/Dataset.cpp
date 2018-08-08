@@ -45,39 +45,48 @@ Dataset::Dataset(Config* config):
     std::cout << "# Sample observations : " << sample.size() << std::endl;
 }
 
-int Dataset::getSize(){
+int Dataset::getSize()
+{
     return train.size();
 }
 
-int Dataset::next(){
+int Dataset::next()
+{
     return train[random(generator)];
 }
 
-uint8_t* Dataset::get_x(){
+uint8_t* Dataset::get_x()
+{
     return x_data.getData();
 }
 
-float* Dataset::get_weight(){
+float* Dataset::get_weight()
+{
     return weight_data.getData();
 }
 
-float* Dataset::get_y(){
+float* Dataset::get_y()
+{
     return y_data.getData();
 }
 
-std::vector<int>& Dataset::getTrain(){
+std::vector<int>& Dataset::getTrain()
+{
     return train;
 }
 
-std::vector<int>& Dataset::getTest(){
+std::vector<int>& Dataset::getTest()
+{
     return test;
 }
 
-std::vector<int>& Dataset::getSample(){
+std::vector<int>& Dataset::getSample()
+{
     return sample;
 }
 
-void Dataset::filterNonZeroTarget(){
+void Dataset::filterNonZeroTarget()
+{
     float* w = get_weight();
 
     auto filter = [w](int i){

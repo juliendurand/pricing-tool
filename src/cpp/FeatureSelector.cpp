@@ -11,7 +11,8 @@ FeatureSelector::FeatureSelector(SGDRegressor* model):
                                           FeatureResult());
 }
 
-void FeatureSelector::fit(){
+void FeatureSelector::fit()
+{
     std::cout << std::endl << "Fit Model for "
                            << model->config->nbFeaturesInModel
                            << " variables :" << std::endl;
@@ -39,7 +40,8 @@ void FeatureSelector::fit(){
     model->fitUntilConvergence(i,  5, stopCriterion);
 }
 
-void FeatureSelector::printSelectedFeatures(){
+void FeatureSelector::printSelectedFeatures()
+{
     std::cout << "Selected Features :" <<std::endl;
     for(int i = 1; i < model->getSelectedFeatures().size() + 1; i++){
         FeatureResult& p = giniPath[i];
@@ -52,7 +54,8 @@ void FeatureSelector::printSelectedFeatures(){
     }
 }
 
-void FeatureSelector::writeResults(){
+void FeatureSelector::writeResults()
+{
     auto coeffs = model->getCoeffs();
     std::ofstream selectedFeatureFile;
     selectedFeatureFile.open(model->config->resultPath + "features.csv",
@@ -88,7 +91,8 @@ void FeatureSelector::writeResults(){
     giniPathFile.close();
 }
 
-void FeatureSelector::storeFeatureInGiniPath(int f){
+void FeatureSelector::storeFeatureInGiniPath(int f)
+{
     int position = model->getSelectedFeatures().size();
     FeatureResult fr;
     auto coeffs = model->getCoeffs();
@@ -130,7 +134,8 @@ void FeatureSelector::storeFeatureInGiniPath(int f){
     giniPath[position] = fr;
 }
 
-void FeatureSelector::backwardStepwise(long& i){
+void FeatureSelector::backwardStepwise(long& i)
+{
     std::cout << "Backward Stepwise" << std::endl;
     for(;;){
         model->fitEpoch(i, 1);
@@ -147,7 +152,8 @@ void FeatureSelector::backwardStepwise(long& i){
     }
 }
 
-void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures){
+void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures)
+{
     std::cout << "Forward Stepwise" << std::endl;
     model->eraseAllFeatures();
     for(auto p : giniPath){
@@ -163,11 +169,13 @@ void FeatureSelector::forwardStepwise(long& i, int maxNbFeatures){
     }
 }
 
-void FeatureSelector::sortFeatures(){
+void FeatureSelector::sortFeatures()
+{
     sortFeatures(giniPath.size());
 }
 
-void FeatureSelector::sortFeatures(int maxNbFeatures){
+void FeatureSelector::sortFeatures(int maxNbFeatures)
+{
     for(int i = 1; i < giniPath.size(); i++){
         giniPath[i].diffGini = giniPath[i].gini - giniPath[i - 1].gini;
     }
@@ -180,7 +188,8 @@ void FeatureSelector::sortFeatures(int maxNbFeatures){
 }
 
 const std::vector<int> FeatureSelector::getBestFeatures(int maxNbFeatures,
-                                                   double treshold){
+                                                   double treshold)
+{
     sortFeatures(maxNbFeatures);
     std::vector<int> bestFeatures;
     for (auto p = giniPath.begin() + 1; p != giniPath.end(); p++) {
