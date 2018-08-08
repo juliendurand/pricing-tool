@@ -45,14 +45,15 @@ void FeatureSelector::printSelectedFeatures(){
         FeatureResult& p = giniPath[i];
         std::cout << "        " << i << " : " << p.feature
                   << " [N2=" << p.norm
-                  << ", CGini" << p.coeffGini * 100
-                  << "%, Spread(100/0)=" << p.spread100 * 100
-                  << "%, Spread(95/5)=" << p.spread95 * 100 << "%]"
+                  << ", CGini=" << p.coeffGini
+                  << "%, Spread(100/0)=" << p.spread100
+                  << "%, Spread(95/5)=" << p.spread95 << "%]"
                   << std::endl;
     }
 }
 
 void FeatureSelector::writeResults(){
+    auto coeffs = model->getCoeffs();
     std::ofstream selectedFeatureFile;
     selectedFeatureFile.open(model->config->resultPath + "features.csv",
                              std::ios::out);
@@ -63,8 +64,8 @@ void FeatureSelector::writeResults(){
         int f = fr.feature_idx;
         selectedFeatureFile << fr.feature << ','
                             << fr.gini << ','
-                            << model->getSpread95(f) << ','
-                            << model->getSpread100(f)
+                            << coeffs->getSpread95(f) << ','
+                            << coeffs->getSpread100(f)
                             << std::endl;
     }
     selectedFeatureFile.close();
@@ -110,10 +111,10 @@ void FeatureSelector::storeFeatureInGiniPath(int f){
             f,
             model->config->features[f],
             testResult->gini(),
-            model->getCoeffGini(f),
-            model->getCoeffNorm2(f),
-            model->getSpread100(f),
-            model->getSpread95(f),
+            coeffs->getCoeffGini(f),
+            coeffs->getCoeffNorm2(f),
+            coeffs->getSpread100(f),
+            coeffs->getSpread95(f),
             testResult->rmse(),
             0
         };
@@ -134,7 +135,8 @@ void FeatureSelector::backwardStepwise(long& i){
     for(;;){
         model->fitEpoch(i, 1);
         if(model->selected_features.size() > 0){
-            int remove_feature = model->getMinCoeff();
+            auto coeffs = model->getCoeffs();
+            int remove_feature = coeffs->getMinCoeff();
             storeFeatureInGiniPath(remove_feature);
             model->eraseFeatures({remove_feature});
         }

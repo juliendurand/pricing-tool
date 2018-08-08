@@ -9,12 +9,7 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     config(config),
     dataset(ds),
     p(config->p),
-    n(config->n),
-    x(ds->get_x()),
-    y(ds->get_y()),
-    exposure(ds->get_weight()),
-    offsets(config->offsets),
-    features(config->features)
+    n(config->n)
 {
     int nbCoeffs = config->m + 1;
     coeffs.resize(nbCoeffs, 0);
@@ -24,10 +19,13 @@ ALinearRegressor::ALinearRegressor(Config* config, Dataset* ds):
     x1.resize(nbCoeffs, 0);
     g.resize(nbCoeffs, 0);
 
+    uint8_t* x = dataset->get_x();
+    float* weight = dataset->get_weight();
+
     for(int i : dataset->getTrain()){
-        weights[0] += exposure[i];
+        weights[0] += weight[i];
         for(int j = 0; j < p; j++){
-            weights[x[p * i+ j] + offsets[j] + 1] += exposure[i];
+            weights[x[p * i + j] + config->offsets[j] + 1] += weight[i];
         }
     }
 
@@ -67,127 +65,8 @@ std::unique_ptr<Coefficients> ALinearRegressor::getCoeffs(){
         }
     }
     return std::unique_ptr<Coefficients>(new Coefficients(config, results,
+                                                          weights,
                                                           selected_features));
-}
-
-int ALinearRegressor::getMinCoeff(){
-    int minidx = -1;
-    double minvalue = 0;
-    for(int i : selected_features){
-        double s = getCoeffGini(i);
-        if(minidx == -1 || s < minvalue){
-            minvalue = s;
-            minidx = i;
-        }
-    }
-    return minidx;
-}
-
-double ALinearRegressor::getCoeffNorm2(int feature){
-    double sc = 0;
-    double sw = 0;
-    for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
-        double c = stdev[j + 1] > 0 ? coeffs[j + 1] / stdev[j + 1] : 0;
-        double w = weights[j + 1];
-        sc += c * c * w;
-        sw += w;
-    }
-    return std::sqrt(sc / sw);
-}
-
-double ALinearRegressor::getCoeffGini(int feature){
-    if(feature < 0){
-        return 0;
-    }
-
-    int nb_coeffs = offsets[feature + 1] - offsets[feature];
-    std::vector<int> feature_idx(nb_coeffs);
-    for(int i = 0; i < nb_coeffs; i++){
-        feature_idx[i] = offsets[feature] + i;
-    }
-    std::sort(feature_idx.begin(), feature_idx.end(),
-        [this](size_t i, size_t j) {
-            return std::exp(this->coeffs[i + 1] / this->stdev[i + 1]) <
-                   std::exp(this->coeffs[j + 1] / this->stdev[j + 1]);
-        }
-    );
-
-    double g = 0;
-    double sc = 0;
-    double sw = 0;
-    for(int i : feature_idx){
-        int j = i + 1;
-        double w = weights[j];
-        double c = stdev[j] != 0 ? std::exp(coeffs[j]) * w : 1;
-        g += w * (2 * sc + c);
-        sc += c;
-        sw += w;
-    }
-    g = 1 - g / (sc * sw);
-    return g < 0.0000001 ? 0 : g;
-}
-
-double ALinearRegressor::getSpread100(int feature){
-    if(feature < 0){
-        return 0;
-    }
-
-    double minvalue = 100000000;
-    double maxvalue = 0;
-
-    for(int j = offsets[feature]; j < offsets[feature + 1] ; j++){
-        float c = std::exp(coeffs[j + 1]  / stdev[j + 1]);
-        if(c < minvalue) minvalue = c;
-        if(c > maxvalue) maxvalue = c;
-    }
-
-    return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
-}
-
-double ALinearRegressor::getSpread95(int feature){
-    if(feature < 0){
-        return 0;
-    }
-    int nb_coeffs = offsets[feature + 1] - offsets[feature];
-    std::vector<int> feature_idx(nb_coeffs);
-    for(int i = 0; i < nb_coeffs; i++){
-        feature_idx[i] = offsets[feature] + i;
-    }
-    std::sort(feature_idx.begin(), feature_idx.end(),
-        [this](size_t i, size_t j) {
-            return std::exp(this->coeffs[i + 1] / this->stdev[i + 1])
-                   < std::exp(this->coeffs[j + 1] / this->stdev[j + 1]);
-        }
-    );
-    std::vector<double> cum_weight(nb_coeffs);
-    for(int i = 0; i < nb_coeffs; i++){
-        cum_weight[i] = (i > 0 ? cum_weight[i - 1] : 0) +
-                        (weights[feature_idx[i] + 1] / weights[0]);
-    }
-    double minvalue = 0;
-    double maxvalue = 0;
-    for(int i = 0; i < nb_coeffs; i++){
-        if(cum_weight[i] > 0.05){
-            int j = feature_idx[i] + 1;
-            if(stdev[j] == 0){
-                continue;
-            }
-            minvalue = std::exp(coeffs[j]/ stdev[j]);
-            break;
-        }
-    }
-    for(int i = 0; i < nb_coeffs; i++){
-        if(cum_weight[i] > 0.95){
-            int j = feature_idx[i] + 1;
-            if(stdev[j] == 0){
-                continue;
-            }
-            maxvalue = std::exp(coeffs[j]/ stdev[j]);
-            break;
-        }
-    }
-
-    return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
 void ALinearRegressor::eraseAllFeatures(){
@@ -225,38 +104,4 @@ void ALinearRegressor::addFeatures(const std::vector<int> &features){
             }
         }
     }
-}
-
-void ALinearRegressor::printResults(){
-    auto c = getCoeffs();
-    std::unique_ptr<ModelResult> trainResult = c->predict(dataset, dataset->getTrain());
-    std::unique_ptr<ModelResult> testResult = c->predict(dataset, dataset->getTest());
-    std::unique_ptr<ModelResult> sampleResult = c->predict(dataset, dataset->getSample());
-    std::cout << "gini(train=" << trainResult->gini()
-              << ", test="     << testResult->gini()
-              << ", sample="     << sampleResult->gini() << ")"
-              << " | "
-              << "ll(train=" << trainResult->logLikelihood()
-              << ", test="   << testResult->logLikelihood() << ")"
-              << std::endl;
-}
-
-const std::vector<size_t> ALinearRegressor::reverse_sort_indexes(
-        const std::vector<float>& v, const float* w,
-        const std::vector<int>& samples)
-{
-    // initialize original index locations
-    std::vector<size_t> idx(samples.size());
-    std::iota(idx.begin(), idx.end(), 0);
-
-    // sort indexes based on comparing values in v
-    std::sort(idx.begin(), idx.end(),
-        [&v, w, &samples](size_t j1, size_t j2) {
-            int i1 = samples[j1];
-            int i2 = samples[j2];
-            return v[i1] / w[i1] > v[i2] / w[i2];
-        }
-    );
-
-  return idx;
 }

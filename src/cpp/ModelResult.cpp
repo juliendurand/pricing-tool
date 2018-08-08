@@ -6,8 +6,8 @@
 #include <iostream>
 
 
-ModelResult::ModelResult(const int size, const std::string loss) :
-    loss(loss)
+ModelResult::ModelResult(const int size, Config* config) :
+    config(config)
 {
     id.resize(size);
     y.resize(size);
@@ -27,6 +27,7 @@ void ModelResult::setObservation(int position, int id, double y, double y_pred,
 
 double ModelResult::logLikelihood(){
     double ll = 0;
+    std::string loss = config->loss;
     if(loss == "gaussian"){
         for(int i = 0; i < y.size(); i++){
             double e = (y_pred[i] - y[i]);
@@ -87,11 +88,11 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
   return idx;
 }
 
-void ModelResult::writeResults(std::string resultPath){
+void ModelResult::writeResults(){
     std::cout << std::endl << "Saving results." << std::endl;
 
     std::ofstream resultFile;
-    resultFile.open(resultPath + "results.csv", std::ios::out);
+    resultFile.open(config->resultPath + "results.csv", std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;
     for(int i = 0; i < y.size(); ++i){
         resultFile << i << "," << weights[i] << "," << y[i] << ","

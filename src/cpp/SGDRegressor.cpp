@@ -41,11 +41,14 @@ void SGDRegressor::fitIntercept(){
     // This calculation only works if :
     //   - all coefficients are set to 0 ;
     //   - or the features have *all* been normalized.
+    float* weight = dataset->get_weight();
+    float* y = dataset->get_y();
+
     double s = 0;
     double w = 0;
     for(int i : dataset->getTrain()){
         s += y[i];
-        w += exposure[i];
+        w += weight[i];
     }
 
     if(config->loss == "gaussian"){
@@ -60,6 +63,10 @@ void SGDRegressor::fitIntercept(){
 }
 
 void SGDRegressor::fit(){
+    uint8_t* x = dataset->get_x();
+    float* weight = dataset->get_weight();
+    float* y = dataset->get_y();
+
     double dp0 = coeffs[0];
     for(int j = 1; j < coeffs.size(); j++){
         dp0 += x0[j] * coeffs[j];
@@ -72,13 +79,13 @@ void SGDRegressor::fit(){
 
         double dp = dp0;
         for(int j : selected_features){
-            int k = offsets[j]+ x[p * i + j] + 1;
+            int k = config->offsets[j]+ x[p * i + j] + 1;
             dp += (x1[k] - x0[k]) * coeffs[k];
         }
-        double r = gradLoss(y[i], dp, exposure[i]);
+        double r = gradLoss(y[i], dp, weight[i]);
         rTotal += r;
         for(int j = 0; j < p ; j++){
-            int k = offsets[j]+ x[p * i + j] + 1;
+            int k = config->offsets[j]+ x[p * i + j] + 1;
             update[k] += r * (x1[k] - x0[k]);
         }
     }
@@ -126,4 +133,21 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
             }
         }
     }
+}
+
+void SGDRegressor::printResults(){
+    auto c = getCoeffs();
+    std::unique_ptr<ModelResult> trainResult = c->predict(dataset,
+        dataset->getTrain());
+    std::unique_ptr<ModelResult> testResult = c->predict(dataset,
+        dataset->getTest());
+    std::unique_ptr<ModelResult> sampleResult = c->predict(dataset,
+        dataset->getSample());
+    std::cout << "gini(train=" << trainResult->gini()
+              << ", test="     << testResult->gini()
+              << ", sample="     << sampleResult->gini() << ")"
+              << " | "
+              << "ll(train=" << trainResult->logLikelihood()
+              << ", test="   << testResult->logLikelihood() << ")"
+              << std::endl;
 }

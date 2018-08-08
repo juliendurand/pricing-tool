@@ -34,6 +34,7 @@ private:
     void sortFeatures();
     void sortFeatures(int maxNbFeatures);
     const std::vector<int> getBestFeatures(int maxNbFeatures, double treshold);
+    void printResults();
 };
 
 #endif  // FEATURESELECTOR_H_

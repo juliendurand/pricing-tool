@@ -14,6 +14,7 @@ public:
     virtual void fit();
     void fitEpoch(long& i, float nb_epoch);
     void fitUntilConvergence(long& i, int precision, float stopCriterion);
+    void printResults();
 
 private:
     int blocksize;
