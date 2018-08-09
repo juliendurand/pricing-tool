@@ -1,5 +1,6 @@
 #include "SGDRegressor.h"
 
+#include <algorithm>
 #include <iostream>
 
 
@@ -39,7 +40,8 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
             // intercept is always equals to 1
             x0[0] = 1;
             x1[0] = 1;
-        }else if(s > 0 && (weights[i] > std::sqrt(weights[0]) / 10)){
+        }else if(s > 0 && (weights[i] > std::min(20.0,
+                                        std::sqrt(weights[0]) / 10))){
             x0[i] = (0 - w) / s;
             x1[i] = (1 - w) / s;
         } else {
@@ -165,9 +167,9 @@ void SGDRegressor::fit()
     // update each modality with momentum
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
-            double grad = (update[j] + rTotal * x0[j]) / blocksize;
-            g[j] = 0.9 * g[j] + grad;
-            coeffs[j] += learningRate * g[j];
+            double grad = (update[j + 1] + rTotal * x0[j + 1]) / blocksize;
+            g[j + 1] = 0.9 * g[j + 1] + grad;
+            coeffs[j + 1] += learningRate * g[j + 1];
         }
     }
 }
