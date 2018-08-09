@@ -600,6 +600,16 @@ Dès lors que vous disposez d'un grand nombre de variables (plusieurs dizaines),
 
 La performance prédictive vient tout naturellement à l'esprit comme le premier critère de choix. C'est malheureusement parfois le seul qui est pris en compte. Le choix des variables doit souvent mettre en balance d'autres critère au depénd de quelques dizièmes de point de gini.
 
+### Simplicité
+
+*«La simplicité est la sophistication suprême»* selon Léonard de Vinci. Cette maxime s'applique bien à la modélisation IARD. Pour une même puissance prédictive les modèles les plus simples sont les plus longs à réaliser.
+
+Pour obtenir des modèles simples, voici quelques pistes :
+
+  - diminuer le nombre de variables utilisées ;
+  - diminuer le nombre de modalités utilisées ;
+  - diminuer le nombre d'interactions utilisées.
+
 ### Interprétabilité
 
 Vous souhaiterez probablement communiquer de manière pédagogique sur les variables constituant vos modèles. Cela est d'autant plus facile que vos features sont faciles à interpréter. Imaginons par exemple que vous ayez le choix, en assurance automobile, entre deux variables véhicules :
@@ -615,18 +625,11 @@ Il est possible qu'une variable sans relation évidente avec le risque modélis�
 
 ### Robustesse
 
-- Résistance aux outliers
+La robustesse est la capacité d'un sytème à se maintenir dans le temps et à résister aux événements exceptionnels. En ce qui concerne le choix des variables dans un modèle vous devez réfléchir à la stabilité de la variable dans le temps et ce qu'il advient en cas de valeur extrême.
 
+Les variables renseignées à la souscription et qui ne sont plus jamais mises à jours sont par exemple à éviter. Il est donc important de connaitre les processus opérationnels de mise à jour des données. Par exemple le statut marital (célibataire, marié, veuf, ...) est une donnée qui évolue avec le temps et dont la pertinence s'émousse au fil des ans.
 
-### Simplicité
-
-*"La simplicité est la sophistication suprême"* selon Léonard de Vinci. Cette maxime s'applique bien à la modélisation IARD. Pour une même puissance prédictive les modèles les plus simples sont les plus longs à réaliser.
-
-Pour obtenir des modèles simples, voici quelques pistes :
-
-  - diminuer le nombre de variables utilisées ;
-  - diminuer le nombre de modalités utilisées ;
-  - diminuer le nombre d'interactions utilisées.
+Les "outliers" (cas extrêmes) sont également à considérer : vos variables sont-elles susceptibles de prendre des variables exceptionnelles et comment cela se traduit-il dans les prédictions ? Par exemple si vous
 
 ### Disponibilité
 
@@ -644,16 +647,30 @@ La collecte et le stockage d'une donnée a toujours un coût. Vous devez essayer
 
 ### Expérience client
 
+On ne pense jamais suffisament au client. Quel surprise de devoir répondre à une question sur son statut de locataire ou propriétaire pour souscrire une assurance automobile !
 
+nombre de données collectées
 vie privée
 
 ### Ethique
 
+Certaines données sont sensibles car leur utilisation pourrait créer des situations de discrimination : nationalité, ethnie, religion, handicap, ...
+
 ### Législation
+
+La législation de votre pays peut vous contraindre dans le choix des variables que vous pouvez utilisez dans votre pricing technique ou commercial. Il est donc préférable d'utiliser dans votre pricing techniques des variables que vous pourrez également utiliser dans vos processus opérationnels et votre pricing commercial.
 
 ### Stratégie
 
-## Manuelle
+Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing et privilégier certaines catégories de variables. Par exemple, en assurance automobile, vous pouvez favoriser les variables véhicules plutôt que les variables conducteurs.
+
+## Sélection Manuelle
+
+Les exemples précédents nous montrent combien il est illusoire de pouvoir réaliser une sélection de variables entièrement automatisée. Bien au contraire la sélection des variables est une opinion subjective qui requiert une expérience approfondie du domaine. Ce choix est le résultats d'un processus empirique pour trouver le "meilleurs" ensemble en fonction des objectifs business de chaque entité.
+
+En raison de la rapide croissance du nombre de variables inclus dans les modèles il est toutefois utile de mettre en place des procédure automatisée de recherche des meilleurs variables pour accélérer le tri et la sélection manuelle finale.
+
+Dans les prochaines sections nous expliquerons les différentes méthodes disponibles et celles qui sont le plus appropriées pour le contexte big data.
 
 ## Forward Stepwise
 
@@ -662,6 +679,8 @@ vie privée
 ## Greedy Process
 
 ## Pénalisation
+
+Les pénalisations sont des méthodes "intégrées" qui réalisent la sélection des variables en même temps que l'apprentissage du modèle.
 
 ### Lasso
 
