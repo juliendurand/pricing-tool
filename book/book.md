@@ -590,6 +590,69 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 # Sélection des variables
 
+Nous disposons grâce au big data d'un nombre toujours plus grand de variables à tester pour nos modèle. Toutefois il est illusoire de vouloir toutes les utiliser dans un modèle de production. Il faut donc choisir le meilleur groupe de variables en fonction de votre stratégie commerciale. Réaliser une bonne sélection des variables est probablement l'étape la plus importante de la modélisation et cela se renforce à mesure que notre capacité à traiter de nouvelles variables s'accroît.
+
+## Objectifs
+
+Dès lors que vous disposez d'un grand nombre de variables (plusieurs dizaines), il est souvent possible d'obtenir des performances prédictives proches avec des variables différentes. Il est donc important de bien définir vos objectifs pour guider vos choix.
+
+### Performance Predictive
+
+La performance prédictive vient tout naturellement à l'esprit comme le premier critère de choix. C'est malheureusement parfois le seul qui est pris en compte. Le choix des variables doit souvent mettre en balance d'autres critère au depénd de quelques dizièmes de point de gini.
+
+### Interprétabilité
+
+Vous souhaiterez probablement communiquer de manière pédagogique sur les variables constituant vos modèles. Cela est d'autant plus facile que vos features sont faciles à interpréter. Imaginons par exemple que vous ayez le choix, en assurance automobile, entre deux variables véhicules :
+
+   - la somme de la longueur et de la largeur du véhicule ;
+   - le poids du véhicule ;
+
+A capacité prédictive égale (ou très proche), il est préférable d'utiliser le poids du véhicule qui est plus facilement interprétable pour les novices.
+
+### Sens business
+
+Il est possible qu'une variable sans relation évidente avec le risque modélisé présente pourtant une forte corrélation avec la variable cible. Il est tentant de l'inclure dans le modèle car cela peut augmenter la capacité prédictive du modèle. Il est toutefois préférable de préférer des variables dont on comprend intuitivement l'impact sur la sinistralité.
+
+### Robustesse
+
+- Résistance aux outliers
+
+
+### Simplicité
+
+*"La simplicité est la sophistication suprême"* selon Léonard de Vinci. Cette maxime s'applique bien à la modélisation IARD. Pour une même puissance prédictive les modèles les plus simples sont les plus longs à réaliser.
+
+Pour obtenir des modèles simples, voici quelques pistes :
+
+  - diminuer le nombre de variables utilisées ;
+  - diminuer le nombre de modalités utilisées ;
+  - diminuer le nombre d'interactions utilisées.
+
+### Disponibilité
+
+De nombreuses variables ne sont pas disponible ou parfaitement connue au moment où l'on souhaiterait appliquer le modèle en production. Il faut privilégier les variables les plus facilement disponible.
+
+### Crédibilité
+
+Les variables reflètent de manière imparfaite la réalité, surtout si une partie prenante y trouve un avantage. Par exemple, il n'est pas possible de vérifier la durée d'assurance chez l'assureur précédent. Si la variable est utilisée dans les processus opérationnel, il y a un risque que les clients ou les intermédiaires déclarent des valeurs inexactes pour optimiser leur tarif.
+
+Lors du choix d'une variable vous devez vous demander si le processus de collecte permet de garantir avec un degré de confiance suffisant la qualité de la donnée.
+
+### Cout d'acquisition
+
+La collecte et le stockage d'une donnée a toujours un coût. Vous devez essayer d'identifier les coûts associés à chaque variable et privilégier celles qui ont les coûts les plus faibles. Pour les variables les plus onéreuses vous pouvez balancer ce coût avec l'avantage compétitif procuré par l'intégration de la variable dans le modèle.
+
+### Expérience client
+
+
+vie privée
+
+### Ethique
+
+### Législation
+
+### Stratégie
+
 ## Manuelle
 
 ## Forward Stepwise
