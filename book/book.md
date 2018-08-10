@@ -5,8 +5,7 @@ subject: Finance Data-Science Big-Data
 keywords: Tarification Assurance IARD Data-Science Big-Data
 ---
 
-\addcontentsline{toc}{chapter}{Introduction}
-\chapter*[Introduction]{Introduction}
+# Introduction {-}
 
 Les assureurs détiennent dans leur portefeuille des millions de contrats automobiles, habitations et professionnels. Ces activités, couramment regroupées sous le vocable IARD (Incendie, Accidents et Risques Divers) génèrent des volumes de données très importants. Pour améliorer leur compétitivité les compagnies d'assurance souhaitent modéliser l'impact de dizaines, voire centaines de variables. L'un des enjeux majeurs est de tarifer au juste prix chaque contrat en fonction de ses caractéristiques individuelles tout en assurant la mutualisation des risques au niveau du portefeuille. Pour avoir un ordre de grandeur, nous pouvons estimer qu'un assureur qui détient un portefeuille de quatre millions de contrats et qui souhaite mesurer l'impact de cent variables sur trois ans d'activité doit traiter 1,2 milliard de point de données. Cela représente 9,6 Go de donnée brute (en comptant une moyenne de 8 octets pour le stockage d'une donnée atomique). Ce volume croit avec la taille du portefeuille, la profondeur de l'historique et le nombre de variables étudiées. Les outils classiques de l'actuaire et du statisticien sont peu adaptés à des volumes aussi importants. La maitrise des technologies big data est donc un facteur clef de succès pour la tarification des contrats IARD.
 
@@ -355,24 +354,24 @@ Une fois que vous aurez créé toutes les features nécessaires à l'apprentissa
 
 - Etablir une convention de nommage pour vos variables. Cette convention va définir la langue, la casse et les séparateurs utilisés, voici quelques exemples courants :
 
-    - CamelCase ;
-    - snake_case ;
-    - CAPITAL_CASE ;
+  - CamelCase ;
+  - snake_case ;
+  - CAPITAL_CASE ;
 
 - Grouper les features par catégorie et préfixer les noms de variables. Par exemple si vos features sont issues de 4 bases de données différentes (client, contrat, sinistre, devis) vous pouvez envisager une notation similaire à celle-ci :
 
-    - client.feature_1, client.Feature_x... pour les variables de la base client ;
-    - contrat.features_1, contrat.feature_x... pour les variables contrats ;
-    - sinistre.feature_x... pour les variables sinistres ;
-    - devis.feature_x... pour les variables devis ;
-    - cible.nb_sinistres_rc, cible.cout_sinistres_rc... pour les variables cibles.
+  - client.feature_1, client.Feature_x... pour les variables de la base client ;
+  - contrat.features_1, contrat.feature_x... pour les variables contrats ;
+  - sinistre.feature_x... pour les variables sinistres ;
+  - devis.feature_x... pour les variables devis ;
+  - cible.nb_sinistres_rc, cible.cout_sinistres_rc... pour les variables cibles.
 
 - Identifier les interactions de manière intuitive. Une interaction peut être définie par la combinaison de plusieurs variables séparées par un caractère spécial, par exemple '\*' : Client.nb_contrats_*_type_logement.
 
 - Distinguer les variables catégorielles et ordinales :
 
-    - client.type_logement&, avec un caractère & à la fin pour identifier les variables catégorielles ;
-    - client.age#, avec un caractère # à la fin pour identifier les variables ordinales ;
+  - client.type_logement&, avec un caractère & à la fin pour identifier les variables catégorielles ;
+  - client.age#, avec un caractère # à la fin pour identifier les variables ordinales ;
 
 Libre à vous de choisir les catégories et les conventions qui vous semblent les plus pertinentes !
 
@@ -388,10 +387,10 @@ Dans le cadre de l'architecture orienté événement, la base contrat est un gé
 - suspension d'une (ou plusieurs) garantie ;
 - début d'une année (ou de début de la durée de référence du reserving) ;
 - modification d'un ou plusieurs facteur de risque :
-    - déménagement ;
-    - changement de véhicule ;
-    - modification de la composition familiale ;
-    - ...
+  - déménagement ;
+  - changement de véhicule ;
+  - modification de la composition familiale ;
+  - ...
 
 Le générateur d'événement contrat est un opérateur *map* dans un environnement big data. Il prend en entrée une ligne par contrat et génère un ou plusieurs événements contenant au moins les attributs suivants :
 
@@ -520,8 +519,8 @@ Nous vous recommandons d'utiliser, pour chaque garantie, un tableau similaire à
 Points de vérification :
 
  - L'exposition, la charge totale et le nombre de sinistres, doivent être comparables pour chaque année sur :
-    - le total de la base de modélisation, y compris les images exclues ;
-    - la base comptable.
+  - le total de la base de modélisation, y compris les images exclues ;
+  - la base comptable.
 
 ## Documentation
 
@@ -580,12 +579,6 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 ### Recommandation d'algorithme pour le big data
 
-## Traitement des modalités à faible exposition
-
-### Mise à zéro du coefficient linéaire
-
-### Lissage par spline
-
 ## Interactions entre variables
 
 # Sélection des variables
@@ -606,16 +599,16 @@ La performance prédictive vient tout naturellement à l'esprit comme le premier
 
 Pour obtenir des modèles simples, voici quelques pistes :
 
-  - diminuer le nombre de variables utilisées ;
-  - diminuer le nombre de modalités utilisées ;
-  - diminuer le nombre d'interactions utilisées.
+- diminuer le nombre de variables utilisées ;
+- diminuer le nombre de modalités utilisées ;
+- diminuer le nombre d'interactions utilisées.
 
 ### Interprétabilité
 
 Vous souhaiterez probablement communiquer de manière pédagogique sur les variables constituant vos modèles. Cela est d'autant plus facile que vos features sont faciles à interpréter. Imaginons par exemple que vous ayez le choix, en assurance automobile, entre deux variables véhicules :
 
-   - la somme de la longueur et de la largeur du véhicule ;
-   - le poids du véhicule ;
+ - la somme de la longueur et de la largeur du véhicule ;
+ - le poids du véhicule ;
 
 A capacité prédictive égale (ou très proche), il est préférable d'utiliser le poids du véhicule qui est plus facilement interprétable pour les novices.
 
@@ -682,29 +675,55 @@ Dans les prochaines sections nous expliquerons les différentes méthodes dispon
 
 La régularisation des coefficients réalisée par l'introduction d'une ou plusieurs pénalisation dans le modèle est une méthode "intégrée" qui réalise la sélection des variables en même temps que l'apprentissage du modèle. Les pénalisations les plus fréquentes sont :
 
-  - LASSO (norme 1 des coefficients) ;
-  - Ridge (Norme 2) ;
-  - Elastic Net (combinaison de LASSO et Ridge).
+- LASSO (norme 1 des coefficients) ;
+- Ridge (Norme 2) ;
+- Elastic Net (combinaison de LASSO et Ridge).
 
 ### LASSO
 
-La méthode LASSO a été inventé par Rob
+Le LASSO (Least Absolute Shrinkage and Selection Operator) est une méthode statistique de contraction et de sélection des coefficients d'un modèle linéaire qui a été inventé par Robert Tibshirani dans un article^[Robert Tibshirani, *« Regression shrinkage and selection via the lasso »*, Journal of the Royal Statistical Society. Series B, vol. 58, n°1, 1996, p. 267-288.] publié en 1996.
 
+Le Lasso rajoute une contrainte à l'équation d'apprentissage : minimiser la somme des valeurs absolues des coefficient, aussi appelée norme $l_{1}$, telle que $\mid\mid\beta\mid\mid_{1} = \sum _{j=1}^{p}{\mid\beta _{j}\mid}$. Un paramètre de seuillage $\lambda_{1}\ge0$ contrôle le niveau de contraction des coefficients.
+\begin{equation}
+\min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{1} \mid\mid\beta\mid\mid_{1}
+\end{equation}
 
+La particularité du lasso est de contracter certains coefficients à zéro grâce à la forme particulière de la pénalité $l_{1}$ qui est non différentiable en 0, ce qui crée un seuillage dans l'intervalle $[-\lambda_{1};\lambda_{1}]$. Tous les coefficients dont la valeur se situe dans cet intervalle sont mis à zéro. Cela permet de réaliser une sélection des variables.
 
-### Ridge
+#### Pari sur la parcimonie
 
+ Le lasso fonctionne d'autant mieux qu'il y a un faible nombre de variables qui ont de l'importance dans la prédiction. Ces bases de données sont qualifiée de parcimonieuse : il y a peu de variables corrélées avec la cible. Dans cette situations le vecteur des coefficients d'apprentissage est "creux" et la base d'apprentissage est appelée "parcimonieuse". C'est notamment le cas dans le domaine de la génomique avec plusieurs millions de gènes analysés dont seuls quelques uns sont impliqués dans la maladie étudiée. Robert Tibshirani appelle cela le *«pari sur la parcimonie»*^[Pour plus de détails sur le "pari sur la parcimonie" voir le \S 16.2.2 du livre *«The Elements of Statistical Learning»*, Trevor Hastie, Robert Tibshirani, Jerome Friedman.].
 
-### Elastic-Net
+#### Avantages et Limites
 
+Le principal avantage du lasso est de réaliser une sélection parcimonieuse des features dont le nombre dépend du paramètre $\lambda_{1}$. En revanche, le lasso a certaines limites :
 
-### Utilité pour le pricing IARD
+- exclusion des variables corrélées ;
+- coefficients non optimaux ;
+- sélection des coefficients non optimale ;
+- introduction d'un meta-paramètre supplémentaire.
 
-- dataset dense
-- pas de garantie d'optimalité et même sous optimalité
-- pas de group LASSO
-- mise en oeuvre compliqué
-- plus de meta-paramètres
+**Variables corrélées** : Si la base d'apprentissage contient des features corrélées entre elles, et qui sont importantes pour la prédiction, le lasso risque de n'en sélectionner qu'une seule et d'écarter les autres au dépend de la qualité de prédiction.
+
+**Coefficients non optimaux** : Dans l'hypothèse, fréquente en pratique, où la base d'apprentisage est dense, l'estimateur lasso est biaisé et les coefficients ne sont pas les mêmes que ceux obtenus avec une regression sur le "support" (le sous-ensemble des variables dont le coefficient est différent de zéro). Le biais introduit rend le modèle plus robuste et réduit le risque de sur-apprentissage, ce qui est parfois bénéfique, toutefois cela peut également se faire au détriment de la capacité prédictive du modèle.
+
+**Selection des coefficients non optimale** : toujours dans le cas d'un dataset dense, la sélection des coefficients par le lasso n'est pas toujours optimale car elle est régit par la taille des coefficient uniquement et ne prend pas en compte la significativité statistique. Un fort coefficient n'est pas forcément synonyme de significativité statistique, surtout si les données n'ont pas été normalisées.
+
+**Meta-paramètre supplémentaire** : l'introduction du paramètre de seuillage $\lambda_{1}$ rajoute de la complexité dans le processus d'apprentissage. Il faut rechercher le meilleur paramètre $\lambda_{1}^{*}$ de manière empirique, par :
+
+  1. essais successifs de différentes valeurs ;
+  2. et sélection du meilleur paramètre $\lambda_{1}^{*}$ par validation croisée.
+
+#### Group Lasso
+
+L'idée du lasso groupé est de réaliser la sélection par groupe de variables. Cela est très utile pour les variables catégorielles qui sont encodées avec des colonnes binaires (one hot encoding). Le group lasso permet de regrouper ensemble toutes les modalités d'une variable et sélectionne/déselectionne ensemble toutes les modalités d'une même variable. A l'intérieur d'un groupe de variable le group lasso réalise une pénalisation $l_{2}$ qui s'assimile à la méthode Ridge (cf. chapitre suivant). Si $G$ est une partition des coefficients $\beta_{j}$ et pour $g \in G$, $\beta_{g}$ est le vecteur creux contenant uniquement les coeffient $\beta_{j} \in g$, l'objectif du fused lasso est alors :
+\begin{equation}
+\min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{1} \sum_{g \in G} \omega_{g} \mid\mid\beta_{g}\mid\mid_{2}
+\end{equation}
+
+#### Utilisation
+
+Dans le cadre des régresions actuarielles, le group lasso peut-être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en oeuvre de ces méthodes est complexe et non standardisé en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser.
 
 ## Métriques
 
@@ -722,9 +741,60 @@ La méthode LASSO a été inventé par Rob
 
 ## Chemin de sélection
 
-Un dessin vaut mieux qu'un long discours.
+Le chemin de selection est un graphique qui permet de visualiser la performance prédictive obtenue en partant d'un modèle sans aucune variable et en sélectionnant une variable de plus à chaque nouvelle étape. Le graphique est tracé avec le nombre de variables sélectionnées en abcisses et la performance prédictive en ordonnées (gini, réduction de la déviance, ...).
 
-## Recommandation d'algorithme pour le big data
+![Exemple de chemin de sélection](img/gini_path.png){ height=80%  width=100%}
+\
+
+Le chemin de sélection vous permettra de choisir le nombre optimal de variables à retenir dans votre modèle final. Sur le graphique ci-dessus nous pouvons déterminer que le nombre optimal de variable se situe autour de neuf.
+
+Comme vous pouvez le constater, la performance d'un modèle a tendance à plafonner et le gain marginal obtenu en rajoutant de nouvelles variables diminue. C'est un exemple de la loi des rendements décroissants. Si votre processus de sélection des variables est performant chaque variable supplémentaire vous permet de gagner en performance, mais moins que la précédente. Il arrive même fréquement qu'au delà un nombre critique de variables la performance du modèle diminue. C'est une illustration du sur-apprentissage.
+
+## Recommandation d'algorithmes pour le big data
+
+Pour l'apprentissage sur des données big data il faut favoriser les algorithmes rapides et efficaces. Nous vous recommandons de mettre en place un processus "glouton" bâti à partir de briques élémentaires simples comme les méthodes forward et backward stepwise.
+
+Dans notre outil de pricing IARD, nous avons abouti, par itération successive, au processus de sélection des variables suivant :
+
+1. Forward stepwise qui supprime à chaque étape la variable avec le plus faible CGini. Le gini de chaque modèle est stocké pour analyse à l'étape suivante ;
+2. Tri des variables par gain de gini : chaque variable se voit afecter le gain de gini réalisé par rapport au modèle avec une variable de moins. Les variables sont ensuite classé par gain de gini croissant ;
+3. Forward stepwise dans l'ordre de gain de gini croissant.
+4. Répétition plusieurs fois des étapes 2. et 3. (entre 3 et 6 fois) ;
+5. Détermination du nombre optimal de variable : conserver toutes les variables qui font gagner suffisament de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).
+
+Vous pouvez bien sûr utiliser ce processus directment tel qu'il est implémenté dans notre outil ou le modifier^[Cet algorithme est mis en oeuvre dans le fichier
+`src/cpp/FeatureSelector.cpp`] selon vos besoins.
+
+# Optimisation des modèles
+
+## Traitement des modalités à faible exposition
+
+### Mise à zéro des coefficients
+
+### Lissage par spline
+
+## Régularisation
+
+#### Fused Lasso
+
+Le Fused Lasso^[Robert Tibshirani, Michael Saunders, Saharon Rosset, Ji Zhu et Keith Knight, « Sparsity and smoothness via the fused lasso », Journal of the Royal Statistical Society: Series B (Statistical Methodology), vol. 67, n°1,‎ 2005, p. 91-108.] permet de lisser les coefficients pour les variables ordinales (discrètes). Le principe est que deux modalités successives auront des valeurs "proches". Par exemple, pour la variable `AGE_CLIENT`, la pénalisation Fused Lasso s'assure que pour chaque âge le coefficient soit lissé avec ses deux voisins, ce qui limite le sur-apprentissage et augmente la généralité du modèle.
+\begin{equation}
+\min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{f} \sum_{j=2}^{n} \mid\beta_{j} - \beta_{j-1}\mid_{1}
+\end{equation}
+
+### Pénalisation Ridge
+
+La pénalisation ridge (ou pénalisation de Tikhonov du nom de son inventeur, le mathématicien russe Andreï Nikolaïev Tikhonov) utilise la norme $l_{2}$, telle que $\mid\mid\beta\mid\mid_{2} = \sqrt{\sum _{j=1}^{p}{\beta _{j}^{2}}}$. Un paramètre $\lambda_{2}\ge0$ contrôle le niveau de contraction des coefficients.
+\begin{equation}
+\min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{2} \mid\mid\beta\mid\mid_{2}
+\end{equation}
+
+### Pénalisation Elastic-Net
+
+La pénalisation Elastic-Net essaie de tirer parti des qualités respectives des méthodes lasso et Ridge.
+\begin{equation}
+\min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{1} \mid\mid\beta\mid\mid_{1}+\lambda_{2} \mid\mid\beta\mid\mid_{2}
+\end{equation}
 
 # Evaluation d'un modèle
 
@@ -928,3 +998,5 @@ Revue par les pairs
 ELR
 Expected Frequency
 Client Value
+
+# Conlusion {-}

@@ -1,12 +1,14 @@
 \documentclass[11pt,twoside,openright]{memoir}
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
 \usepackage[dvips]{graphicx}
 \usepackage{xcolor}
 \usepackage{times}
 \usepackage{indentfirst}
-
+\usepackage{enumitem}
+\setlist[itemize]{topsep=0pt,after=\vspace{.5\baselineskip}}
+\setlist[enumerate]{topsep=0pt,after=\vspace{.5\baselineskip}}
 
 \usepackage[
 breaklinks=true,colorlinks=true,
