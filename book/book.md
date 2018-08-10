@@ -669,6 +669,20 @@ Dans les prochaines sections nous expliquerons les différentes méthodes dispon
 
 ## Backward Stepwise
 
+## Métriques
+
+### AIC
+
+### BIC
+
+### Norme 2
+
+### CGini
+
+### Spread 100/0
+
+### Spread 95/5
+
 ## Greedy Process
 
 ## Pénalisation
@@ -724,20 +738,6 @@ L'idée du lasso groupé est de réaliser la sélection par groupe de variables.
 #### Utilisation
 
 Dans le cadre des régresions actuarielles, le group lasso peut-être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en oeuvre de ces méthodes est complexe et non standardisé en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser.
-
-## Métriques
-
-### AIC
-
-### BIC
-
-### Norme 2
-
-### CGini
-
-### Spread 100/0
-
-### Spread 95/5
 
 ## Chemin de sélection
 
@@ -796,7 +796,7 @@ La pénalisation Elastic-Net essaie de tirer parti des qualités respectives des
 \min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{1} \mid\mid\beta\mid\mid_{1}+\lambda_{2} \mid\mid\beta\mid\mid_{2}
 \end{equation}
 
-# Evaluation d'un modèle
+# Evaluation
 
 ## Evaluation globale
 
