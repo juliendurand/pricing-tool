@@ -750,22 +750,22 @@ Le chemin de sélection vous permettra de choisir le nombre optimal de variables
 
 Comme vous pouvez le constater, la performance d'un modèle a tendance à plafonner et le gain marginal obtenu en rajoutant de nouvelles variables diminue. C'est un exemple de la loi des rendements décroissants. Si votre processus de sélection des variables est performant chaque variable supplémentaire vous permet de gagner en performance, mais moins que la précédente. Il arrive même fréquement qu'au delà un nombre critique de variables la performance du modèle diminue. C'est une illustration du sur-apprentissage.
 
-## Recommandation d'algorithmes pour le big data
+## Recommandations pour le big data
 
 Pour l'apprentissage sur des données big data il faut favoriser les algorithmes rapides et efficaces. Nous vous recommandons de mettre en place un processus "glouton" bâti à partir de briques élémentaires simples comme les méthodes forward et backward stepwise.
 
 Dans notre outil de pricing IARD, nous avons abouti, par itération successive, au processus de sélection des variables suivant :
 
-1. Forward stepwise qui supprime à chaque étape la variable avec le plus faible CGini. Le gini de chaque modèle est stocké pour analyse à l'étape suivante ;
-2. Tri des variables par gain de gini : chaque variable se voit afecter le gain de gini réalisé par rapport au modèle avec une variable de moins. Les variables sont ensuite classé par gain de gini croissant ;
-3. Forward stepwise dans l'ordre de gain de gini croissant.
-4. Répétition plusieurs fois des étapes 2. et 3. (entre 3 et 6 fois) ;
-5. Détermination du nombre optimal de variable : conserver toutes les variables qui font gagner suffisament de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).
+1. **Forward stepwise** en supprimant à chaque étape la variable avec le plus faible CGini. Le gini de chaque modèle est stocké pour analyse à l'étape suivante ;
+2. **Tri des variables par gain de gini** : chaque variable se voit affecter le gain de gini réalisé par rapport au modèle avec une variable de moins. Les variables sont ensuite classées par gain de gini croissant ;
+3. **Forward stepwise** dans l'ordre de gain de gini croissant établi à l'étape précédente ;
+4. **Répétition** plusieurs fois des étapes 2 et 3 (entre 3 et 6 fois) ;
+5. **Détermination du nombre optimal de variable** : conserver toutes les variables qui font gagner suffisament de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).
 
-Vous pouvez bien sûr utiliser ce processus directment tel qu'il est implémenté dans notre outil ou le modifier^[Cet algorithme est mis en oeuvre dans le fichier
+Vous pouvez utiliser ce processus directment tel qu'il est implémenté dans notre outil ou le modifier^[Cet algorithme est mis en oeuvre dans le fichier
 `src/cpp/FeatureSelector.cpp`] selon vos besoins.
 
-# Optimisation des modèles
+# Optimisation
 
 ## Traitement des modalités à faible exposition
 
