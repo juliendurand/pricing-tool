@@ -662,7 +662,7 @@ La législation de votre pays peut vous contraindre dans le choix des variables 
 
 ### Stratégie
 
-Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing et privilégier certaines catégories de variables. Par exemple, en assurance automobile, vous pouvez favoriser les variables véhicules plutôt que les variables conducteurs.
+Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing et privilégier certaines catégories de variables. Par exemple, en assurance automobile, vous pouvez décider de favoriser les variables véhicules plutôt que les variables conducteurs afin que deux clients avec le même véhicule soient le plus proche possible (ou l'inverse).
 
 ## Sélection Manuelle
 
@@ -680,11 +680,31 @@ Dans les prochaines sections nous expliquerons les différentes méthodes dispon
 
 ## Pénalisation
 
-Les pénalisations sont des méthodes "intégrées" qui réalisent la sélection des variables en même temps que l'apprentissage du modèle.
+La régularisation des coefficients réalisée par l'introduction d'une ou plusieurs pénalisation dans le modèle est une méthode "intégrée" qui réalise la sélection des variables en même temps que l'apprentissage du modèle. Les pénalisations les plus fréquentes sont :
 
-### Lasso
+  - LASSO (norme 1 des coefficients) ;
+  - Ridge (Norme 2) ;
+  - Elastic Net (combinaison de LASSO et Ridge).
+
+### LASSO
+
+La méthode LASSO a été inventé par Rob
+
+
 
 ### Ridge
+
+
+### Elastic-Net
+
+
+### Utilité pour le pricing IARD
+
+- dataset dense
+- pas de garantie d'optimalité et même sous optimalité
+- pas de group LASSO
+- mise en oeuvre compliqué
+- plus de meta-paramètres
 
 ## Métriques
 
@@ -701,6 +721,8 @@ Les pénalisations sont des méthodes "intégrées" qui réalisent la sélection
 ### Spread 95/5
 
 ## Chemin de sélection
+
+Un dessin vaut mieux qu'un long discours.
 
 ## Recommandation d'algorithme pour le big data
 
