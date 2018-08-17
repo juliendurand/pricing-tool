@@ -43,7 +43,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
         }else if(s > 0 && (weights[i] > std::min(20.0,
                                         std::sqrt(weights[0]) / 10))){
             x0[i] = (0 - w) / s;
-            x1[i] = (1 - w) / s;
+            x1[i] = (1 - w) / s - x0[i];
         } else {
             x0[i] = 0;
             x1[i] = 0;
@@ -121,6 +121,7 @@ void SGDRegressor::fitIntercept()
 // Stochastic Gradient Descent with accelerated momentum and mini-batch
 void SGDRegressor::fit()
 {
+    float momentum = 0.8;
     int p = config->p;
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
@@ -144,7 +145,7 @@ void SGDRegressor::fit()
         double dp = dp0;
         for(int j : selected_features){
             int k = config->offsets[j] + x[p * i + j] + 1;
-            dp += (x1[k] - x0[k]) * coeffs[k];
+            dp += x1[k] * coeffs[k];
         }
 
         // calculates the error with the appropriate loss function
@@ -152,8 +153,8 @@ void SGDRegressor::fit()
 
         // calculate the base update for each modality
         for(int j : selected_features){
-            int k = config->offsets[j]+ x[p * i + j] + 1;
-            update[k] += r * (x1[k] - x0[k]);
+            int k = config->offsets[j] + x[p * i + j] + 1;
+            update[k] += r * x1[k];
         }
 
         // total error for the mini-batch
@@ -161,14 +162,14 @@ void SGDRegressor::fit()
     }
 
     // update intercept with momentum
-    g[0] = 0.9 * g[0] + rTotal / blocksize;
+    g[0] = momentum * g[0] + rTotal / blocksize;
     coeffs[0] += learningRate * g[0];
 
     // update each modality with momentum
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
             double grad = (update[j + 1] + rTotal * x0[j + 1]) / blocksize;
-            g[j + 1] = 0.9 * g[j + 1] + grad;
+            g[j + 1] = momentum * g[j + 1] + grad;
             coeffs[j + 1] += learningRate * g[j + 1];
         }
     }
