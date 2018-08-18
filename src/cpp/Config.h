@@ -43,7 +43,6 @@ public:
     std::string getTrainFilename();
     std::string getTestFilename();
     int getFeatureIndex(const std::string& feature);
-    int getFeatureFromModality(int m);
 };
 
 #endif  // CONFIG_H_

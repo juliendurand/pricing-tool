@@ -93,15 +93,3 @@ int Config::getFeatureIndex(const std::string& feature)
     auto idx = std::distance(features.begin(), it);
     return idx;
 }
-
-// Returns the feature index containing the modality m.
-int Config::getFeatureFromModality(int m)
-{
-    for(int i = 0; i < features.size(); i++){
-        if(m >= offsets[i] && m < offsets[i + 1]){
-            return i;
-        }
-    }
-    throw std::invalid_argument("ERROR : Modality " + std::to_string(m) +
-                                " can not be found." );
-}
