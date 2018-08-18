@@ -154,7 +154,7 @@ void SGDRegressor::fit()
         // calculate the base update for each modality
         for(int j : selected_features){
             int k = config->offsets[j] + x[row + j] + 1;
-            update[k] += r * x1[k];
+            update[k] += r;
         }
 
         // total error for the mini-batch
@@ -169,7 +169,7 @@ void SGDRegressor::fit()
     for(int i : selected_features){
         for(int j = config->offsets[i] + 1; j < config->offsets[i + 1] + 1;
                 j++){
-            float grad = (update[j] + update[0] * x0[j]) / blocksize;
+            float grad = (update[j] * x1[j] + update[0] * x0[j]) / blocksize;
             g[j] = momentum * g[j] + grad;
             coeffs[j] += learningRate * g[j];
         }
