@@ -35,7 +35,7 @@ std::unique_ptr<ModelResult> Coefficients::predict(Dataset* dataset,
     for(int i : samples){
         float dp = coeffs[0];
         for(int j : selected_features){
-            int k = config->offsets[j] + x[p * i + j] + 1;
+            int k = config->offsets[j] + x[p * i + j];
             dp += coeffs[k];
         }
         result->setObservation(j, i, y[i], exp(dp) * weight[i], weight[i],
@@ -67,10 +67,10 @@ float Coefficients::getCoeffNorm2(int feature)
 
     float sc = 0;
     float sw = 0;
-    for(int j = config->offsets[feature]; j < config->offsets[feature + 1] ;
+    for(int j = config->offsets[feature]; j < config->offsets[feature + 1];
         j++){
-        float c = std::exp(coeffs[j + 1]);
-        float w = weights[j + 1];
+        float c = std::exp(coeffs[j]);
+        float w = weights[j];
         sc += c * c * w;
         sw += w;
     }
@@ -90,7 +90,7 @@ float Coefficients::getCoeffGini(int feature)
     }
     std::sort(feature_idx.begin(), feature_idx.end(),
         [this](size_t i, size_t j) {
-            return this->coeffs[i + 1] < this->coeffs[j + 1];
+            return this->coeffs[i] < this->coeffs[j];
         }
     );
 
@@ -98,9 +98,8 @@ float Coefficients::getCoeffGini(int feature)
     float sc = 0;
     float sw = 0;
     for(int i : feature_idx){
-        int j = i + 1;
-        float w = weights[j];
-        float c = std::exp(coeffs[j]) * w;
+        float w = weights[i];
+        float c = std::exp(coeffs[i]) * w;
         g += w * (2 * sc + c);
         sc += c;
         sw += w;
@@ -119,9 +118,9 @@ float Coefficients::getSpread100(int feature)
     float minvalue = 100000000;
     float maxvalue = 0;
 
-    for(int j = config->offsets[feature]; j < config->offsets[feature + 1] ;
+    for(int j = config->offsets[feature]; j < config->offsets[feature + 1];
         j++){
-        float c = std::exp(coeffs[j + 1]);
+        float c = std::exp(coeffs[j]);
         if(c < minvalue) minvalue = c;
         if(c > maxvalue) maxvalue = c;
     }
@@ -141,27 +140,25 @@ float Coefficients::getSpread95(int feature)
     }
     std::sort(feature_idx.begin(), feature_idx.end(),
         [this](size_t i, size_t j) {
-            return this->coeffs[i + 1] < this->coeffs[j + 1];
+            return this->coeffs[i] < this->coeffs[j];
         }
     );
     std::vector<float> cum_weight(nb_coeffs);
     for(int i = 0; i < nb_coeffs; i++){
         cum_weight[i] = (i > 0 ? cum_weight[i - 1] : 0) +
-                        (weights[feature_idx[i] + 1] / weights[0]);
+                        (weights[feature_idx[i]] / weights[0]);
     }
     float minvalue = 0;
     float maxvalue = 0;
     for(int i = 0; i < nb_coeffs; i++){
         if(cum_weight[i] > 0.05){
-            int j = feature_idx[i] + 1;
-            minvalue = std::exp(coeffs[j]);
+            minvalue = std::exp(coeffs[feature_idx[i]]);
             break;
         }
     }
     for(int i = 0; i < nb_coeffs; i++){
         if(cum_weight[i] > 0.95){
-            int j = feature_idx[i] + 1;
-            maxvalue = std::exp(coeffs[j]);
+            maxvalue = std::exp(coeffs[feature_idx[i]]);
             break;
         }
     }

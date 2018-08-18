@@ -53,7 +53,7 @@ Config::Config(const std::string& name) :
     int k;
     for(int i = 0; i < p + 1; i++){
         datasetfile >> k;
-        offsets.push_back(k);
+        offsets.push_back(k + 1);
     }
 }
 
