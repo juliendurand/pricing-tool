@@ -138,7 +138,6 @@ void SGDRegressor::fit()
         }
     }
 
-    float rTotal = 0;
     for(int b = 0; b < blocksize; b++){ // mini-batch
         int i = dataset->next(); // get a random observation
         int row = p * i;
@@ -159,19 +158,20 @@ void SGDRegressor::fit()
         }
 
         // total error for the mini-batch
-        rTotal += r;
+        update[0] += r;
     }
 
     // update intercept with momentum
-    g[0] = momentum * g[0] + rTotal / blocksize;
+    g[0] = momentum * g[0] + update[0] / blocksize;
     coeffs[0] += learningRate * g[0];
 
     // update each modality with momentum
     for(int i : selected_features){
-        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
-            float grad = (update[j + 1] + rTotal * x0[j + 1]) / blocksize;
-            g[j + 1] = momentum * g[j + 1] + grad;
-            coeffs[j + 1] += learningRate * g[j + 1];
+        for(int j = config->offsets[i] + 1; j < config->offsets[i + 1] + 1;
+                j++){
+            float grad = (update[j] + update[0] * x0[j]) / blocksize;
+            g[j] = momentum * g[j] + grad;
+            coeffs[j] += learningRate * g[j];
         }
     }
 }
