@@ -33,14 +33,14 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
 
     // Normalization of data (scaling)
     for(int i = 0; i < config->m + 1; i++){
-        double w = weights[i] / weights[0];
-        double s = std::sqrt(w - w * w);
+        float w = weights[i] / weights[0];
+        float s = std::sqrt(w - w * w);
         stdev[i] = s;
         if(i == 0){
             // intercept is always equals to 1
             x0[0] = 1;
             x1[0] = 1;
-        }else if(s > 0 && (weights[i] > std::min(20.0,
+        }else if(s > 0 && (weights[i] > std::min(20.0f,
                                         std::sqrt(weights[0]) / 10))){
             x0[i] = (0 - w) / s;
             x1[i] = (1 - w) / s - x0[i];
@@ -71,17 +71,17 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
 
 void SGDRegressor::selectGradLoss(const std::string loss){
     if(loss == "gaussian"){
-        gradLoss = [](double y, double dp, double weight){
+        gradLoss = [](float y, float dp, float weight){
             return y - dp * weight;
         };
         std::cout << "Using gaussian loss" << std::endl;
     } else if(loss == "poisson") {
-        gradLoss = [](double y, double dp, double weight){
+        gradLoss = [](float y, float dp, float weight){
             return y - std::exp(dp) * weight;
         };
         std::cout << "Using poisson loss" << std::endl;
     } else if(loss == "gamma") {
-        gradLoss = [](double y, double dp, double weight){
+        gradLoss = [](float y, float dp, float weight){
             return y / (std::exp(dp) * weight) - 1;
         };
         std::cout << "Using gamma loss" << std::endl;
@@ -100,8 +100,8 @@ void SGDRegressor::fitIntercept()
     float* weight = dataset->get_weight();
     float* y = dataset->get_y();
 
-    double s = 0;
-    double w = 0;
+    float s = 0;
+    float w = 0;
     for(int i : dataset->getTrain()){
         s += y[i];
         w += weight[i];
@@ -121,7 +121,7 @@ void SGDRegressor::fitIntercept()
 // Stochastic Gradient Descent with accelerated momentum and mini-batch
 void SGDRegressor::fit()
 {
-    float momentum = 0.8;
+    float momentum = 0.90;
     int p = config->p;
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
@@ -130,30 +130,31 @@ void SGDRegressor::fit()
     std::fill(update.begin(), update.end(), 0); // set all values to 0
 
     // dot-product value for intercept + null observations
-    double dp0 = coeffs[0];
+    float dp0 = coeffs[0];
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
             dp0 += x0[j + 1] * coeffs[j + 1];
         }
     }
 
-    double rTotal = 0;
+    float rTotal = 0;
     for(int b = 0; b < blocksize; b++){ // mini-batch
         int i = dataset->next(); // get a random observation
+        int row = p * i;
 
 
-        double dp = dp0;
+        float dp = dp0;
         for(int j : selected_features){
-            int k = config->offsets[j] + x[p * i + j] + 1;
+            int k = config->offsets[j] + x[row + j] + 1;
             dp += x1[k] * coeffs[k];
         }
 
         // calculates the error with the appropriate loss function
-        double r = gradLoss(y[i], dp, weight[i]);
+        float r = gradLoss(y[i], dp, weight[i]);
 
         // calculate the base update for each modality
         for(int j : selected_features){
-            int k = config->offsets[j] + x[p * i + j] + 1;
+            int k = config->offsets[j] + x[row + j] + 1;
             update[k] += r * x1[k];
         }
 
@@ -168,7 +169,7 @@ void SGDRegressor::fit()
     // update each modality with momentum
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
-            double grad = (update[j + 1] + rTotal * x0[j + 1]) / blocksize;
+            float grad = (update[j + 1] + rTotal * x0[j + 1]) / blocksize;
             g[j + 1] = momentum * g[j + 1] + grad;
             coeffs[j + 1] += learningRate * g[j + 1];
         }
@@ -178,7 +179,7 @@ void SGDRegressor::fit()
 // Return un-normalized coefficients (final regression coefficients)
 std::unique_ptr<Coefficients> SGDRegressor::getCoeffs()
 {
-    std::vector<double> results(coeffs.size(), 0);
+    std::vector<float> results(coeffs.size(), 0);
     results[0] = coeffs[0];
     for(int i : selected_features){
         for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
@@ -214,7 +215,7 @@ void SGDRegressor::fitEpoch(long& i, float nb_epoch)
 void SGDRegressor::fitUntilConvergence(long& i, int precision,
                       float stopCriterion)
 {
-    double minll = 1e30;
+    float minll = 1e30;
     int nbIterationsSinceMinimum = 0;
     int epoch = dataset->getSize() / blocksize;
     for(; nbIterationsSinceMinimum < precision; i++){
@@ -227,7 +228,7 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
             //printResults();
             auto coeffs = getCoeffs();
             auto trainResult = coeffs->predict(dataset, dataset->getTrain());
-            double ll = trainResult->logLikelihood();
+            float ll = trainResult->logLikelihood();
             if(ll < minll - stopCriterion) {
                 minll = ll;
                 nbIterationsSinceMinimum = 0;

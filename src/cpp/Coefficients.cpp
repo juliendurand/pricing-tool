@@ -13,8 +13,8 @@
 //      - selected_features : active set of features.
 
 Coefficients::Coefficients(Config* config,
-    const std::vector<double>& coeffs,
-    const std::vector<double>& weights,
+    const std::vector<float>& coeffs,
+    const std::vector<float>& weights,
     const std::set<int>& selected_features) :
     config(config),
     coeffs(coeffs),
@@ -33,7 +33,7 @@ std::unique_ptr<ModelResult> Coefficients::predict(Dataset* dataset,
     int p = config->p;
     int j = 0;
     for(int i : samples){
-        double dp = coeffs[0];
+        float dp = coeffs[0];
         for(int j : selected_features){
             int k = config->offsets[j] + x[p * i + j] + 1;
             dp += coeffs[k];
@@ -48,9 +48,9 @@ std::unique_ptr<ModelResult> Coefficients::predict(Dataset* dataset,
 int Coefficients::getMinCoeff()
 {
     int minidx = -1;
-    double minvalue = 0;
+    float minvalue = 0;
     for(int i : selected_features){
-        double s = getCoeffGini(i);
+        float s = getCoeffGini(i);
         if(minidx == -1 || s < minvalue){
             minvalue = s;
             minidx = i;
@@ -59,25 +59,25 @@ int Coefficients::getMinCoeff()
     return minidx;
 }
 
-double Coefficients::getCoeffNorm2(int feature)
+float Coefficients::getCoeffNorm2(int feature)
 {
     if(feature < 0){
         return 0;
     }
 
-    double sc = 0;
-    double sw = 0;
+    float sc = 0;
+    float sw = 0;
     for(int j = config->offsets[feature]; j < config->offsets[feature + 1] ;
         j++){
-        double c = std::exp(coeffs[j + 1]);
-        double w = weights[j + 1];
+        float c = std::exp(coeffs[j + 1]);
+        float w = weights[j + 1];
         sc += c * c * w;
         sw += w;
     }
     return std::sqrt(sc / sw);
 }
 
-double Coefficients::getCoeffGini(int feature)
+float Coefficients::getCoeffGini(int feature)
 {
     if(feature < 0){
         return 0;
@@ -94,13 +94,13 @@ double Coefficients::getCoeffGini(int feature)
         }
     );
 
-    double g = 0;
-    double sc = 0;
-    double sw = 0;
+    float g = 0;
+    float sc = 0;
+    float sw = 0;
     for(int i : feature_idx){
         int j = i + 1;
-        double w = weights[j];
-        double c = std::exp(coeffs[j]) * w;
+        float w = weights[j];
+        float c = std::exp(coeffs[j]) * w;
         g += w * (2 * sc + c);
         sc += c;
         sw += w;
@@ -110,14 +110,14 @@ double Coefficients::getCoeffGini(int feature)
     return g * 100;
 }
 
-double Coefficients::getSpread100(int feature)
+float Coefficients::getSpread100(int feature)
 {
     if(feature < 0){
         return 0;
     }
 
-    double minvalue = 100000000;
-    double maxvalue = 0;
+    float minvalue = 100000000;
+    float maxvalue = 0;
 
     for(int j = config->offsets[feature]; j < config->offsets[feature + 1] ;
         j++){
@@ -128,7 +128,7 @@ double Coefficients::getSpread100(int feature)
     return float(std::round((maxvalue / minvalue - 1) * 10000)) / 100;
 }
 
-double Coefficients::getSpread95(int feature)
+float Coefficients::getSpread95(int feature)
 {
     if(feature < 0){
         return 0;
@@ -144,13 +144,13 @@ double Coefficients::getSpread95(int feature)
             return this->coeffs[i + 1] < this->coeffs[j + 1];
         }
     );
-    std::vector<double> cum_weight(nb_coeffs);
+    std::vector<float> cum_weight(nb_coeffs);
     for(int i = 0; i < nb_coeffs; i++){
         cum_weight[i] = (i > 0 ? cum_weight[i - 1] : 0) +
                         (weights[feature_idx[i] + 1] / weights[0]);
     }
-    double minvalue = 0;
-    double maxvalue = 0;
+    float minvalue = 0;
+    float maxvalue = 0;
     for(int i = 0; i < nb_coeffs; i++){
         if(cum_weight[i] > 0.05){
             int j = feature_idx[i] + 1;
@@ -173,7 +173,7 @@ void Coefficients::saveResults()
     std::ofstream coeffFile;
     coeffFile.open(config->resultPath + "coeffs.csv", std::ios::out);
     coeffFile << "Coeffs" << std::endl;
-    for(double c : coeffs){
+    for(float c : coeffs){
         coeffFile << c << std::endl;
     }
     coeffFile.close();

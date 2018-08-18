@@ -45,15 +45,15 @@ private:
     int blocksize;
     float learningRate;
     std::set<int> selected_features;
-    std::vector<double> coeffs; // regression coefficients.
-    std::vector<double> update; // delta for next update (temporary data).
-    std::vector<double> weights; // sum of active exposure for each modality.
-    std::vector<double> stdev; // standard deviation for each modality.
-    std::vector<double> x0; // normalized 0 value for each modality.
-    std::vector<double> x1; // normalized 0 value for each modality.
-    std::vector<double> g; // momentum
+    std::vector<float> coeffs; // regression coefficients.
+    std::vector<float> update; // delta for next update (temporary data).
+    std::vector<float> weights; // sum of active exposure for each modality.
+    std::vector<float> stdev; // standard deviation for each modality.
+    std::vector<float> x0; // normalized 0 value for each modality.
+    std::vector<float> x1; // normalized 0 value for each modality.
+    std::vector<float> g; // momentum
 
-    double (*gradLoss)(double, double, double);
+    float (*gradLoss)(float, float, float);
     void selectGradLoss(const std::string loss);
     void fitIntercept(); // fit intercept for warm start
 };

@@ -14,22 +14,22 @@ class Coefficients
 {
 public:
     Coefficients(Config* config,
-        const std::vector<double>& coeffs,
-        const std::vector<double>& weights,
+        const std::vector<float>& coeffs,
+        const std::vector<float>& weights,
         const std::set<int>& selected_features);
     std::unique_ptr<ModelResult> predict(Dataset* dataset,
         const std::vector<int> &samples);
     int getMinCoeff();
-    double getCoeffNorm2(int feature);
-    double getCoeffGini(int feature);
-    double getSpread95(int feature);
-    double getSpread100(int feature);
+    float getCoeffNorm2(int feature);
+    float getCoeffGini(int feature);
+    float getSpread95(int feature);
+    float getSpread100(int feature);
     void saveResults();
 
 private:
     Config* config;
-    std::vector<double> coeffs;
-    std::vector<double> weights;
+    std::vector<float> coeffs;
+    std::vector<float> weights;
     std::set<int> selected_features;
 };
 
