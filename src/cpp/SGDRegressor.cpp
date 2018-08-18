@@ -8,6 +8,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     config(config),
     dataset(dataset),
     blocksize(200),
+    momentum(0.90),
     learningRate(0.0001),
     coeffs(config->m + 1, 0),
     update(config->m + 1, 0),
@@ -121,7 +122,6 @@ void SGDRegressor::fitIntercept()
 // Stochastic Gradient Descent with accelerated momentum and mini-batch
 void SGDRegressor::fit()
 {
-    float momentum = 0.90;
     int p = config->p;
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();

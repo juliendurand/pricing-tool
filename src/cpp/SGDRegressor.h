@@ -44,6 +44,7 @@ public:
 private:
     int blocksize;
     float learningRate;
+    float momentum;
     std::set<int> selected_features;
     std::vector<float> coeffs; // regression coefficients.
     std::vector<float> update; // delta for next update (temporary data).
