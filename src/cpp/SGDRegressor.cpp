@@ -132,8 +132,9 @@ void SGDRegressor::fit()
     // dot-product value for intercept + null observations
     float dp0 = coeffs[0];
     for(int i : selected_features){
-        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
-            dp0 += x0[j + 1] * coeffs[j + 1];
+        for(int j = config->offsets[i] + 1; j < config->offsets[i + 1] + 1;
+                j++){
+            dp0 += x0[j] * coeffs[j];
         }
     }
 
@@ -141,7 +142,6 @@ void SGDRegressor::fit()
     for(int b = 0; b < blocksize; b++){ // mini-batch
         int i = dataset->next(); // get a random observation
         int row = p * i;
-
 
         float dp = dp0;
         for(int j : selected_features){
