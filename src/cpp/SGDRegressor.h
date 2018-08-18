@@ -39,6 +39,7 @@ public:
     void eraseAllFeatures();
     void eraseFeatures(const std::vector<int> &features);
     void addFeatures(const std::vector<int> &features);
+    void initFeatures(const std::vector<int> &features);
     void printResults();
 
 private:

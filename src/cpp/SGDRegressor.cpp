@@ -145,7 +145,6 @@ void SGDRegressor::fit()
         float dp = dp0;
         for(int l = 0; l < f; l++){
             int j = selected_features_list[l];
-        //for(int j : selected_features){
             int k = config->offsets[j] + x[row + j];
             dp += x1[k] * coeffs[k];
         }
@@ -247,6 +246,21 @@ void SGDRegressor::eraseFeatures(const std::vector<int> &features)
 {
     for(int f : features){
         selected_features.erase(f);
+    }
+    initFeatures(features);
+}
+
+void SGDRegressor::addFeatures(const std::vector<int> &features)
+{
+    for(int f : features){
+        selected_features.insert(f);
+    }
+    initFeatures(features);
+}
+
+void SGDRegressor::initFeatures(const std::vector<int> &features)
+{
+    for(int f : features){
         for(int j = config->offsets[f]; j < config->offsets[f + 1]; j++){
             coeffs[j] = 0; // reset regression coefficient to 0.
         }
@@ -260,24 +274,10 @@ void SGDRegressor::eraseFeatures(const std::vector<int> &features)
         }
     }
 
-    selected_features_list = std::vector<int>(selected_features.begin(), selected_features.end());
-}
-
-void SGDRegressor::addFeatures(const std::vector<int> &features)
-{
-    for(int f : features){
-        selected_features.insert(f);
-    }
-
-    selected_modality_list.clear();
-    selected_modality_list.push_back(0);
+    selected_features_list.clear();
     for(int i : selected_features){
-        for(int j = config->offsets[i]; j < config->offsets[i + 1]; j++){
-            selected_modality_list.push_back(j);
-        }
+        selected_features_list.push_back(i);
     }
-
-    selected_features_list = std::vector<int>(selected_features.begin(), selected_features.end());
 }
 
 void SGDRegressor::printResults()
