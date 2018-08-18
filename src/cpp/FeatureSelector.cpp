@@ -19,17 +19,15 @@ void FeatureSelector::fit()
                            << " variables :" << std::endl;
 
     long i = 0;
-    double stopCriterion = (model->config->loss == "poisson")
-                           ? 0.00001 : 0.000001;
-    model->fitUntilConvergence(i, 1, stopCriterion);
+    double stopCriterion = 0.00001;
+    model->fitUntilConvergence(i, 2, stopCriterion);
     model->printResults();
 
     backwardStepwise(i);
 
     int maxSortedFeatures = model->config->p;
-    for(int k = 0; k < 6; k++){
-        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures,
-                                                        0.0001);
+    for(int k = 0; k < 5; k++){
+        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0);
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }

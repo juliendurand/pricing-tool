@@ -31,16 +31,16 @@ std::unique_ptr<ModelResult> Coefficients::predict(Dataset* dataset,
     float* y = dataset->get_y();
     ModelResult* result = new ModelResult(samples.size(), config);
     int p = config->p;
-    int j = 0;
+    int obs = 0;
     for(int i : samples){
         float dp = coeffs[0];
         for(int j : selected_features){
             int k = config->offsets[j] + x[p * i + j];
             dp += coeffs[k];
         }
-        result->setObservation(j, i, y[i], exp(dp) * weight[i], weight[i],
+        result->setObservation(obs, i, y[i], exp(dp) * weight[i], weight[i],
                                dp);
-        ++j;
+        ++obs;
     }
     return std::unique_ptr<ModelResult>(result);
 }
