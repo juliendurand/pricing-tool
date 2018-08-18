@@ -128,6 +128,8 @@ void SGDRegressor::fit()
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
     float* y = dataset->get_y();
+    // also using : x0, x1, update, coeffs, blocksize, config->offsets, g,
+    //              momentum, learningRate, gradLoss
 
     std::fill(update.begin(), update.end(), 0); // set all values to 0
 
