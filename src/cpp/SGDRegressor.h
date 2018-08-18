@@ -53,6 +53,8 @@ private:
     std::vector<float> x0; // normalized 0 value for each modality.
     std::vector<float> x1; // normalized 0 value for each modality.
     std::vector<float> g; // momentum
+    std::vector<int> selected_modality_list;
+    std::vector<int> selected_features_list;
 
     float (*gradLoss)(float, float, float);
     void selectGradLoss(const std::string loss);
