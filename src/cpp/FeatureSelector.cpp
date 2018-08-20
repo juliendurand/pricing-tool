@@ -25,16 +25,18 @@ void FeatureSelector::fit()
 
     backwardStepwise(i);
 
-    int maxSortedFeatures = model->config->p;
+    int maxSortedFeatures = std::min(model->config->p,
+                                     model->config->nbFeaturesInModel * 3);
     for(int k = 0; k < 5; k++){
-        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0);
+        std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures,
+                                                        0.00005);
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }
 
     maxSortedFeatures = std::min(maxSortedFeatures,
                                  model->config->nbFeaturesInModel);
-    std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0002);
+    std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures, 0.0001);
     forwardStepwise(i, maxSortedFeatures);
 
     model->eraseAllFeatures();

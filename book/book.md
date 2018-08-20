@@ -565,17 +565,36 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 ## Optimisation convexe
 
-### Algorithme d'ordre 1
+### Approche Directe
+
+- Jordan-Gauss
+- QR Factorisation
+- Cholesky decomposition
+- Singular Value Decomposition
+
+### Approches Itérative
+
+#### Approche d'ordre 0
+
+- Descente par Coordonnée
+
+#### Algorithme d'ordre 1
 
 - Descente du Gradient
-- Descente par Coordonnées
 - Descente du Gradient Stochastique
-- IRS
 
-### Algorithme d'ordre 2
+#### Algorithme d'ordre 2
 
 - Newton-Raphson
-- BFGS (et L-BFGS)
+- Quasi Newton
+
+#### Algorithme par conjugaison
+
+- Descente conjuguée
+
+#### Algorithme par approximation de l'équation normale
+
+- IRlS
 
 ### Recommandation d'algorithme pour le big data
 

@@ -8,7 +8,7 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     config(config),
     dataset(dataset),
     blocksize(200),
-    learningRate(0.0001),
+    learningRate(0.00001),
     momentum(0.90),
     coeffs(config->m + 1, 0),
     update(config->m + 1, 0),
