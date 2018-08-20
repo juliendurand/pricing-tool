@@ -25,11 +25,13 @@ void FeatureSelector::fit()
 
     backwardStepwise(i);
 
-    int maxSortedFeatures = std::min(model->config->p,
-                                     model->config->nbFeaturesInModel * 3);
+    int maxSortedFeatures = model->config->p;
     for(int k = 0; k < 5; k++){
         std::vector<int> bestFeatures = getBestFeatures(maxSortedFeatures,
                                                         0.00005);
+        if(bestFeatures.size() > model->config->nbFeaturesInModel * 3){
+            bestFeatures.resize(model->config->nbFeaturesInModel * 3);
+        }
         maxSortedFeatures = bestFeatures.size();
         forwardStepwise(i, maxSortedFeatures);
     }
@@ -187,8 +189,8 @@ void FeatureSelector::sortFeatures(int maxNbFeatures)
     for(int i = 1; i < giniPath.size(); i++){
         giniPath[i].diffGini = giniPath[i].gini - giniPath[i - 1].gini;
     }
-    std::sort(giniPath.begin() + 1, std::min(giniPath.end(),
-              giniPath.begin() + maxNbFeatures+ 1),
+    std::sort(giniPath.begin() + 1,
+              std::min(giniPath.end(), giniPath.begin() + maxNbFeatures + 1),
         [](FeatureResult& i, FeatureResult& j) {
             return i.diffGini > j.diffGini;
         }
