@@ -62,7 +62,7 @@ bookmarks=true,bookmarksopenlevel=2 ]{hyperref}
 \chapterstyle{clean}
 
 \maxsecnumdepth{subsection} % chapters, sections, and subsections are numbered
-\maxtocdepth{subsection} % chapters, sections, and subsections are in the Table of Contents
+\maxtocdepth{section} % chapters, sections are in the Table of Contents
 
 %%% BLURB COMPLIANCY
 \pdfinfo{
