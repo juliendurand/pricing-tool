@@ -5,6 +5,10 @@ subject: Finance Data-Science Big-Data
 keywords: Tarification Assurance IARD Data-Science Big-Data
 ---
 
+TODO
+
+Dire qu'en big data les algorithmes doivent être au plus linaires par rapport au nombre de variables utilisées.
+
 # Introduction {-}
 
 Les assureurs détiennent dans leur portefeuille des millions de contrats automobiles, habitations et professionnels. Ces activités, couramment regroupées sous le vocable IARD (Incendie, Accidents et Risques Divers) génèrent des volumes de données très importants. Pour améliorer leur compétitivité les compagnies d'assurance souhaitent modéliser l'impact de dizaines, voire centaines de variables. L'un des enjeux majeurs est de tarifer au juste prix chaque contrat en fonction de ses caractéristiques individuelles tout en assurant la mutualisation des risques au niveau du portefeuille. Pour avoir un ordre de grandeur, nous pouvons estimer qu'un assureur qui détient un portefeuille de quatre millions de contrats et qui souhaite mesurer l'impact de cent variables sur trois ans d'activité doit traiter 1,2 milliard de point de données. Cela représente 9,6 Go de donnée brute (en comptant une moyenne de 8 octets pour le stockage d'une donnée atomique). Ce volume croit avec la taille du portefeuille, la profondeur de l'historique et le nombre de variables étudiées. Les outils classiques de l'actuaire et du statisticien sont peu adaptés à des volumes aussi importants. La maitrise des technologies big data est donc un facteur clef de succès pour la tarification des contrats IARD.
@@ -559,6 +563,8 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 - cross validation
 - toujours utiliser l'année
 
+### Variables Catégorielles
+
 ### Normalisation
 
 ### Variables corrélées
@@ -587,6 +593,7 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 - Newton-Raphson
 - Quasi Newton
+- L-BFGS
 
 #### Algorithme par conjugaison
 
@@ -594,7 +601,7 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 #### Algorithme par approximation de l'équation normale
 
-- IRlS
+- IRLS
 
 ### Recommandation d'algorithme pour le big data
 
@@ -602,7 +609,7 @@ Voici une check-list des éléments minimums qui doivent être documentés pour 
 
 # Sélection des variables
 
-Nous disposons grâce au big data d'un nombre toujours plus grand de variables à tester pour nos modèle. Toutefois il est illusoire de vouloir toutes les utiliser dans un modèle de production. Il faut donc choisir le meilleur groupe de variables en fonction de votre stratégie commerciale. Réaliser une bonne sélection des variables est probablement l'étape la plus importante de la modélisation et cela se renforce à mesure que notre capacité à traiter de nouvelles variables s'accroît.
+Nous disposons grâce au big data d'un nombre toujours plus grand de variables à tester pour nos modèles. Toutefois il est illusoire de vouloir toutes les utiliser dans un modèle de production. Il faut donc choisir le meilleur groupe de variables en fonction de votre stratégie commerciale. Réaliser une bonne sélection des variables est probablement l'étape la plus importante de la modélisation et cela se renforce à mesure que notre capacité à traiter de nouvelles variables s'accroît.
 
 ## Objectifs
 
@@ -678,31 +685,136 @@ Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing
 
 ## Sélection Manuelle
 
-Les exemples précédents nous montrent combien il est illusoire de pouvoir réaliser une sélection de variables entièrement automatisée. Bien au contraire la sélection des variables est une opinion subjective qui requiert une expérience approfondie du domaine. Ce choix est le résultats d'un processus empirique pour trouver le "meilleurs" ensemble en fonction des objectifs business de chaque entité.
+Les exemples précédents nous montrent combien il est illusoire de pouvoir réaliser une sélection de variables entièrement automatisée. Bien au contraire la sélection des variables s'apparente à une opinion, c'est à dire un choix subjective qui requiert une expérience approfondie du domaine. Ce choix est le résultats d'un processus empirique pour trouver le "meilleurs" ensemble en fonction des objectifs business de chaque entité.
 
 En raison de la rapide croissance du nombre de variables inclus dans les modèles il est toutefois utile de mettre en place des procédure automatisée de recherche des meilleurs variables pour accélérer le tri et la sélection manuelle finale.
 
 Dans les prochaines sections nous expliquerons les différentes méthodes disponibles et celles qui sont le plus appropriées pour le contexte big data.
 
-## Forward Stepwise
+## Best Subset
 
-## Backward Stepwise
+La méthode *Best Subset*, meilleur sous-ensemble en français, est une approche par la force brute qui teste tous les modèles possibles. Le nombre de modèles pour p variables est égal à $2^p$^[Le nombre de modèles avec au plus n variables est la somme des combinaisons possibles de k variables parmi p avec k variant de 1 à p : $\sum_{k=1}^{p}\binom{p}{k}=\sum_{k=0}^{p}\binom{p}{k}-1=2p−1$] et la puissance de calcul nécessaire croît donc de manière exponentielle avec le nombre de variables du dataset. Cette méthode présente également un fort risque de sur-apprentissage. Cette méthode est donc à éviter car elle n'apporte pas d'avantages sur les méthodes pas à pas qui sont tout aussi simples à mettre en oeuvre tout en étant moins gourmandes en puissance de calcul.
 
-## Métriques
+## Sélection Pas à Pas (stepwise)
 
-### AIC
+### Backward Stepwise
 
-### BIC
+La méthode *Bacward Stepwise*, sélection à recul pas à pas en français, est la plus naturelle et sa mise en oeuvre est très facile. Elle peut se faire de manière manuelle ou automatisée. Dans cette méthode on commence par apprendre le modèle complet contenant toutes les variables, puis on élimine à chaque pas la variable dont la perte engendre la moindre détérioration du modèle, jusqu'à ce que toutes les variables aient été enlevées (ou que l'on décide de s'arrêter prématurément avec un nombre de variables satisfaisants).
 
-### Norme 2
+On obtient une suite de modèles imbriqués avec un nombre de variables décroissants : $(\mathcal{M}_p, \mathcal{M}_p-1, ..., \mathcal{M}_2, \mathcal{M}_1, \mathcal{M}_0)$, avec p = nombre de variables.
 
-### CGini
+On sélectionne enfin le modèle final parmi la suite de modèle, en général en utilisant une métrique de performance.
 
-### Spread 100/0
+#### Algorithme
 
-### Spread 95/5
+1. Selectionner toutes les variables ;
+2. Apprendre le modèle $\mathcal{M}p$ avec toutes les variables ;
+3. Apprendre tous les modèles avec une variable en moins ;
+4. Supprimer la variable ayant la moindre importance ;
+5. Reprendre à l'étape 3 tant qu'il reste des variables sélectionnées ;
+6. Sélectionner le modèle final parmi tous les modèles imbriqués créés.
 
-## Greedy Process
+#### Critères
+
+Cette méthode nécéssite de définir deux critéres :
+
+- Le critère de choix de la variable à exclure à chaque pas (étape 3) ;
+- Le critère de choix du modèle final (étape 5).
+
+La clef du succès de cette méthode réside dans le choix de critères pertinents pour ces deux étapes. Comme il existe plusieurs possibilités pour chaque critère, il existe de très nombreuses combinaisons et cette méthode est en réalité une famille de méthodes qui se décline suivant les mutliples critères d'élimination des variables et de choix du modèle final.
+
+### Forward Stepwise
+
+La procédure *forward stepwise*, selection par avancée pas à pas en français, est similaire à la procédure par recul pas à pas. Au lieu de commencer avec le modèle complet contenant toutes les variables, on commence au contraire avec le modèle nul contenant seulement la coordonnée à l'origine (intercept), sans aucune variable explicative. La procédure ajoute ensuite à chaque étape la meilleure variable parmi celles qui ne sont pas encore sélectionnées.
+
+#### Algorithme
+
+1. Selectionner l'intercept ;
+2. Apprendre tous les modèles possibles avec une variable additionnelle ;
+3. Ajouter la variable ayant la plus forte importance ;
+4. Reprendre à l'étape 2 tant qu'il reste des variables non sélectionnées ;
+5. Sélectionner le modèle final parmi tous les modèles imbriqués créés.
+
+### Critère de sélection d'une variable
+
+Pour déterminer la variable la plus (forward setpwise) ou la moins (backward setpwise) significative il est possible d'utiliser plusieurs métriques.
+
+#### p-value
+
+TBW
+
+#### Norme 2 des coefficients
+
+TBW
+
+#### CGini
+
+TBW
+
+#### Spread 100/0
+
+TBW
+
+#### Spread 95/5
+
+TBW
+
+#### AIC
+
+TBW
+
+#### BIC
+
+TBW
+
+#### Gini
+
+TBW
+
+#### Déviance
+
+TBW
+
+#### Complexité calculatoire
+
+Dans leur version canonique, les algorithmes pas à pas nécéssitent d'apprendre $p$ modèles à la première itération, $p-i$ modèles à l'itération $i$ et aucun modèle à l'itération finale (puisque il n'y a plus qu'une seule variable et qu'il n'est donc pas strictement nécéssaire de réaliser un modèle pour la choisir). Le nombre total de modèle nécéssaire est donc :
+\begin{equation}
+\sum_{k=0}^{p-2}p - k = \sum_{k=2}^{p}k = p * (p + 1) / 2 - 1
+\end{equation}
+
+La complexité caculatoire de cette approche est donc quadratique suivant le nombre de variable : $\mathcal{O}(p^2)$. C'est bien meilleur que la force brute $\mathcal{O}(n^p)$, toutefois cette compléxité superlinéaire est peu adaptée pour les approches big data car si on double le nombre de variables on quadruple la puissance de calcul nécéssaire.
+
+Pour palier ce problème il est possible d'utiliser des variantes gloutonnes (greedy) en anglais qui nécéssitent moins de calculs : elles suppriment l'étape 3 et fournissent directement une estimation de la variable à sélectionner (forward) ou exclure (backward).
+
+### Avantages
+
+Les méthodes pas à pas possèdent deux avantages : leur simplicité de mise en oeuvre et l'absence de méta-paramètre. Cette absence de méta-paramètre est intéressante par rapport à d'autres méthodes de sélection des variables car il n'y a pas besoin de faire de grid-search ni de validation croisée.
+
+### Limitations
+
+#### Nombre de variables
+
+Si le nombre de variables explicatives est important, en pratique au dela de quelques milliers, le temps de calcul nécéssaire à une procédure pas à pas complète peut devenir excessif. Il est également possible que le calcul du modèle complet pour démarrer la procédure backward soit hors de portée des meilleurs méthodes de calcul.
+
+L'augmentation du nombre de variable dans la procédure augmente également le risque de triturage des données et de sur-apprentissage.
+
+Dans ce cas, il peut être préférable d'utiliser une pénalisation Lasso qui traite de manière efficace cette situation.
+
+#### Triturage des données
+
+Les méthodes pas à pas sont controversées car elles réutilisent plusieurs fois les informations de la base de données et cela les rend sensibles au surapprentissage par "triturage des données"^[Le triturage des données est une technique statistique qui consiste à ne conserver que les résultats intéressants. Ce phénomène apparaît par exemple en médecine, où, à partir d'un grand nombre de données (poids, âge de l'éventuelle première cigarette, etc.) et d'un grand nombre de résultat possibles (cancer du sein, cancer du poumon, accident de voiture etc.) des associations hasardeuses sont faites (a posteriori), et « validées » statistiquement]. De plus, les **métriques statistiques** de qualité d'un modèle sont biaisées par la procédure pas à pas et peuvent donner une impression meilleure que la réalité.
+
+#### Remède au triturage des données
+
+Pour remédier au triturage des données, il existe heureusement plusieurs pratiques que vous pouvez mettre en place :
+
+1. Big Data : Utiliser le plus grand nombre possible d'observations pour l'apprentissage. En effet, le risque de sur-apprentissage diminue avec la taille de la base d'apprentissage.
+2. Echantillon de test : Calculer les métriques finales sur un échantillon de données aléatoires qui n'aura pas été utilisé durant toute la phase d'apprentissage ;
+3. Choix des critères : Utiliser des métriques de choix des variables et du modèle final peu propices au triturage des données et au sur-apprentissage.
+
+### Pas d'optimalité de la sélection
+
+Les processus pas à pas ne peuvent pas garantir l'optimalité des modèle créés. En effet, il est possible qu'une variable rajoutée à une étape précédente dans une processus forward ne soit désormais plus la meilleure, ou qu'au contraire, une variable exclue en backward devienne une variable utile dans un modèle plus simple. Cela est particulièrement vrai si les facteurs explicatifs sont corrélés.
 
 ## Pénalisation
 
@@ -758,7 +870,36 @@ L'idée du lasso groupé est de réaliser la sélection par groupe de variables.
 
 Dans le cadre des régresions actuarielles, le group lasso peut-être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en oeuvre de ces méthodes est complexe et non standardisé en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser.
 
-## Chemin de sélection
+## Greedy Process
+
+Les *processus de sélection glouton* (greedy process en anglais) sont des approches empiriques qui utilisent les méthodes déjà exposées comme briques de base pour créer un processus de sélection.
+
+Par exemple, dans le cas d'une base de données avec 1000 variables on peut envisager de réaliser en chaîne les 2 étapes suivantes qui permettent de tirer au mieux parti des forces de chaque méthode :
+
+- régression pénalisé lasso pour réduire le nombre de variables étudiées à 100 ;
+- backward stepwise à partir du modèle lasso à 100 variable ;
+
+### Procédure bi-directionnelle
+
+Dans une procédure bidirectionnnelle on combine les approches forward et backward, en testant à chaque étape les variables à inclure ou exclure.
+
+## Sélection du modèle final
+
+Quelque soit la méthode utiliser pour la recherche des variables, procédure stepwise ou pénalisation, vous allez obtenir un ensemble de modèles utilisant un nombre différent de variables et vous devez choisir le modèle final parmi tous ces modèles. Il existe bien sûr plusieurs méthodes et nous en exposons ici quelques-une parmi les plus utiles.
+
+### Nombre de variables maximum
+
+Le critère le plus simple est celui du nombre de variable. Il est souvent utile de se donner un nombre maximum de variables dans le modèle. Dans ce cas on choisit donc le modèle correspondant à ce maximum. Ce critère peut être composé avec d'autres critère qui permettent de limiter davantage le nombre de variables utilisées.
+
+### Critère sur les variables
+
+Il est possible de sélectionner le modèle final sur les caractéristiques des variables utilisées par les modèles. Par exemple on peut envisager de sélectionner le modèle qui possède le plus de variables ayant toutes un Spread95/5 supérieur à 10%.
+
+### Gain sur la performance
+
+En pratique on souhaite souvent sélectionner le modèle qui réalise le meilleur compromis entre nombre de variables utilisé (simplicité) et performance. Une méthode naïve pour réaliser cet arbitrage est d'exiger que le modèle choisi fournisse un gain "suffisant" par rapport au modèle précédent. Par exemple on pourra choisir le dernier modèle permettant de gagner au moins 0,1% de gini par rapport au précédent. Cette méthode s'apparente à la méthode graphique du chemin de sélection (cf. ci-dessous).
+
+### Chemin de sélection
 
 Le chemin de selection est un graphique qui permet de visualiser la performance prédictive obtenue en partant d'un modèle sans aucune variable et en sélectionnant une variable de plus à chaque nouvelle étape. Le graphique est tracé avec le nombre de variables sélectionnées en abcisses et la performance prédictive en ordonnées (gini, réduction de la déviance, ...).
 
@@ -775,8 +916,8 @@ Pour l'apprentissage sur des données big data il faut favoriser les algorithmes
 
 Dans notre outil de pricing IARD, nous avons abouti, par itération successive, au processus de sélection des variables suivant :
 
-1. **Forward stepwise** en supprimant à chaque étape la variable avec le plus faible CGini. Le gini de chaque modèle est stocké pour analyse à l'étape suivante ;
-2. **Tri des variables par gain de gini** : chaque variable se voit affecter le gain de gini réalisé par rapport au modèle avec une variable de moins. Les variables sont ensuite classées par gain de gini croissant ;
+1. **Backward stepwise** en supprimant à chaque étape la variable avec le plus faible CGini. Le gini de chaque modèle est stocké pour analyse à l'étape suivante ;
+2. **Tri des variables par gain de gini** : chaque variable se voit affecter le gain de gini réalisé par rapport au modèle avec une variable en moins. Les variables sont ensuite classées par gain de gini croissant ;
 3. **Forward stepwise** dans l'ordre de gain de gini croissant établi à l'étape précédente ;
 4. **Répétition** plusieurs fois des étapes 2 et 3 (entre 3 et 6 fois) ;
 5. **Détermination du nombre optimal de variable** : conserver toutes les variables qui font gagner suffisament de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).

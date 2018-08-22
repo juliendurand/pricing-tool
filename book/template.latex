@@ -7,6 +7,8 @@
 \usepackage{times}
 \usepackage{indentfirst}
 \usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[bottom]{footmisc}
 \setlist[itemize]{topsep=0pt,after=\vspace{.5\baselineskip}}
 \setlist[enumerate]{topsep=0pt,after=\vspace{.5\baselineskip}}
 
@@ -25,6 +27,7 @@ bookmarks=true,bookmarksopenlevel=2 ]{hyperref}
 \setulmargins{*}{*}{1}
 \setbinding{0.625in}
 \checkandfixthelayout
+\raggedbottom
 
 \usepackage[french,english]{babel}
 
