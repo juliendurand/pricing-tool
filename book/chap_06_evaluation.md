@@ -20,7 +20,7 @@
 
 ### Résidus
 
-## Evéluation de chaque variable
+## Evaluation de chaque variable
 
 ### Spread
 

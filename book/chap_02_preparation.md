@@ -151,7 +151,7 @@ TODO
 
 Une fois que vous aurez créé toutes les features nécessaires à l'apprentissage, vous obtiendrez probablement une liste de plusieurs dizaines, voire plusieurs centaines de variable. Nous vous recommandons d'y mettre de d'ordre en classant vos variables et en les renommant de telle sorte que leur utilisation devienne intuitive et cohérente. Voici une liste d'idées que vous pouvez mettre en œuvre :
 
-- Etablir une convention de nommage pour vos variables. Cette convention va définir la langue, la casse et les séparateurs utilisés, voici quelques exemples courants :
+- Établir une convention de nommage pour vos variables. Cette convention va définir la langue, la casse et les séparateurs utilisés, voici quelques exemples courants :
 
   - CamelCase ;
   - snake_case ;
@@ -323,7 +323,7 @@ Points de vérification :
 
 ## Documentation
 
-La documentation de la phase de préparation des données est souvent lacunaire car les équipes pensent, à tort, que cela ne crée pas de valeur. Nous avons pu constater que les équipes passent souvent trop rapidement à la phase de modélisation sans avoir sufisament documenté la constitution de la base. Ce qui semble un gain de temps à court terme, ce révèle souvent une perte de temps à long terme car il n'est pas rare de s'apercevoir en fin de modélisation que la base utilisée était biaisée et devoir recommencer le travail.
+La documentation de la phase de préparation des données est souvent lacunaire car les équipes pensent, à tort, que cela ne crée pas de valeur. Nous avons pu constater que les équipes passent souvent trop rapidement à la phase de modélisation sans avoir suffisamment documenté la constitution de la base. Ce qui semble un gain de temps à court terme, ce révèle souvent une perte de temps à long terme car il n'est pas rare de s'apercevoir en fin de modélisation que la base utilisée était biaisée et devoir recommencer le travail.
 
 Mettre par écrit, de manière formalisée, toutes les étapes de la préparation de la base permet de partager les informations, de détecter les incohérences, et de les corriger. De plus c'est sur la base de cette documentation que le management et les auditeurs externes se forgeront une idée de la qualité et donc de la confiance qui doit être accordée au travail réalisé. D'une certaine manière vous devez considérer que la documentation est le véritable "livrable" de la phase de préparation des données.
 

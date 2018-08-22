@@ -6,13 +6,13 @@ Nous disposons grâce au big data d'un nombre toujours plus grand de variables �
 
 Dès lors que vous disposez d'un grand nombre de variables (plusieurs dizaines), il est souvent possible d'obtenir des performances prédictives proches avec des variables différentes. Il est donc important de bien définir vos objectifs pour guider vos choix.
 
-### Performance Predictive
+### Performance Prédictive
 
-La performance prédictive vient tout naturellement à l'esprit comme le premier critère de choix. C'est malheureusement parfois le seul qui est pris en compte. Le choix des variables doit souvent mettre en balance d'autres critère au depénd de quelques dizièmes de point de gini.
+La performance prédictive vient tout naturellement à l'esprit comme le premier critère de choix. C'est malheureusement parfois le seul qui est pris en compte. Le choix des variables doit souvent mettre en balance d'autres critère au dépend de quelques dixièmes de point de gini.
 
 ### Simplicité
 
-*«La simplicité est la sophistication suprême»* selon Léonard de Vinci. Cette maxime s'applique bien à la modélisation IARD. Pour une même puissance prédictive les modèles les plus simples sont les plus longs à réaliser.
+*« La simplicité est la sophistication suprême »* selon Léonard de Vinci. Cette maxime s'applique bien à la modélisation IARD. Pour une même puissance prédictive les modèles les plus simples sont les plus longs à réaliser.
 
 Pour obtenir des modèles simples, voici quelques pistes :
 
@@ -27,7 +27,7 @@ Vous souhaiterez probablement communiquer de manière pédagogique sur les varia
  - la somme de la longueur et de la largeur du véhicule ;
  - le poids du véhicule ;
 
-A capacité prédictive égale (ou très proche), il est préférable d'utiliser le poids du véhicule qui est plus facilement interprétable pour les novices.
+A pouvoir prédictif égal (ou très proche), il est préférable d'utiliser le poids du véhicule qui est plus facilement interprétable pour les novices.
 
 ### Sens business
 
@@ -35,9 +35,9 @@ Il est possible qu'une variable sans relation évidente avec le risque modélis�
 
 ### Robustesse
 
-La robustesse est la capacité d'un sytème à se maintenir dans le temps et à résister aux événements exceptionnels. En ce qui concerne le choix des variables dans un modèle vous devez réfléchir à la stabilité de la variable dans le temps et ce qu'il advient en cas de valeur extrême.
+La robustesse est la capacité d'un système à se maintenir dans le temps et à résister aux événements exceptionnels. En ce qui concerne le choix des variables dans un modèle vous devez réfléchir à la stabilité de la variable dans le temps et ce qu'il advient en cas de valeur extrême.
 
-Les variables renseignées à la souscription et qui ne sont plus jamais mises à jours sont par exemple à éviter. Il est donc important de connaitre les processus opérationnels de mise à jour des données. Par exemple le statut marital (célibataire, marié, veuf, ...) est une donnée qui évolue avec le temps et dont la pertinence s'émousse au fil des ans.
+Les variables renseignées à la souscription et qui ne sont plus jamais mises à jour sont par exemple à éviter. Il est donc important de connaitre les processus opérationnels de mise à jour des données. Par exemple le statut marital (célibataire, marié, veuf, ...) est une donnée qui évolue avec le temps et dont la pertinence s'émousse au fil des ans.
 
 Les "outliers" (cas extrêmes) sont également à considérer : vos variables sont-elles susceptibles de prendre des variables exceptionnelles et comment cela se traduit-il dans les prédictions ? Par exemple si vous
 
@@ -57,40 +57,37 @@ La collecte et le stockage d'une donnée a toujours un coût. Vous devez essayer
 
 ### Expérience client
 
-On ne pense jamais suffisament au client. Quel surprise de devoir répondre à une question sur son statut de locataire ou propriétaire pour souscrire une assurance automobile !
+On ne pense jamais suffisamment au client. Quelle surprise de devoir répondre à une question sur son statut de locataire ou propriétaire pour souscrire une assurance automobile ! Vous devez chercher à minimiser le nombre, la complexité et la sensibilité des données collectées. Attention le nombre absolu ne doit pas être l'unique metrique car il vaut mieux demander deux données simples plutôt qu'une compliquée, ou deux données publiques plutôt qu'une donnée privée sensible.
 
-nombre de données collectées
-vie privée
-
-### Ethique
+### Éthique
 
 Certaines données sont sensibles car leur utilisation pourrait créer des situations de discrimination : nationalité, ethnie, religion, handicap, ...
 
 ### Législation
 
-La législation de votre pays peut vous contraindre dans le choix des variables que vous pouvez utilisez dans votre pricing technique ou commercial. Il est donc préférable d'utiliser dans votre pricing techniques des variables que vous pourrez également utiliser dans vos processus opérationnels et votre pricing commercial.
+La législation de votre pays peut vous contraindre dans le choix des variables que vous pouvez utiliser dans votre pricing technique ou commercial. Il est donc préférable d'utiliser dans votre pricing techniques des variables que vous pourrez également utiliser dans vos processus opérationnels et votre pricing commercial.
 
 ### Stratégie
 
-Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing et privilégier certaines catégories de variables. Par exemple, en assurance automobile, vous pouvez décider de favoriser les variables véhicules plutôt que les variables conducteurs afin que deux clients avec le même véhicule soient le plus proche possible (ou l'inverse).
+Enfin il vous revient en dernier lieu de décider de votre stratégie de pricing et privilégier certaines catégories de variables. Par exemple, en assurance automobile, vous pouvez décider de favoriser les variables véhicule plutôt que les variables conducteur afin que deux clients avec le même véhicule soient le plus proche possible (ou l'inverse).
 
 ## Sélection Manuelle
 
-Les exemples précédents nous montrent combien il est illusoire de pouvoir réaliser une sélection de variables entièrement automatisée. Bien au contraire la sélection des variables s'apparente à une opinion, c'est à dire un choix subjective qui requiert une expérience approfondie du domaine. Ce choix est le résultats d'un processus empirique pour trouver le "meilleurs" ensemble en fonction des objectifs business de chaque entité.
+Les exemples précédents nous montrent combien il est illusoire de pouvoir réaliser une sélection de variables entièrement automatisée. Bien au contraire la sélection des variables s'apparente à une opinion, c'est à dire un choix subjectif qui requiert une expérience approfondie du domaine. Ce choix est le résultat d'un processus empirique pour trouver le "meilleurs" ensemble en fonction des objectifs business de chaque entité.
 
-En raison de la rapide croissance du nombre de variables inclus dans les modèles il est toutefois utile de mettre en place des procédure automatisée de recherche des meilleurs variables pour accélérer le tri et la sélection manuelle finale.
+En raison de la rapide croissance du nombre de variables inclus dans les modèles il est toutefois utile de mettre en place des procédures automatisées de recherche des meilleures variables pour accélérer le tri et la sélection manuelle finale.
 
 Dans les prochaines sections nous expliquerons les différentes méthodes disponibles et celles qui sont le plus appropriées pour le contexte big data.
 
 ## Best Subset
 
-La méthode *Best Subset*, meilleur sous-ensemble en français, est une approche par la force brute qui teste tous les modèles possibles. Le nombre de modèles pour p variables est égal à $2^p$^[Le nombre de modèles avec au plus n variables est la somme des combinaisons possibles de k variables parmi p avec k variant de 1 à p : $\sum_{k=1}^{p}\binom{p}{k}=\sum_{k=0}^{p}\binom{p}{k}-1=2p−1$] et la puissance de calcul nécessaire croît donc de manière exponentielle avec le nombre de variables du dataset. Cette méthode présente également un fort risque de sur-apprentissage. Cette méthode est donc à éviter car elle n'apporte pas d'avantages sur les méthodes pas à pas qui sont tout aussi simples à mettre en oeuvre tout en étant moins gourmandes en puissance de calcul.
+La méthode *Best Subset*, meilleur sous-ensemble en français, est une approche par la force brute qui teste tous les modèles possibles. Le nombre de modèles pour p variables est égal à $2^p$^[Le nombre de modèles avec au plus n variables est la somme des combinaisons possibles de k variables parmi p avec k variant de 1 à p : $\sum_{k=1}^{p}\binom{p}{k}=\sum_{k=0}^{p}\binom{p}{k}-1=2p−1$] et la puissance de calcul nécessaire croît donc de manière exponentielle avec le nombre de variables du dataset. Cette méthode présente également un fort risque de surapprentissage. Cette méthode est donc à éviter car elle n'apporte pas d'avantages sur les méthodes pas à pas qui sont tout aussi simples à mettre en œuvre tout en étant moins gourmandes en puissance de calcul.
 
 ## Sélection Pas à Pas (stepwise)
 
 ### Backward Stepwise
 
-La méthode *Bacward Stepwise*, sélection à recul pas à pas en français, est la plus naturelle et sa mise en oeuvre est très facile. Elle peut se faire de manière manuelle ou automatisée. Dans cette méthode on commence par apprendre le modèle complet contenant toutes les variables, puis on élimine à chaque pas la variable dont la perte engendre la moindre détérioration du modèle, jusqu'à ce que toutes les variables aient été enlevées (ou que l'on décide de s'arrêter prématurément avec un nombre de variables satisfaisants).
+La méthode *Bacward Stepwise*, sélection à recul pas à pas en français, est la plus naturelle et sa mise en œuvre est très facile. Elle peut se faire de manière manuelle ou automatisée. Dans cette méthode on commence par apprendre le modèle complet contenant toutes les variables, puis on élimine à chaque pas la variable dont la perte engendre la moindre détérioration du modèle, jusqu'à ce que toutes les variables aient été enlevées (ou que l'on décide de s'arrêter prématurément avec un nombre de variables satisfaisants).
 
 On obtient une suite de modèles imbriqués avec un nombre de variables décroissants : $(\mathcal{M}_p, \mathcal{M}_p-1, ..., \mathcal{M}_2, \mathcal{M}_1, \mathcal{M}_0)$, avec p = nombre de variables.
 
@@ -98,7 +95,7 @@ On sélectionne enfin le modèle final parmi la suite de modèle, en général e
 
 #### Algorithme
 
-1. Selectionner toutes les variables ;
+1. Sélectionner toutes les variables ;
 2. Apprendre le modèle $\mathcal{M}p$ avec toutes les variables ;
 3. Apprendre tous les modèles avec une variable en moins ;
 4. Supprimer la variable ayant la moindre importance ;
@@ -107,20 +104,20 @@ On sélectionne enfin le modèle final parmi la suite de modèle, en général e
 
 #### Critères
 
-Cette méthode nécéssite de définir deux critéres :
+Cette méthode nécessite de définir deux critères :
 
 - Le critère de choix de la variable à exclure à chaque pas (étape 3) ;
 - Le critère de choix du modèle final (étape 5).
 
-La clef du succès de cette méthode réside dans le choix de critères pertinents pour ces deux étapes. Comme il existe plusieurs possibilités pour chaque critère, il existe de très nombreuses combinaisons et cette méthode est en réalité une famille de méthodes qui se décline suivant les mutliples critères d'élimination des variables et de choix du modèle final.
+La clef du succès de cette méthode réside dans le choix de critères pertinents pour ces deux étapes. Comme il existe plusieurs possibilités pour chaque critère, il existe de très nombreuses combinaisons et cette méthode est en réalité une famille de méthodes qui se décline suivant les multiples critères d'élimination des variables et de choix du modèle final.
 
 ### Forward Stepwise
 
-La procédure *forward stepwise*, selection par avancée pas à pas en français, est similaire à la procédure par recul pas à pas. Au lieu de commencer avec le modèle complet contenant toutes les variables, on commence au contraire avec le modèle nul contenant seulement la coordonnée à l'origine (intercept), sans aucune variable explicative. La procédure ajoute ensuite à chaque étape la meilleure variable parmi celles qui ne sont pas encore sélectionnées.
+La procédure *forward stepwise*, sélection par avancée pas à pas en français, est similaire à la procédure par recul pas à pas. Au lieu de commencer avec le modèle complet contenant toutes les variables, on commence au contraire avec le modèle nul contenant seulement la coordonnée à l'origine (intercept), sans aucune variable explicative. La procédure ajoute ensuite à chaque étape la meilleure variable parmi celles qui ne sont pas encore sélectionnées.
 
 #### Algorithme
 
-1. Selectionner l'intercept ;
+1. Sélectionner l'intercept ;
 2. Apprendre tous les modèles possibles avec une variable additionnelle ;
 3. Ajouter la variable ayant la plus forte importance ;
 4. Reprendre à l'étape 2 tant qu'il reste des variables non sélectionnées ;
@@ -128,7 +125,7 @@ La procédure *forward stepwise*, selection par avancée pas à pas en français
 
 ### Critère de sélection d'une variable
 
-Pour déterminer la variable la plus (forward setpwise) ou la moins (backward setpwise) significative il est possible d'utiliser plusieurs métriques.
+Pour déterminer la variable la plus (forward stepwise) ou la moins (backward septwise) significative il est possible d'utiliser plusieurs métriques.
 
 #### p-value
 
@@ -168,26 +165,26 @@ TBW
 
 #### Complexité calculatoire
 
-Dans leur version canonique, les algorithmes pas à pas nécéssitent d'apprendre $p$ modèles à la première itération, $p-i$ modèles à l'itération $i$ et aucun modèle à l'itération finale (puisque il n'y a plus qu'une seule variable et qu'il n'est donc pas strictement nécéssaire de réaliser un modèle pour la choisir). Le nombre total de modèle nécéssaire est donc :
+Dans leur version canonique, les algorithmes pas à pas nécessitent d'apprendre $p$ modèles à la première itération, $p-i$ modèles à l'itération $i$ et aucun modèle à l'itération finale (puisqu'il n'y a plus qu'une seule variable et qu'il n'est donc pas strictement utile de réaliser un modèle pour la choisir). Le nombre total de modèle nécessaire est donc :
 \begin{equation}
 \sum_{k=0}^{p-2}p - k = \sum_{k=2}^{p}k = p * (p + 1) / 2 - 1
 \end{equation}
 
-La complexité caculatoire de cette approche est donc quadratique suivant le nombre de variable : $\mathcal{O}(p^2)$. C'est bien meilleur que la force brute $\mathcal{O}(n^p)$, toutefois cette compléxité superlinéaire est peu adaptée pour les approches big data car si on double le nombre de variables on quadruple la puissance de calcul nécéssaire.
+La complexité calculatoire de cette approche est donc quadratique suivant le nombre de variable : $\mathcal{O}(p^2)$. C'est bien meilleur que la force brute $\mathcal{O}(n^p)$, toutefois cette compléxité superlinéaire est peu adaptée pour les approches big data car si on double le nombre de variables on quadruple la puissance de calcul nécessaire.
 
-Pour palier ce problème il est possible d'utiliser des variantes gloutonnes (greedy) en anglais qui nécéssitent moins de calculs : elles suppriment l'étape 3 et fournissent directement une estimation de la variable à sélectionner (forward) ou exclure (backward).
+Pour pallier ce problème il est possible d'utiliser des variantes gloutonnes (greedy) en anglais qui nécessitent moins de calculs : elles suppriment l'étape 3 et fournissent directement une estimation de la variable à sélectionner (forward) ou exclure (backward).
 
 ### Avantages
 
-Les méthodes pas à pas possèdent deux avantages : leur simplicité de mise en oeuvre et l'absence de méta-paramètre. Cette absence de méta-paramètre est intéressante par rapport à d'autres méthodes de sélection des variables car il n'y a pas besoin de faire de grid-search ni de validation croisée.
+Les méthodes pas à pas possèdent deux avantages : leur simplicité de mise en œuvre et l'absence de méta-paramètre. Cette absence de méta-paramètre est intéressante par rapport à d'autres méthodes de sélection des variables car il n'y a pas besoin de faire de grid-search ni de validation croisée.
 
 ### Limitations
 
 #### Nombre de variables
 
-Si le nombre de variables explicatives est important, en pratique au dela de quelques milliers, le temps de calcul nécéssaire à une procédure pas à pas complète peut devenir excessif. Il est également possible que le calcul du modèle complet pour démarrer la procédure backward soit hors de portée des meilleurs méthodes de calcul.
+Si le nombre de variables explicatives est important, en pratique au-delà de quelques milliers, le temps de calcul nécessaire à une procédure pas à pas complète peut devenir excessif. Il est également possible que le calcul du modèle complet pour démarrer la procédure backward soit hors de portée des meilleures méthodes de calcul.
 
-L'augmentation du nombre de variable dans la procédure augmente également le risque de triturage des données et de sur-apprentissage.
+L'augmentation du nombre de variable dans la procédure augmente également le risque de triturage des données et de surapprentissage.
 
 Dans ce cas, il peut être préférable d'utiliser une pénalisation Lasso qui traite de manière efficace cette situation.
 
@@ -199,9 +196,9 @@ Les méthodes pas à pas sont controversées car elles réutilisent plusieurs fo
 
 Pour remédier au triturage des données, il existe heureusement plusieurs pratiques que vous pouvez mettre en place :
 
-1. Big Data : Utiliser le plus grand nombre possible d'observations pour l'apprentissage. En effet, le risque de sur-apprentissage diminue avec la taille de la base d'apprentissage.
-2. Echantillon de test : Calculer les métriques finales sur un échantillon de données aléatoires qui n'aura pas été utilisé durant toute la phase d'apprentissage ;
-3. Choix des critères : Utiliser des métriques de choix des variables et du modèle final peu propices au triturage des données et au sur-apprentissage.
+1. Big Data : Utiliser le plus grand nombre possible d'observations pour l'apprentissage. En effet, le risque de surapprentissage diminue avec la taille de la base d'apprentissage.
+2. Échantillon de test : Calculer les métriques finales sur un échantillon de données aléatoires qui n'aura pas été utilisé durant toute la phase d'apprentissage ;
+3. Choix des critères : Utiliser des métriques de choix des variables et du modèle final peu propices au triturage des données et au surapprentissage.
 
 ### Pas d'optimalité de la sélection
 
@@ -209,7 +206,7 @@ Les processus pas à pas ne peuvent pas garantir l'optimalité des modèle cré�
 
 ## Pénalisation
 
-La régularisation des coefficients réalisée par l'introduction d'une ou plusieurs pénalisation dans le modèle est une méthode "intégrée" qui réalise la sélection des variables en même temps que l'apprentissage du modèle. Les pénalisations les plus fréquentes sont :
+La régularisation des coefficients réalisée par l'introduction d'une ou plusieurs pénalisations dans le modèle est une méthode "intégrée" qui réalise la sélection des variables en même temps que l'apprentissage du modèle. Les pénalisations les plus fréquentes sont :
 
 - LASSO (norme 1 des coefficients) ;
 - Ridge (Norme 2) ;
@@ -228,7 +225,7 @@ La particularité du lasso est de contracter certains coefficients à zéro grâ
 
 #### Pari sur la parcimonie
 
- Le lasso fonctionne d'autant mieux qu'il y a un faible nombre de variables qui ont de l'importance dans la prédiction. Ces bases de données sont qualifiée de parcimonieuse : il y a peu de variables corrélées avec la cible. Dans cette situations le vecteur des coefficients d'apprentissage est "creux" et la base d'apprentissage est appelée "parcimonieuse". C'est notamment le cas dans le domaine de la génomique avec plusieurs millions de gènes analysés dont seuls quelques uns sont impliqués dans la maladie étudiée. Robert Tibshirani appelle cela le *«pari sur la parcimonie»*^[Pour plus de détails sur le "pari sur la parcimonie" voir le \S 16.2.2 du livre *«The Elements of Statistical Learning»*, Trevor Hastie, Robert Tibshirani, Jerome Friedman.].
+ Le lasso fonctionne d'autant mieux qu'il y a un faible nombre de variables qui ont de l'importance dans la prédiction. Ces bases de données sont qualifiées de parcimonieuses : il y a peu de variables corrélées avec la cible. Dans cette situations le vecteur des coefficients d'apprentissage est "creux" et la base d'apprentissage est appelée "parcimonieuse". C'est notamment le cas dans le domaine de la génomique avec plusieurs millions de gènes analysés dont seuls quelques-uns sont impliqués dans la maladie étudiée. Robert Tibshirani appelle cela le *« pari sur la parcimonie »*^[Pour plus de détails sur le "pari sur la parcimonie" voir le \S 16.2.2 du livre *«The Elements of Statistical Learning»*, Trevor Hastie, Robert Tibshirani, Jerome Friedman.].
 
 #### Avantages et Limites
 
@@ -241,9 +238,9 @@ Le principal avantage du lasso est de réaliser une sélection parcimonieuse des
 
 **Variables corrélées** : Si la base d'apprentissage contient des features corrélées entre elles, et qui sont importantes pour la prédiction, le lasso risque de n'en sélectionner qu'une seule et d'écarter les autres au dépend de la qualité de prédiction.
 
-**Coefficients non optimaux** : Dans l'hypothèse, fréquente en pratique, où la base d'apprentisage est dense, l'estimateur lasso est biaisé et les coefficients ne sont pas les mêmes que ceux obtenus avec une regression sur le "support" (le sous-ensemble des variables dont le coefficient est différent de zéro). Le biais introduit rend le modèle plus robuste et réduit le risque de sur-apprentissage, ce qui est parfois bénéfique, toutefois cela peut également se faire au détriment de la capacité prédictive du modèle.
+**Coefficients non optimaux** : Dans l'hypothèse, fréquente en pratique, où la base d'apprentissage est dense, l'estimateur lasso est biaisé et les coefficients ne sont pas les mêmes que ceux obtenus avec une régression sur le "support" (le sous-ensemble des variables dont le coefficient est différent de zéro). Le biais introduit rend le modèle plus robuste et réduit le risque de surapprentissage, ce qui est parfois bénéfique, toutefois cela peut également se faire au détriment de la capacité prédictive du modèle.
 
-**Selection des coefficients non optimale** : toujours dans le cas d'un dataset dense, la sélection des coefficients par le lasso n'est pas toujours optimale car elle est régit par la taille des coefficient uniquement et ne prend pas en compte la significativité statistique. Un fort coefficient n'est pas forcément synonyme de significativité statistique, surtout si les données n'ont pas été normalisées.
+**Sélection non optimale des coefficients** : toujours dans le cas d'un dataset dense, la sélection des coefficients par le lasso n'est pas toujours optimale car elle est régie par la taille des coefficients uniquement et ne prend pas en compte la significativité statistique. Un fort coefficient n'est pas forcément synonyme de significativité statistique, surtout si les données n'ont pas été normalisées.
 
 **Meta-paramètre supplémentaire** : l'introduction du paramètre de seuillage $\lambda_{1}$ rajoute de la complexité dans le processus d'apprentissage. Il faut rechercher le meilleur paramètre $\lambda_{1}^{*}$ de manière empirique, par :
 
@@ -252,14 +249,14 @@ Le principal avantage du lasso est de réaliser une sélection parcimonieuse des
 
 #### Group Lasso
 
-L'idée du lasso groupé est de réaliser la sélection par groupe de variables. Cela est très utile pour les variables catégorielles qui sont encodées avec des colonnes binaires (one hot encoding). Le group lasso permet de regrouper ensemble toutes les modalités d'une variable et sélectionne/déselectionne ensemble toutes les modalités d'une même variable. A l'intérieur d'un groupe de variable le group lasso réalise une pénalisation $l_{2}$ qui s'assimile à la méthode Ridge (cf. chapitre suivant). Si $G$ est une partition des coefficients $\beta_{j}$ et pour $g \in G$, $\beta_{g}$ est le vecteur creux contenant uniquement les coeffient $\beta_{j} \in g$, l'objectif du fused lasso est alors :
+L'idée du lasso groupé est de réaliser la sélection par groupe de variables. Cela est très utile pour les variables catégorielles qui sont encodées avec des colonnes binaires (one hot encoding). Le group lasso permet de regrouper ensemble toutes les modalités d'une variable et sélectionne/désélectionne ensemble toutes les modalités d'une même variable. A l'intérieur d'un groupe de variable le group lasso réalise une pénalisation $l_{2}$ qui s'assimile à la méthode Ridge (cf. chapitre suivant). Si $G$ est une partition des coefficients $\beta_{j}$ et pour $g \in G$, $\beta_{g}$ est le vecteur creux contenant uniquement les coeffient $\beta_{j} \in g$, l'objectif du fused lasso est alors :
 \begin{equation}
 \min _{\beta _{j}}\sum _{i=1}^{n}f_{loss}(y_{i},\sum _{j=0}^{p}\beta _{j}x_{i,j})+\lambda_{1} \sum_{g \in G} \omega_{g} \mid\mid\beta_{g}\mid\mid_{2}
 \end{equation}
 
 #### Utilisation
 
-Dans le cadre des régresions actuarielles, le group lasso peut-être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en oeuvre de ces méthodes est complexe et non standardisé en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser.
+Dans le cadre des régressions actuarielles, le group lasso peut être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en œuvre de ces méthodes est complexe et non standardisée en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser.
 
 ## Greedy Process
 
@@ -268,15 +265,15 @@ Les *processus de sélection glouton* (greedy process en anglais) sont des appro
 Par exemple, dans le cas d'une base de données avec 1000 variables on peut envisager de réaliser en chaîne les 2 étapes suivantes qui permettent de tirer au mieux parti des forces de chaque méthode :
 
 - régression pénalisé lasso pour réduire le nombre de variables étudiées à 100 ;
-- backward stepwise à partir du modèle lasso à 100 variable ;
+- backward stepwise à partir du modèle lasso à 100 variables ;
 
-### Procédure bi-directionnelle
+### Procédure bidirectionnelle
 
-Dans une procédure bidirectionnnelle on combine les approches forward et backward, en testant à chaque étape les variables à inclure ou exclure.
+Dans une procédure bidirectionnelle on combine les approches forward et backward, en testant à chaque étape les variables à inclure ou exclure.
 
 ## Sélection du modèle final
 
-Quelque soit la méthode utiliser pour la recherche des variables, procédure stepwise ou pénalisation, vous allez obtenir un ensemble de modèles utilisant un nombre différent de variables et vous devez choisir le modèle final parmi tous ces modèles. Il existe bien sûr plusieurs méthodes et nous en exposons ici quelques-une parmi les plus utiles.
+Quelle que soit la méthode utilisée pour la recherche des variables, procédure stepwise ou pénalisation, vous allez obtenir un ensemble de modèles utilisant un nombre différent de variables et vous devez choisir le modèle final parmi tous ces modèles. Il existe bien sûr plusieurs méthodes et nous en exposons ici quelques-unes parmi les plus utiles.
 
 ### Nombre de variables maximum
 
@@ -292,14 +289,14 @@ En pratique on souhaite souvent sélectionner le modèle qui réalise le meilleu
 
 ### Chemin de sélection
 
-Le chemin de selection est un graphique qui permet de visualiser la performance prédictive obtenue en partant d'un modèle sans aucune variable et en sélectionnant une variable de plus à chaque nouvelle étape. Le graphique est tracé avec le nombre de variables sélectionnées en abcisses et la performance prédictive en ordonnées (gini, réduction de la déviance, ...).
+Le chemin de sélection est un graphique qui permet de visualiser la performance prédictive obtenue en partant d'un modèle sans aucune variable et en sélectionnant une variable de plus à chaque nouvelle étape. Le graphique est tracé avec le nombre de variables sélectionnées en abscisses et la performance prédictive en ordonnées (gini, réduction de la déviance, ...).
 
 ![Exemple de chemin de sélection](img/gini_path.png){ height=80%  width=100%}
 \
 
 Le chemin de sélection vous permettra de choisir le nombre optimal de variables à retenir dans votre modèle final. Sur le graphique ci-dessus nous pouvons déterminer que le nombre optimal de variable se situe autour de neuf.
 
-Comme vous pouvez le constater, la performance d'un modèle a tendance à plafonner et le gain marginal obtenu en rajoutant de nouvelles variables diminue. C'est un exemple de la loi des rendements décroissants. Si votre processus de sélection des variables est performant chaque variable supplémentaire vous permet de gagner en performance, mais moins que la précédente. Il arrive même fréquement qu'au delà un nombre critique de variables la performance du modèle diminue. C'est une illustration du sur-apprentissage.
+Comme vous pouvez le constater, la performance d'un modèle a tendance à plafonner et le gain marginal obtenu en rajoutant de nouvelles variables diminue. C'est un exemple de la loi des rendements décroissants. Si votre processus de sélection des variables est performant chaque variable supplémentaire vous permet de gagner en performance, mais moins que la précédente. Il arrive même fréquemment qu'au-delà un nombre critique de variables la performance du modèle diminue. C'est une illustration du surapprentissage.
 
 ## Recommandations pour le big data
 
@@ -311,7 +308,7 @@ Dans notre outil de pricing IARD, nous avons abouti, par itération successive, 
 2. **Tri des variables par gain de gini** : chaque variable se voit affecter le gain de gini réalisé par rapport au modèle avec une variable en moins. Les variables sont ensuite classées par gain de gini croissant ;
 3. **Forward stepwise** dans l'ordre de gain de gini croissant établi à l'étape précédente ;
 4. **Répétition** plusieurs fois des étapes 2 et 3 (entre 3 et 6 fois) ;
-5. **Détermination du nombre optimal de variable** : conserver toutes les variables qui font gagner suffisament de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).
+5. **Détermination du nombre optimal de variable** : conserver toutes les variables qui font gagner suffisamment de gini (le seuil de gain minimum est arbitraire, une valeur de 0.1% est généralement bien adapté).
 
-Vous pouvez utiliser ce processus directment tel qu'il est implémenté dans notre outil ou le modifier^[Cet algorithme est mis en oeuvre dans le fichier
+Vous pouvez utiliser ce processus directement tel qu'il est implémenté dans notre outil ou le modifier^[Cet algorithme est mis en œuvre dans le fichier
 `src/cpp/FeatureSelector.cpp`] selon vos besoins.
