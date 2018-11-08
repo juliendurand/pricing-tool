@@ -16,6 +16,7 @@ class Config:
             self.target = config_file.readline().strip()
             self.weight = config_file.readline().strip()
             self.nb_features = config_file.readline().strip()
+            self.excludes = [x.strip() for x in config_file.readlines()]
 
     def get_dataset_filename(self):
         return self.dataset_filename

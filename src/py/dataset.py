@@ -12,6 +12,16 @@ import numpy as np
 start_time = 0
 
 
+def detect_csv_separator(filename):
+    """
+    Utility function to automatically detect the separator character in
+    a csv file.
+    """
+    with open(filename) as csvfile:
+        first_line = csvfile.readline()
+        return csv.Sniffer().sniff(first_line).delimiter
+
+
 def count_line(filename):
     '''
     Fast count the number of lines in a file.
@@ -70,8 +80,7 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
     elapsed_time = int(time.time() - start_time)
     m = str(elapsed_time // 60).zfill(2)
     s = str(elapsed_time % 60).zfill(2)
-    print('\r%s |%s| %s%% %s in %sm%ss' %
-          (prefix, bar, percent, suffix, m, s), end='')
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = '\r')
     # Print New Line on Complete
     if iteration == total:
         print()
@@ -212,6 +221,8 @@ class Dataset:
         nb_lines = count_line(csv_filename) - 1
         print("Importing", '{:,}'.format(nb_lines).replace(',', ' '), "lines.")
 
+        delimiter = detect_csv_separator(csv_filename)
+
         nb_features = len(features)
 
         observations = np.empty((nb_lines, nb_features), np.dtype('u1'))
@@ -229,7 +240,7 @@ class Dataset:
         random = (np.random.rand(nb_lines) < config['train_size'])
 
         with open(csv_filename) as csv_file:
-            reader = csv.DictReader(csv_file)
+            reader = csv.DictReader(csv_file, delimiter=delimiter)
             fields = [field.strip() for field in reader.fieldnames]
             nb_fields = len(fields)
 

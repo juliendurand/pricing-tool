@@ -124,9 +124,51 @@ Les méthodes pas à pas nécessitent de définir deux critères :
 
 La clef du succès de ces méthodes réside dans le choix de critères pertinents pour ces deux étapes. Comme il existe plusieurs possibilités pour chacun des deux critères, les combinaisons très nombreuses et ces méthodes sont en réalité des familles de méthodes qui se déclinent suivant les critères choisis pour l'élimination des variables et le choix du modèle final.
 
-Pour déterminer la variable la plus significative (forward stepwise) ou la moins significative (backward septwise) il est possible d'utiliser plusieurs métriques.
+Pour déterminer la variable la plus significative (forward stepwise) ou la moins significative (backward septwise) il est possible d'utiliser plusieurs métriques. En voici quelques-une qui sont adaptées dans le cas des régressions actuarielles (glm avec loi de poisson ou gamma et un dataset contenant des variables discrétisées).
+
+#### Déviance
+
+La déviance mesure la qualité de l'adéquation d'un modèle aux données. Elle est directement issue de la fonction de coût utilisée par le modèle et est pour cela la meilleure métrique pour juger de la performance respective de plusieurs modèles. Plus la déviance est faible, plus la qualité du modèle est élevée.
+
+Déviance de Gauss (loi normale) :
+\begin{equation}
+\mathcal{D}_{Normale}(y, \hat{y}) = \sum_i{\omega_i\left(y_i -\hat{y_i}\right)^2}
+\end{equation}
+
+Déviance de la loi de Poisson :
+\begin{equation}
+\mathcal{D}_{Poisson}(y,\hat{y}) = 2 \sum_i{\omega_i\left(y_i \log{\frac {y_i}{\hat{y_i}}} - y_i + \hat{y_i} \right)}
+\end{equation}
+
+Déviance de la loi Gamma :
+\begin{equation}
+\mathcal{D}_{Gamma}(y, \hat{y}) = 2 \sum_i{\omega_i \left(-\log{\frac {y_i}{\hat{y_i}}} + \frac{y_i - \hat{y}_i}{\hat{y}_i}\right)}
+\end{equation}
+
+#### RMSE
+
+Pour une modélisation par les moindre carrés (fonction de coût gaussienne), le RMSE (Root Mean Square Error), est égal à la racine carrée de la déviance moyenne. L'utilisation du RMSE comme critère de choix est donc équivalente à l'utilisation de la déviance.
+\begin{equation}
+RMSE = \sqrt{\frac{(y -\hat{y})^2}{N}}
+\end{equation}
+Pour les modélisations non gaussiennes le RMSE est inadapté.
 
 #### p-value
+
+La p-value est une mesure statistique normalisée de l'ajustement d'un modèle (ou d'un coefficient) aux données. Plus la p-value est élevée, plus l'ajustement est mauvais. Malgré une apparente simplicité, l'interprétation correcte des p-values est contre-intuitive et conduit le plus souvent à des erreurs. L'erreur la plus fréquente est de penser qu'une p-value faible valide un bon modèle. Ce n'est pourtant pas le cas et un modèle de faible qualité peut afficher une bonne p-value (c'est à dire une p-value proche de zero). La p-value ne devrait donc être utlisée que pour exclure les *mauvais* modèles et non pas pour sélectionner des *bons*. L'utilisation de la p-value comme critère de choix dans une procédure stepwise est donc mal fondée sur le plan théorique et conduit rapidement au surapprentissage en pratique. Nous vous déconseillons son usage.
+
+#### AIC
+
+Le critère d'information d'Akaike est une estimation de la qualité d'un modèle pour un dataset. Appliqué à un ensemble de modèle l'AIC estime la qualité de chaque modèle, relativement aux autres. L'AIC est un bon critère pour la sélection des variables.
+
+Si k est le nombre de paramètres dans un modèle et $\hat {L}$ est la valeur du maximum de vraisemblance du modèle (likelihood) :
+\begin{equation}
+AIC = 2k - 2 \ln({\hat {L}})
+\end{equation}
+
+Le modèle préféré est celui qui a la valeur AIC la plus faible.
+
+#### BIC
 
 TBW
 
@@ -134,35 +176,47 @@ TBW
 
 TBW
 
-#### CGini
-
-TBW
-
 #### Spread 100/0
 
-TBW
+Pour les modèles glm avec une fonction de lien logarithmique, le spread 100/0 d'une variable catégorielle est le rapport entre le coefficient maximum et le coefficient minimun de ses modalités.
+
+\begin{equation}
+Spread_{100/0}(v)=\frac{e^{max(\beta_{m})}}{e^{min{(\beta_{m})}}}, m \in v
+\end{equation}
+
+TODO : donner un exemple
+
+Le spread 100/0 peut être fortement impacté par une modalité à faible exposition et non significative. Le risque de surapprentissage avec ce critère est très important et nous ne recommandons pas son utilisation comme critère de choix dans une procédure pas à pas.
 
 #### Spread 95/5
 
-TBW
+Toujours dans le cadre des modèles glm avec une fonction de lien logarithmique, le spread 95/5 d'une variable catégorielle est le rapport entre le coefficient au 95\up{ème} percentile et le coefficient au 5\up{ème} percentile.
 
-#### AIC
+\begin{equation}
+Spread_{95/5}(v)=\frac{e^{Percentile_{95}(\beta_{m})}}{e^{Percentile_5(\beta_{m})}}, m \in v
+\end{equation}
 
-TBW
+TODO : donner un exemple
 
-#### BIC
+Le spread 95/5 est moins sensible au surapprentissage que le Spread 100/0 puisque les grands coefficients qui s'appliquent à de faibles expositions ne sont pas pris en compte.
 
-TBW
+Le spread 95/5 est un critère de sélection intéressant pour les procédures stepwise appliquées à des modèles utilisant une loi de poisson ou une loi gamma.
 
 #### Gini
 
-TBW
+Le coefficient de gini mesure la capacité d'un modèle à distinguer les profils et à différencier correctement la prédiction pour des profils différents. Plus le gini d'un modèle est élevé plus la qualité de modélisation est élevée.
 
-#### Déviance
+TODO : donner un exemple
 
-TBW
+#### CGini
 
-#### Complexité calculatoire
+Le CGini (Coefficient Gini) est une métrique inventée par l'auteur pour quantifier le pouvoir segmentant d'une variable catégorielle. Sa valeur est égale au gini du modèle contenant seulement les modalités de la variable catégorielle considérée.
+
+TODO : donner un exemple de calcul.
+
+Le CGini nous semble un très bon critère de sélection pour les procédures stepwise appliquées à des modèles utilisant une loi de poisson ou une loi gamma.
+
+### Complexité calculatoire
 
 Dans leur version canonique, les algorithmes pas à pas nécessitent d'apprendre $p$ modèles à la première itération, $p-i$ modèles à l'itération $i$ et aucun modèle à l'itération finale (puisqu'il n'y a plus qu'une seule variable et qu'il n'est donc pas strictement utile de réaliser un modèle pour la choisir). Le nombre total de modèles calculés est donc :
 \begin{equation}
@@ -171,7 +225,7 @@ Dans leur version canonique, les algorithmes pas à pas nécessitent d'apprendre
 
 La complexité algorithmique de cette approche est donc quadratique suivant le nombre de variables : $\mathcal{O}(p^2)$. C'est bien meilleur que la force brute $\mathcal{O}(n^p)$, toutefois cette compléxité superlinéaire est peu adaptée pour les approches big data : quand on double le nombre de variables on quadruple la puissance de calcul nécessaire.
 
-Pour pallier ce problème il est possible d'utiliser des variantes gloutonnes (greedy) en anglais qui nécessitent moins de calculs : elles suppriment l'étape 3 et fournissent directement une estimation de la variable à sélectionner (forward) ou exclure (backward).
+Pour pallier ce problème il est possible d'utiliser des heuristiques pour déterminer avec un bonne probabilité la meilleure variable à sélectionner (forward) ou exclure (backward). Cela permet de tester tous les modèles possibles.
 
 ### Avantages
 
@@ -266,7 +320,7 @@ L'idée du lasso groupé est de réaliser la sélection par groupe de variables.
 
 Dans le cadre des régressions actuarielles, le group lasso peut être utilisées comme un outil pour la sélection automatisée des variables. Toutefois les bases d'apprentissages sont le plus souvent denses et le pari sur la parcimonie devient caduque. Les limitations du lasso sont souvent atteintes et dans ces conditions le lasso ne garantit ni l'optimalité de la sélection des variables, ni l'optimalité des coefficients. De plus la mise en œuvre de ces méthodes est complexe et non standardisée en raison de la sophistication mathématique requise et de l'introduction d'un ou plusieurs méta-paramètre supplémentaires à optimiser. Son utilisation n'est pas encore répandue et est un domaine d'expérimentation actif^[A la date d'écriture de ce livre, une startup est en cours de développement au sein de l'incubateur Kamet pour proposer un outil de modélisation actuarielle par régression pénalisée.].
 
-## Greedy Process
+## Méthode pas à pas heuristiques
 
 [A revoir entièrement]
 
