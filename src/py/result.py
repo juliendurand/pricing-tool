@@ -27,11 +27,11 @@ class Result:
         self.train_data_index = np.memmap(train_data_filename, 'int32')
         test_data_filename = self.dataset.get_test_filename()
         self.test_data_index = np.memmap(test_data_filename, 'int32')
-        if self.config.loss == "gamma":
-            self.test_data_index = np.intersect1d(self.test_data_index,
-                                                  self.weight.nonzero())
-            self.train_data_index = np.intersect1d(self.train_data_index,
-                                                   self.weight.nonzero())
+        #if self.config.loss == "gamma":
+        self.test_data_index = np.intersect1d(self.test_data_index,
+                                              self.weight.nonzero())
+        self.train_data_index = np.intersect1d(self.train_data_index,
+                                               self.weight.nonzero())
         self.train_data = self.data[self.train_data_index, :]
         self.test_data = self.data[self.test_data_index, :]
 
