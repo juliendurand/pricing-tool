@@ -41,10 +41,8 @@ Dataset::Dataset(Config* config):
         sample_index.getData() + config->testSize);
     sample.swap(sample_data);
 
-    // excludes all zero weighted observation when using a gamma loss function.
-    if(config->loss == "gamma"){
-        filterNonZeroWeight();
-    }
+    // excludes all zero weighted observation.
+    filterNonZeroWeight();
 
     // uniform random number generator for the next() function
     random = std::uniform_int_distribution<std::mt19937::result_type>(0,

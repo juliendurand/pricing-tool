@@ -291,6 +291,10 @@ class Dataset:
                                    (nb_observations, nb_features))
         for i, t in enumerate(targets):
             target = target_data[i]
+            create_data_file_from_list(target[:nb_observations],
+                                       self.get_target_filename(t),
+                                       np.dtype('float32'),
+                                       (nb_observations))
         create_data_file_from_list(train_set,
                                    self.get_train_filename(),
                                    np.dtype('int32'),

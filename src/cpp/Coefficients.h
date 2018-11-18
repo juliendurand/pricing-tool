@@ -5,7 +5,7 @@
 #include <set>
 #include <vector>
 
-#include "config.h"
+#include "Config.h"
 #include "Dataset.h"
 #include "ModelResult.h"
 

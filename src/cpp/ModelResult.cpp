@@ -3,7 +3,6 @@
 #include <cmath>
 #include <fstream>
 #include <numeric>
-#include <iostream>
 
 
 ModelResult::ModelResult(const int size, Config* config) :
