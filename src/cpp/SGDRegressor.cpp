@@ -213,26 +213,22 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
 {
     float minll = 1e30;
     int nbIterationsSinceMinimum = 0;
-    int epoch = dataset->getSize() / blocksize;
     while(nbIterationsSinceMinimum < precision){
-        fit();
-        if(i % epoch == 0){
-            std::cout << i * blocksize << "th iteration : "
-                      << " minll " << minll
-                      << " iteration since min " << nbIterationsSinceMinimum
-                      << std::endl;
-            //printResults();
-            auto coeffs = getCoeffs();
-            auto trainResult = coeffs->predict(dataset, dataset->getTrain());
-            float ll = trainResult->logLikelihood();
-            if(ll < minll - stopCriterion) {
-                minll = ll;
-                nbIterationsSinceMinimum = 0;
-            } else {
-                nbIterationsSinceMinimum++;
-            }
+        fitEpoch(i, 1);
+        std::cout << i * blocksize << "th iteration : "
+                  << " minll " << minll
+                  << " iteration since min " << nbIterationsSinceMinimum
+                  << std::endl;
+        //printResults();
+        auto coeffs = getCoeffs();
+        auto trainResult = coeffs->predict(dataset, dataset->getTrain());
+        float ll = trainResult->logLikelihood();
+        if(ll < minll - stopCriterion) {
+            minll = ll;
+            nbIterationsSinceMinimum = 0;
+        } else {
+            nbIterationsSinceMinimum++;
         }
-        ++i;
     }
 }
 
