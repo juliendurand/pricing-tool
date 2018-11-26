@@ -11,7 +11,6 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     learningRate(0.0001),
     momentum(0.90),
     coeffs(config->m + 1, 0),
-    update(config->m + 1, 0),
     weights(config->m + 1, 0),
     stdev(config->m + 1, 0),
     x0(config->m + 1, 0),
@@ -128,10 +127,9 @@ void SGDRegressor::fit()
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
     float* y = dataset->get_y();
-    // also using : x0, x1, update, coeffs, blocksize, config->offsets, g,
+    std::vector<float> update(config->m + 1, 0); // delta for next update
+    // also using : x0, x1, coeffs, blocksize, config->offsets, g,
     //              momentum, learningRate, gradLoss
-
-    std::fill(update.begin(), update.end(), 0); // set all values to 0
 
     // dot-product value for intercept + null observations
     float dp0 = 0;
@@ -216,7 +214,7 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
     float minll = 1e30;
     int nbIterationsSinceMinimum = 0;
     int epoch = dataset->getSize() / blocksize;
-    for(; nbIterationsSinceMinimum < precision; i++){
+    while(nbIterationsSinceMinimum < precision){
         fit();
         if(i % epoch == 0){
             std::cout << i * blocksize << "th iteration : "
@@ -234,6 +232,7 @@ void SGDRegressor::fitUntilConvergence(long& i, int precision,
                 nbIterationsSinceMinimum++;
             }
         }
+        ++i;
     }
 }
 

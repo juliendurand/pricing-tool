@@ -97,8 +97,6 @@ const std::vector<size_t> ModelResult::reverse_sort_indexes(
 // Persists the prediction in the filesystem
 void ModelResult::saveResults()
 {
-    std::cout << std::endl << "Saving results." << std::endl;
-
     std::ofstream resultFile;
     resultFile.open(config->resultPath + "results.csv", std::ios::out);
     resultFile << "row,exposure,target,prediction" << std::endl;

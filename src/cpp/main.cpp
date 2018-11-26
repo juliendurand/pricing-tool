@@ -29,6 +29,8 @@ int main(int argc, char** argv)
     auto coeffs = model.getCoeffs();
     coeffs->saveResults();
     auto result = coeffs->predict(&ds, ds.getSample());
+
+    std::cout << std::endl << "Saving results." << std::endl;
     result->saveResults();
 
     std::cout << std::endl << "Finished OK." << std::endl;

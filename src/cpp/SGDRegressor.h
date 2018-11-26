@@ -48,7 +48,6 @@ private:
     float momentum;
     std::set<int> selected_features;
     std::vector<float> coeffs; // regression coefficients.
-    std::vector<float> update; // delta for next update (temporary data).
     std::vector<float> weights; // sum of active exposure for each modality.
     std::vector<float> stdev; // standard deviation for each modality.
     std::vector<float> x0; // normalized 0 value for each modality.
