@@ -204,8 +204,8 @@ void SGDRegressor::fitEpoch(long& i, float nb_epoch)
     int nb_blocks = nb_epoch * epoch;
     for(int j=0; j < nb_blocks; ++j){
         fit();
-        ++i;
     }
+    i += nb_blocks;
 }
 
 void SGDRegressor::fitUntilConvergence(long& i, int precision,
