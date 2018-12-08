@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <thread>
 
 
 SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
@@ -14,12 +15,14 @@ SGDRegressor::SGDRegressor(Config* config, Dataset* dataset):
     weights(config->m + 1, 0),
     stdev(config->m + 1, 0),
     x0(config->m + 1, 0),
-    x1(config->m + 1, 0),
-    g(config->m + 1, 0)
+    x1(config->m + 1, 0)
 {
     int p = config->p;
     uint8_t* x = dataset->get_x();
     float* weight = dataset->get_weight();
+    nthreads = std::thread::hardware_concurrency();
+    std::cout << "# Core available for multi-threading : "
+              << nthreads << std::endl;
 
     selectGradLoss(config->loss);
 
@@ -119,7 +122,7 @@ void SGDRegressor::fitIntercept()
 }
 
 // Stochastic Gradient Descent with accelerated momentum and mini-batch
-void SGDRegressor::fit()
+void SGDRegressor::fit(int nb_blocks, std::vector<float>& results)
 {
     int p = config->p;
     int m = selected_modality_list.size();
@@ -128,47 +131,53 @@ void SGDRegressor::fit()
     float* weight = dataset->get_weight();
     float* y = dataset->get_y();
     std::vector<float> update(config->m + 1, 0); // delta for next update
+    std::vector<float> g(config->m + 1, 0); // momentum
     // also using : x0, x1, coeffs, blocksize, config->offsets, g,
     //              momentum, learningRate, gradLoss
 
-    // dot-product value for intercept + null observations
-    float dp0 = 0;
-    for(int l = 0; l < m; l++){
-        int j = selected_modality_list[l];
-        dp0 += x0[j] * coeffs[j];
-    }
+    for(int i = 0; i < nb_blocks; i++){
+        // reset update vector to zeros.
+        std::fill(update.begin(), update.end(), 0);
 
-    for(int b = 0; b < blocksize; b++){ // mini-batch
-        int i = dataset->next(); // get a random observation
-        int row = p * i;
-
-        float dp = dp0;
-        for(int l = 0; l < f; l++){
-            int j = selected_features_list[l];
-            int k = config->offsets[j] + x[row + j];
-            dp += x1[k] * coeffs[k];
+        // dot-product value for intercept + null observations
+        float dp0 = 0;
+        for(int l = 0; l < m; l++){
+            int j = selected_modality_list[l];
+            dp0 += x0[j] * results[j];
         }
 
-        // calculates the error with the appropriate loss function
-        float r = gradLoss(y[i], dp, weight[i]);
+        for(int b = 0; b < blocksize; b++){ // mini-batch
+            int i = dataset->next(); // get a random observation
+            int row = p * i;
 
-        // calculate the base update for each modality
-        for(int l = 0; l < f; l++){
-            int j = selected_features_list[l];
-            int k = config->offsets[j] + x[row + j];
-            update[k] += r;
+            float dp = dp0;
+            for(int l = 0; l < f; l++){
+                int j = selected_features_list[l];
+                int k = config->offsets[j] + x[row + j];
+                dp += x1[k] * results[k];
+            }
+
+            // calculates the error with the appropriate loss function
+            float r = gradLoss(y[i], dp, weight[i]);
+
+            // calculate the base update for each modality
+            for(int l = 0; l < f; l++){
+                int j = selected_features_list[l];
+                int k = config->offsets[j] + x[row + j];
+                update[k] += r;
+            }
+
+            // total error for the mini-batch
+            update[0] += r;
         }
 
-        // total error for the mini-batch
-        update[0] += r;
-    }
-
-    // update each modality with momentum
-    for(int l = 0; l < m; l++){
-        int j = selected_modality_list[l];
-        float grad = (update[j] * x1[j] + update[0] * x0[j]) / blocksize;
-        g[j] = momentum * g[j] + grad;
-        coeffs[j] += learningRate * g[j];
+        // update each modality with momentum
+        for(int l = 0; l < m; l++){
+            int j = selected_modality_list[l];
+            float grad = (update[j] * x1[j] + update[0] * x0[j]) / blocksize;
+            g[j] = momentum * g[j] + grad;
+            results[j] += learningRate * g[j];
+        }
     }
 }
 
@@ -200,11 +209,35 @@ std::set<int> SGDRegressor::getSelectedFeatures() const
 // that all observations will be used. (some others may be used several times).
 void SGDRegressor::fitEpoch(long& i, float nb_epoch)
 {
+    int split = 1;
+    nthreads = 1;
+    std::thread t[nthreads];
     int epoch = dataset->getSize() / blocksize;
     int nb_blocks = nb_epoch * epoch;
-    for(int j=0; j < nb_blocks; ++j){
-        fit();
+    std::vector< std::vector<float> > results(nthreads,
+        std::vector<float>(config->m + 1));
+
+for(int s = 0; s < split; s++){
+    //Launch a group of threads
+    for (int i = 0; i < nthreads; ++i) {
+        for(int j = 0; j < config->m + 1; j++){
+            results[i][j] = coeffs[j];
+        }
+        t[i] = std::thread(&SGDRegressor::fit, this, nb_blocks / nthreads / split,
+                           std::ref(results[i]));
     }
+
+    std::fill(coeffs.begin() + 1, coeffs.end(), 0);
+
+    //Join the threads with the main thread
+    for (int i = 0; i < nthreads; ++i) {
+        t[i].join();
+        for(int j = 1; j < config->m + 1; j++){
+            coeffs[j] += results[i][j] / nthreads;
+        }
+    }
+}
+
     i += nb_blocks;
 }
 

@@ -31,7 +31,7 @@ public:
     Dataset* dataset;
 
     SGDRegressor(Config* config, Dataset* dataset);
-    void fit();
+    void fit(int nb_blocks, std::vector<float>& results);
     std::unique_ptr<Coefficients> getCoeffs();
     std::set<int> getSelectedFeatures() const;
     void fitEpoch(long& i, float nb_epoch);
@@ -46,13 +46,13 @@ private:
     int blocksize;
     float learningRate;
     float momentum;
+    unsigned int nthreads;
     std::set<int> selected_features;
     std::vector<float> coeffs; // regression coefficients.
     std::vector<float> weights; // sum of active exposure for each modality.
     std::vector<float> stdev; // standard deviation for each modality.
     std::vector<float> x0; // normalized 0 value for each modality.
     std::vector<float> x1; // normalized 0 value for each modality.
-    std::vector<float> g; // momentum
     std::vector<int> selected_modality_list;
     std::vector<int> selected_features_list;
 
