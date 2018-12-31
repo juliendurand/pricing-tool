@@ -53,6 +53,7 @@ private:
     std::vector<float> stdev; // standard deviation for each modality.
     std::vector<float> x0; // normalized 0 value for each modality.
     std::vector<float> x1; // normalized 0 value for each modality.
+    std::vector<float> g; // delta for next update
     std::vector<int> selected_modality_list;
     std::vector<int> selected_features_list;
 
