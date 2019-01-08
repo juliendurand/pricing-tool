@@ -1,0 +1,15 @@
+{% extends "./base.html" %}
+
+{% block content %}
+        <h1>Confirm delete Model</h1>
+
+        <form action="" method="post">
+    {% csrf_token %}
+    The following objects as well as their related objects will be deleted. Are you sure?
+            <input type="hidden" value="{{ object.id }}" name="itemsToDelete" />
+            <li><a href="{{ item.get_absolute_url }}">{{ object }}</a></li>
+    <input type="submit" class="btn btn-primary" value="Confirm deletion" name="confirm_delete" />
+    <input type="submit" class="btn btn-primary" value="Cancel" name="cancel"/>
+</form>
+
+{% endblock %}

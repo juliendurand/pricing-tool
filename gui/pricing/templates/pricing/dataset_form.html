@@ -1,0 +1,10 @@
+{% extends "./base.html" %}
+
+{% block content %}
+    <h1>New Dataset</h1>
+    <form method="post" enctype ="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save">
+    </form>
+{% endblock %}

@@ -7,6 +7,7 @@ import sys
 import time
 
 import numpy as np
+import pandas as pd
 
 
 start_time = 0
@@ -30,6 +31,21 @@ def count_line(filename):
     bufgen = it.takewhile(lambda x: x, (f.raw.read(1024 * 1024)
                                         for _ in it.repeat(None)))
     return sum(buf.count(b'\n') for buf in bufgen)
+
+
+def sniff_field(df, field):
+    field_type = 'Input'
+    values = df[field].unique()
+    print(field + ' ' + str(len(values)))
+    if len(values) > 200:
+        field_type = 'Ignore'
+    return (field, field_type)
+
+
+def get_fields(filename):
+    separator = detect_csv_separator(filename)
+    df = pd.read_csv(filename, sep=separator, nrows=100000)
+    return [sniff_field(df, f) for f in df]
 
 
 def create_data_file_from_list(lst, out_filename, dtype, shape):
@@ -91,8 +107,9 @@ class Dataset:
     Encapsulate all the data en metadata for a glm regression.
     '''
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, path=None):
+        if path:
+            self.set_path(path)
         self.size = -1
         self.fields = None
         self.features = None
@@ -102,6 +119,8 @@ class Dataset:
         self.train_size = None
         self.test_size = None
 
+    def set_path(self, path):
+        self.path = path
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -205,10 +224,16 @@ class Dataset:
         return os.path.join(self.path, "test.dat")
 
     def process(self, config):
+        self.set_path(config['path'])
+        context = {"math": math}
+        exec(config["filter"], context)
+        exec(config["transform"], context)
+        exec(config["train"], context)
+
         csv_filename = config['filename']
-        data_transform = config['data_transform']
-        data_filter = config['data_filter']
-        data_train = config['data_train']
+        data_transform = context['data_transform']
+        data_filter = context['data_filter']
+        data_train = context['data_train']
         features = config['features']
         targets = config['targets']
 
@@ -237,7 +262,7 @@ class Dataset:
         nb_observations = 0
         train_set = []
         test_set = []
-        random = (np.random.rand(nb_lines) < config['train_size'])
+        # random = (np.random.rand(nb_lines) < config['train_size'])
 
         with open(csv_filename) as csv_file:
             reader = csv.DictReader(csv_file, delimiter=delimiter)
@@ -324,6 +349,8 @@ class Dataset:
         self.features = features
         self.targets = targets
         self.set_modalities(modalities)
+        self.save()
+        self.save_simple_config()
 
 
 if __name__ == '__main__':
@@ -334,14 +361,4 @@ if __name__ == '__main__':
     print("Processing config file :", filename)
     with open(filename) as config_file:
         config = json.load(config_file)
-        context = {"math": math}
-        exec(config["filter"], context)
-        exec(config["transform"], context)
-        exec(config["train"], context)
-        config['data_transform'] = context['data_transform']
-        config['data_filter'] = context['data_filter']
-        config['data_train'] = context['data_train']
-        dataset = Dataset(config['path'])
-        dataset.process(config)
-        dataset.save()
-        dataset.save_simple_config()
+    Dataset().process(config)

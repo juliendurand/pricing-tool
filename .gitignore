@@ -17,6 +17,7 @@
 *.pdf
 *.docx
 *.doc
+*.sqlite3
 ~*
 .~*
 

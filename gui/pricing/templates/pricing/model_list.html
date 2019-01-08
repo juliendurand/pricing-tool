@@ -1,0 +1,15 @@
+{% extends "./base.html" %}
+
+{% block content %}
+        <h1>Models</h1>
+        <a class="btn btn-primary" href="{% url 'model_create' %}">New Model</a>
+        {% if object_list %}
+          {% for model in object_list %}
+    <li><a href="{% url 'model_detail' model.id %}">{{ model }}</a>
+
+          {% endfor %}
+        {% else %}
+            <h2>No model yet.</h2>
+        {% endif %}
+
+{% endblock %}

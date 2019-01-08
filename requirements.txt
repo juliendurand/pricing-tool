@@ -4,3 +4,5 @@ matplotlib
 markdown
 jinja2
 django
+pygments
+django-background-tasks

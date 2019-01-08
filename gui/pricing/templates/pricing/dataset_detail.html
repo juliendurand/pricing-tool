@@ -1,0 +1,31 @@
+{% extends "./base.html" %}
+
+{% load pygmentize %}
+
+{% block content %}
+        <h1>Dataset</h1>
+        <a class="btn btn-danger" href="{% url 'dataset_delete' dataset.id %}" role="button">
+          <i class="far fa-trash-alt"></i>
+          Delete
+        </a>
+        <ul>
+            <li>{{ dataset }}
+            <li>{{ dataset.timestamp|date:"r" }}
+            <li>{{ dataset.csvfile }}
+            <li>{{ dataset.train_size }}
+            <li>{{ dataset.test_size }}
+            <li>{{ dataset.get_number_lines }}
+            <li><b>Features :</b>
+                <ul>{% for feature in dataset.feature_set.all %}
+                    <li>{{ feature.name }} ({{ feature.status }})
+                        <a href="{% url 'feature_update' feature.id %}">Edit</a>
+                {% endfor %}
+                </ul>
+                        <pre class="bg-light"><code>{{ dataset.fn_transform | pygmentize:"python" }}</pre></code>
+            <pre class="bg-light"><code>{{ dataset.fn_filter | pygmentize:"python" }}</pre></code>
+            <pre class="bg-light"><code>{{ dataset.fn_train | pygmentize:"python" }}</pre></code>
+
+        </ul>
+
+        <a class="btn btn-primary" href="{% url 'dataset_process' dataset.id %}" role="button">Process</a>
+{% endblock %}

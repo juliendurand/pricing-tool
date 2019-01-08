@@ -1,0 +1,17 @@
+{% extends "./base.html" %}
+
+{% block content %}
+        <h1>Model</h1>
+        <a class="btn btn-danger confirm-delete" href="{% url 'model_delete'  model.id %}" role="button">
+          <i class="far fa-trash-alt"></i>
+          Delete
+        </a>
+        <ul>
+            <li>{{ model }}
+            <li>{{ model.timestamp|date:"r" }}
+            <li>{{ model.dataset }}
+            <li>{{ model.loss }}
+            <li>{{ model.target }}
+            <li>{{ model.weight }}
+        </ul>
+{% endblock %}

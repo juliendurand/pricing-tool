@@ -1,0 +1,15 @@
+{% extends "./base.html" %}
+
+{% block content %}
+        <h1>Datasets</h1>
+        <a class="btn btn-primary" href="{% url 'dataset_create' %}">New Dataset</a>
+        {% if object_list %}
+          {% for dataset in object_list %}
+    <li><a href="{% url 'dataset_detail' dataset.id %}">{{ dataset }}</a>
+
+          {% endfor %}
+        {% else %}
+            <h2>No dataset yet.</h2>
+        {% endif %}
+
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h1>Hello</h1>
+
+<a href="{% url 'dataset_list' %}">Datasets</a>
+<a href="{% url 'model_list' %}">Models</a>
+{% endblock %}
