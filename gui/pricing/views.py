@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
-from .models import Dataset, Feature, FeatureStatus, Model, Run
+from .models import Dataset, Feature, FeatureStatus, Model, ModelFeature, Run
 
 import pypricing.dataset as ds
 
@@ -80,7 +80,39 @@ class ModelDetailView(generic.DetailView):
 
 class ModelCreateView(generic.CreateView):
     model = Model
-    fields = ['name', 'dataset', 'loss', 'target', 'weight', ]
+    fields = ['name', 'dataset', ]
+    nav = 'model'
+
+    def get_success_url(self):
+        return reverse('model_update', args=[self.object.pk])
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        for f in self.object.dataset.feature_set.filter(status=FeatureStatus.Input):
+            self.object.features.create(feature=f)
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class ModelForm(ModelForm):
+
+    class Meta:
+        model = Model
+        fields = ['loss', 'target', 'weight', 'max_nb_features']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        targets = self.fields['target'].queryset.filter(
+            dataset=kwargs['instance'].dataset,
+            status=FeatureStatus.Target
+        )
+        self.fields['target'].queryset = targets
+        self.fields['weight'].queryset = targets
+
+
+class ModelUpdateView(generic.UpdateView):
+    model = Model
+    form_class = ModelForm
     nav = 'model'
 
     def get_success_url(self):
@@ -92,9 +124,25 @@ class ModelCreateView(generic.CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+def switchFeature(request, pk, mf):
+    instance = ModelFeature.objects.get(pk=mf)
+    instance.active = not instance.active
+    instance.save()
+    url = Model.objects.get(pk=pk).get_absolute_url()
+    return HttpResponseRedirect(url)
+
+
 class ModelDeleteView(generic.DeleteView):
     model = Model
     success_url = reverse_lazy('model_list')
+
+
+def run(request, pk):
+    instance = Model.objects.get(pk=pk)
+    run = Run.objects.create(model=instance)
+    tasks.run_model(run.id)
+    url = Model.objects.get(pk=pk).get_absolute_url()
+    return HttpResponseRedirect(url)
 
 
 class RunDetailView(generic.DetailView):

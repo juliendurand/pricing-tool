@@ -1,4 +1,5 @@
 from enum import Enum
+import io
 
 from django.db import models
 from django.urls import reverse
@@ -52,6 +53,9 @@ class Dataset(models.Model):
     def get_fields(self):
         return ds.get_fields(self.get_data_filename())
 
+    def get_path(self):
+        return './dataset/' + slugify(self.name)
+
     def get_config(self):
         config = {
             'filename': str(self.csvfile),
@@ -62,7 +66,7 @@ class Dataset(models.Model):
                          self.feature_set.filter(status=FeatureStatus.Input)],
             'targets': [f.name for f in
                         self.feature_set.filter(status=FeatureStatus.Target)],
-            'path': './dataset/' + slugify(self.name),
+            'path': self.get_path(),
         }
         return config
 
@@ -84,7 +88,7 @@ class Feature(models.Model):
         ordering = [models.functions.Lower('name')]
 
     def __str__(self):
-        return self.dataset.name + ' / ' + self.name
+        return self.name
 
 
 class Modality(models.Model):
@@ -94,6 +98,17 @@ class Modality(models.Model):
     def __str__(self):
         return self.feature.dataset.name + ' / ' + self.feature.name \
             + ' / ' + self.value
+
+
+class ModelFeature(models.Model):
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = [models.functions.Lower('feature__name')]
+
+    def __str__(self):
+        return self.feature.name
 
 
 class Model(models.Model):
@@ -106,18 +121,35 @@ class Model(models.Model):
         default=LossFunction.Gaussian,
         choices=[(tag.name, tag.value) for tag in LossFunction]
     )
-    features = models.ManyToManyField(Feature, related_name='features')
+    features = models.ManyToManyField(ModelFeature, related_name='features')
     target = models.ForeignKey(Feature,
                                on_delete=models.CASCADE,
                                related_name='target',
+                               null=True,
                                )
     weight = models.ForeignKey(Feature,
                                on_delete=models.CASCADE,
                                related_name='weight',
+                               null=True,
                                )
+    max_nb_features = models.PositiveSmallIntegerField(default=20)
 
     def get_absolute_url(self):
-        return reverse("model_detail", kwargs={'pk': self.object.pk})
+        return reverse("model_detail", kwargs={'pk': self.pk})
+
+    def get_config(self):
+        sb = io.StringIO()
+        print(self.name, file=sb)
+        print(self.dataset.get_path(), file=sb)
+        print(self.name, file=sb)
+        print(self.loss.lower(), file=sb)
+        print(self.target, file=sb)
+        print(self.weight, file=sb)
+        print(self.max_nb_features, file=sb)
+        for f in self.features.filter(active=False):
+            print(f, file=sb)
+        config = sb.getvalue()
+        return config
 
     def __str__(self):
         return self.name
@@ -126,3 +158,6 @@ class Model(models.Model):
 class Run(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return 'Run #' + str(self.pk)

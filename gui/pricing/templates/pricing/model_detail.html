@@ -2,7 +2,7 @@
 
 {% block content %}
         <h1>Model</h1>
-        <a class="btn btn-danger confirm-delete" href="{% url 'model_delete'  model.id %}" role="button">
+        <a class="btn btn-danger" href="{% url 'model_delete' model.id %}" role="button">
           <i class="far fa-trash-alt"></i>
           Delete
         </a>
@@ -13,5 +13,22 @@
             <li>{{ model.loss }}
             <li>{{ model.target }}
             <li>{{ model.weight }}
+            <li>{{ model.max_nb_features }}
+            <li><b>Features</b>
+                <ul>
+                    {% for feature in model.features.all %}
+                    <li>{{ feature.feature }} {% if feature.active %}(On) {% else %}(Off){% endif %}
+                        <a href="{% url 'switch' model.id feature.id%}">{% if feature.active %}Swich Off {% else %} Switch On{% endif %}</a>
+                    {% endfor %}
+                </ul>
+
+            <li><b>Runs</b>
+                <ul>
+                    {% for run in model.run_set.all %}
+                    <li>
+                        <a href="{% url 'run_detail' run.id %}">{{ run }}</a>
+                    {% endfor %}
+                </ul>
         </ul>
+        <a class="btn btn-primary" href="{% url 'run' model.id %}" role="button">Run</a>
 {% endblock %}

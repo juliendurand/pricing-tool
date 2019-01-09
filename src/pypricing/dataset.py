@@ -73,8 +73,8 @@ def load_data(file_path, dtype='int32', shape=None):
     return np.memmap(file_path, dtype=dtype, shape=shape)
 
 
-def printProgressBar(iteration, total, prefix='', suffix='', decimals=1,
-                     length=100, fill='█'):
+def printProgressBar(iteration, total, prefix='Progress: ', suffix='Complete',
+                     decimals=1, length=50, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -223,7 +223,7 @@ class Dataset:
     def get_test_filename(self):
         return os.path.join(self.path, "test.dat")
 
-    def process(self, config):
+    def process(self, config, feedback_callback):
         self.set_path(config['path'])
         context = {"math": math}
         exec(config["filter"], context)
@@ -262,7 +262,6 @@ class Dataset:
         nb_observations = 0
         train_set = []
         test_set = []
-        # random = (np.random.rand(nb_lines) < config['train_size'])
 
         with open(csv_filename) as csv_file:
             reader = csv.DictReader(csv_file, delimiter=delimiter)
@@ -278,11 +277,10 @@ class Dataset:
                 raise Exception("Invalid targets")
 
             for i, row in enumerate(reader):
-                if data_filter and not data_filter(row):
+                if not data_filter(row):
                     continue
-                if data_transform:
-                    data_transform(row)
-                if (data_train(row) if data_train else random[i]):
+                data_transform(row)
+                if data_train(row):
                     train_set.append(nb_observations)
                 else:
                     test_set.append(nb_observations)
@@ -304,10 +302,7 @@ class Dataset:
                 for idx, t in enumerate(target_data):
                     t[nb_observations] = float(values[targets_index[idx]])
                 if i % 1000 == 0 or i == nb_lines - 1:
-                    printProgressBar(i, nb_lines - 1,
-                                     prefix='Progress:',
-                                     suffix='Complete',
-                                     length=50)
+                    feedback_callback(i, nb_lines - 1)
                 nb_observations += 1
 
         create_data_file_from_list(observations[:nb_observations, :],
@@ -361,4 +356,4 @@ if __name__ == '__main__':
     print("Processing config file :", filename)
     with open(filename) as config_file:
         config = json.load(config_file)
-    Dataset().process(config)
+    Dataset().process(config, printProgressBar)

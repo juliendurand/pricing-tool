@@ -6,14 +6,17 @@
 
 int main(int argc, char** argv)
 {
-    if(argc != 2){
+    if(argc > 2){
         std::cout
-            << "Invalid parameters. Expecting 1 parameter : [config file]."
+            << "Invalid parameters. Expecting 0 (stdin) or 1 parameter : [config file]."
             << std::endl;
         return 1;
     }
 
-    std::string config_filename = argv[1];
+    std::string config_filename = "";
+    if(argc == 2){
+        config_filename = argv[1];
+    }
     Config config(config_filename); // Loads config file.
     Dataset ds(&config); // Loads dataset.
 

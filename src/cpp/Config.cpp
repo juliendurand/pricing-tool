@@ -8,24 +8,34 @@
 Config::Config(const std::string& name) :
     name(name), testPct(0.2)
 {
-    std::cout << "Loading config file : " << name <<std::endl;
-    std::ifstream cfgfile(name);
-    std::getline(cfgfile, label);
-    cfgfile >> path;
+    std::istream* cfgfile = &std::cin;
+    std::ifstream cfgfilestream;
+
+    if(name == ""){
+        std::cout << "Loading config file from standard input stream. " << std::endl;
+    } else {
+        std::cout << "Loading config file : " << name << std::endl;
+        cfgfilestream = std::ifstream(name);
+        cfgfile = &cfgfilestream;
+    }
+
+    std::getline(*cfgfile, label);
+    *cfgfile >> path;
     if(strcmp(&path.back(), "/") != 0){
         path += "/";
     }
-    cfgfile >> resultPath;
+
+    *cfgfile >> resultPath;
     resultPath = "result/" + resultPath + "/";
     std::cout << "resultPath : " << resultPath << std::endl;
-    cfgfile >> loss;
-    cfgfile >> target;
-    cfgfile >> weight;
-    cfgfile >> nbFeaturesInModel;
+    *cfgfile >> loss;
+    *cfgfile >> target;
+    *cfgfile >> weight;
+    *cfgfile >> nbFeaturesInModel;
 
     std::string f;
-    while(cfgfile){
-        std::getline(cfgfile, f);
+    while(*cfgfile){
+        std::getline(*cfgfile, f);
         if(f.empty()){
             continue;
         }
