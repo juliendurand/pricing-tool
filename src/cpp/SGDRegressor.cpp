@@ -79,6 +79,11 @@ void SGDRegressor::selectGradLoss(const std::string loss){
             return y - dp * weight;
         };
         std::cout << "Using gaussian loss" << std::endl;
+    } else if(loss == "logistic") {
+        gradLoss = [](float y, float dp, float weight){
+            return y - 1 / (1 + std::exp(-dp) * weight);
+        };
+        std::cout << "Using poisson loss" << std::endl;
     } else if(loss == "poisson") {
         gradLoss = [](float y, float dp, float weight){
             return y - std::exp(dp) * weight;
