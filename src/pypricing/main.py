@@ -5,6 +5,8 @@ import sys
 import config
 
 
+
+
 def compile():
     print("Compiling regression algorithms...")
     command = "time c++ -Wall -std=c++11 -O3 ./src/cpp/*.cpp -o ./bin/glm"

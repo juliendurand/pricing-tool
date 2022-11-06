@@ -1,0 +1,45 @@
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "dataframe.h"
+
+namespace csv{
+
+    class Parser{
+        uintmax_t line = 0;
+        uintmax_t column = 0;
+        uintmax_t cells = 0;
+        std::vector<std::string> features;
+        std::shared_ptr<DataFrame> dataframe = std::make_shared<DataFrame>();
+        std::vector<std::string> headers;
+        //std::unordered_map<uint64_t, uint8_t> values;
+        std::vector<bool> process_column;
+
+    public:
+        std::shared_ptr<DataFrame> parse(std::string const path);
+
+        Parser(std::vector<std::string> features) : features(features) {};
+
+    private:
+
+        void process_header(std::string header);
+        void process_cell(char* cell_start, size_t length);
+        void process_endline();
+    };
+
+    class Dictionnary{
+        std::string column;
+        std::vector< std::pair<uint64_t, uint8_t> > values;
+        std::unordered_map<uint8_t, std::string> keys;
+
+    public:
+        Dictionnary(std::string column): column(column) {};
+        uint32_t size();
+        uint8_t get(char *str, size_t length);
+        std::string get_key_from_value(uint8_t value);
+    };
+
+}
