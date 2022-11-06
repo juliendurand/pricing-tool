@@ -30,16 +30,4 @@ namespace csv{
         void process_endline();
     };
 
-    class Dictionnary{
-        std::string column;
-        std::vector< std::pair<uint64_t, uint8_t> > values;
-        std::unordered_map<uint8_t, std::string> keys;
-
-    public:
-        Dictionnary(std::string column): column(column) {};
-        uint32_t size();
-        uint8_t get(char *str, size_t length);
-        std::string get_key_from_value(uint8_t value);
-    };
-
 }
