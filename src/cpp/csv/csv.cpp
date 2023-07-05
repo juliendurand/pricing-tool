@@ -48,9 +48,9 @@ void csv::Parser::process_cell(char *cell_start, size_t length){
     }
     if(process_column[column]){
         auto value = dataframe->series[column].set(cell_start, length);
-        if(line % 100000 == 0){
+        if(line % 1000000 == 0){
             std::cout << line << "line :" << std::to_string(value) << std::endl;
-            }
+        }
     }
     column++;
     cells++;

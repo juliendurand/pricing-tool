@@ -17,22 +17,24 @@ uint32_t Serie::size(){
 
 uint8_t Serie::set(char *str, size_t length){
     auto hash = hash_c_string(str, length);
-    for(unsigned int i=0; i < hkeys.size(); i++){
-        if(hkeys[i] == hash){
-            data.push_back(i);
-            return i;
-        }
+    auto key = std::lower_bound(hkeys.begin(), hkeys.end(), hash);
+    size_t pos = key - hkeys.begin();
+    if((key < hkeys.end()) && (*key == hash)){
+        uint8_t value = values[pos];
+        data.push_back(value);
+        return value;
     }
-    hkeys.push_back(hash);
-    keys.push_back(std::string(str, length));
-    int value = hkeys.size() - 1;
+    int value = hkeys.size();
     if(value > 255){
         std::cout << "too many values for column " << name << std::endl;
         exit(1);
     }
+    hkeys.insert(hkeys.begin() + pos, hash);
+    values.insert(values.begin() + pos, value);
+    keys.push_back(std::string(str, length));
     data.push_back(value);
-    return value;
 
+    return value;
 }
 
 std::string Serie::get_key_from_value(uint8_t value){
