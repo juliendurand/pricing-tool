@@ -229,7 +229,7 @@ class Result:
         d.index = list(range(0, len(y_pred)))
         exp_cum = [0]
         for k in range(0, len(y_pred)):
-            exp_cum.append(exp_cum[-1] + d.ix[k, 'weights'])
+            exp_cum.append(exp_cum[-1] + d.loc[k]['weights'])
         s = exp_cum[-1]
         j = s // n_band
         m_pred, m_obs, m_weight = [], [], []
@@ -240,7 +240,7 @@ class Result:
             for p in range(k, len(y_pred)):
                 if exp_cum[p] < ((i + 1) * j):
                     k2 += 1
-            temp = d.ix[range(k, k2), ]
+            temp = d.loc[range(k, k2)]
             m_pred.append(sum(temp['pred'] * temp['weights']) /
                           sum(temp['weights']))
             m_obs.append(sum(temp['obs'] * temp['weights']) /

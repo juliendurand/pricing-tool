@@ -41,9 +41,9 @@ The modeling dataset contains {{result.nb_features}} features.
     </tr>
     <tr>
         <td>Avg Frequency</td>
-        <td>{{(np.float(result.target[result.train_data_index].sum()) / np.float(result.weight[result.train_data_index].sum())) | percent}}</td>
-        <td>{{(np.float(result.target[result.test_data_index].sum()) /
-        np.float(result.weight[result.test_data_index].sum())) | percent}}</td>
+        <td>{{(np.float64(result.target[result.train_data_index].sum()) / np.float64(result.weight[result.train_data_index].sum())) | percent}}</td>
+        <td>{{(np.float64(result.target[result.test_data_index].sum()) /
+        np.float64(result.weight[result.test_data_index].sum())) | percent}}</td>
     </tr>
     {% endif %}
     {% if result.config.loss == "gamma" %}
@@ -65,9 +65,9 @@ The modeling dataset contains {{result.nb_features}} features.
     </tr>
     <tr>
         <td>Average claim</td>
-        <td>{{(np.float(result.target[result.train_data_index].sum()) / np.float(result.weight[result.train_data_index].sum())) | euro}}</td>
-        <td>{{(np.float(result.target[result.test_data_index].sum()) /
-        np.float(result.weight[result.test_data_index].sum())) | euro}}</td>
+        <td>{{(np.float64(result.target[result.train_data_index].sum()) / np.float64(result.weight[result.train_data_index].sum())) | euro}}</td>
+        <td>{{(np.float64(result.target[result.test_data_index].sum()) /
+        np.float64(result.weight[result.test_data_index].sum())) | euro}}</td>
     </tr>
     <tr>
         <td>Max claim</td>
@@ -136,7 +136,7 @@ The model has a root mean squared error of : {{result.rmse() | twodp}}
 
 #### {{feature}}
 
-This feature is #{{loop.index}} and is {% if loop.index > np.int(result.config.nb_features) %}**not** included{% else %}**included**{% endif %} included in the model.
+This feature is #{{loop.index}} and is {% if loop.index > np.int64(result.config.nb_features) %}**not** included{% else %}**included**{% endif %} included in the model.
 
 {{result.calculate_relativities(feature).to_html(index=False, classes=['table-condensed', 'table-striped'])}}
 
